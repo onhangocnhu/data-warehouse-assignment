@@ -1,59 +1,110 @@
-% !TeX root = ../../main.tex
 \subsection{Thiết kế mức logic}
 
-\subsubsection{Lựa chọn lược đồ}
-\CacBuoc
-\begin{enumerate}
-\item So sánh star schema, snowflake schema và fact constellation.
-\item Đánh giá từng lược đồ theo độ dư thừa, độ phức tạp truy vấn và số bảng sự kiện cần có.
-\item Chọn lược đồ và nêu lý do.
-\end{enumerate}
-\TaiLieu{Ch3 tr.31--37.}
-\KetQua{Bảng so sánh và lược đồ được chọn kèm lý do.}
-\PhanNhom{lược đồ được chọn}
+\textbf{Yêu cầu:} Chuyển mô hình đa chiều thành lược đồ logic cụ thể, bao gồm lựa chọn lược đồ, cấu trúc bảng fact, cấu trúc các bảng chiều và dữ liệu dẫn xuất.
 
-\subsubsection{Thiết kế bảng sự kiện}
-\CacBuoc
-\begin{enumerate}
-\item Đặt tên từng bảng sự kiện và ghi rõ độ mịn.
-\item Liệt kê các khóa ngoại đến bảng chiều.
-\item Liệt kê các độ đo, kiểu dữ liệu và nguồn dữ liệu.
-\item Xác định khóa chính và cách lưu các mã nghiệp vụ như \code{order\_id}.
-\end{enumerate}
-\TaiLieu{Ch3 tr.24, 31--32; Ch2 tr.11.}
-\KetQua{Bảng mô tả cột của từng bảng sự kiện.}
-\PhanNhom{mô tả các bảng sự kiện}
+\subsubsection{Lựa chọn lược đồ}\label{sec:luocdo}
+
+Mô hình dữ liệu đa chiều có thể được tổ chức theo ba dạng lược đồ: star schema, snowflake schema và fact constellation. Dựa trên mô hình đa chiều đã xây dựng ở mục trước, nhóm lựa chọn \textit{snowflake schema} cho Data Mart. Lựa chọn này xuất phát từ các lý do sau:
+
+\begin{itemize}
+\item Chỉ có một bảng fact: Ba quy trình nghiệp vụ được mô hình hóa trong cùng một bảng fact, nên không cần đến lược đồ fact constellation, vốn dùng cho trường hợp nhiều bảng fact cùng chia sẻ các bảng chiều.
+\item Dữ liệu địa lý được dùng chung: Khách hàng và người bán đều có thông tin thành phố và bang. Nếu dùng star schema, thông tin địa lý sẽ bị lặp lại trong cả hai bảng chiều khách hàng và người bán. Snowflake schema tách thông tin này ra các bảng chiều thành phố và bang dùng chung, giúp dữ liệu địa lý nhất quán và dễ mở rộng.
+\item Phân cấp được thể hiện rõ ràng: Các phân cấp Sản phẩm $\rightarrow$ Ngành hàng và Thành phố $\rightarrow$ Bang $\rightarrow$ Vùng được biểu diễn thành các bảng riêng, thuận tiện cho các phép \texttt{roll-up} và \texttt{drill-down}.
+\item Phù hợp với Data Mart: Data Mart thường được thiết kế theo star schema hoặc snowflake schema vì cả hai đều tập trung vào một chủ đề phân tích \cite{han}.
+\end{itemize}
+
+Hạn chế của snowflake schema là truy vấn cần nhiều phép join hơn so với star schema. Tuy nhiên, với quy mô khoảng 112.650 dòng trong bảng fact, chi phí của các phép kết nối này là chấp nhận được. Riêng chiều thời gian được giữ ở dạng phẳng, không tách thành các bảng tháng, quý, năm, vì đây là chiều được dùng nhiều nhất và có kích thước nhỏ.
+
+\subsubsection{Thiết kế bảng fact}
+
+Bảng fact của Data Mart được đặt tên là \code{sales}, với granularity là một sản phẩm trong một đơn hàng như đã xác định ở mục~\ref{sec:granularity}. Khóa chính của bảng là cặp (\code{order\_id}, \code{order\_item\_id}). Bảng~\ref{tab:fact} mô tả cấu trúc của bảng fact.
+
+\begingroup\small\setstretch{1.1}
+\begin{longtable}{|P{3.9cm}|P{1.7cm}|P{4.2cm}|P{3.9cm}|}
+\caption{Cấu trúc bảng fact \code{sales}}\label{tab:fact}\\
+\hline
+\textbf{Cột} & \textbf{Kiểu} & \textbf{Ý nghĩa} & \textbf{Nguồn}\\ \hline \endfirsthead
+\hline
+\textbf{Cột} & \textbf{Kiểu} & \textbf{Ý nghĩa} & \textbf{Nguồn}\\ \hline \endhead
+\code{order\_id} & varchar & Mã đơn hàng (degenerate dimension), một phần của khóa chính & \code{order\_items}\\ \hline
+\code{order\_item\_id} & int & Số thứ tự sản phẩm trong đơn, một phần của khóa chính & \code{order\_items}\\ \hline
+\code{product\_key} & int & Khóa ngoại đến \code{dim\_product} & Tra cứu theo \code{product\_id}\\ \hline
+\code{seller\_key} & int & Khóa ngoại đến \code{dim\_seller} & Tra cứu theo \code{seller\_id}\\ \hline
+\code{customer\_key} & int & Khóa ngoại đến \code{dim\_customer} & Tra cứu theo \code{customer\_unique\_id}\\ \hline
+\code{purchase\_date\_key} & int & Ngày mua & \code{orders}\\ \hline
+\code{approved\_date\_key} & int & Ngày duyệt đơn & \code{orders}\\ \hline
+\code{carrier\_date\_key} & int & Ngày bàn giao vận chuyển & \code{orders}\\ \hline
+\code{delivered\_date\_key} & int & Ngày khách nhận hàng & \code{orders}\\ \hline
+\code{estimated\_date\_key} & int & Ngày giao dự kiến & \code{orders}\\ \hline
+\code{review\_date\_key} & int & Ngày đánh giá & \code{order\_reviews}\\ \hline
+\code{order\_status} & varchar & Trạng thái đơn hàng & \code{orders}\\ \hline
+\code{price} & decimal & Giá bán của dòng sản phẩm & \code{order\_items}\\ \hline
+\code{freight\_value} & decimal & Phí vận chuyển của dòng sản phẩm & \code{order\_items}\\ \hline
+\code{approval\_days} & decimal & Thời gian duyệt đơn (ngày) & Tính từ \code{orders}\\ \hline
+\code{handling\_days} & decimal & Thời gian chuẩn bị hàng (ngày) & Tính từ \code{orders}\\ \hline
+\code{shipping\_days} & decimal & Thời gian vận chuyển (ngày) & Tính từ \code{orders}\\ \hline
+\code{delivery\_days} & decimal & Tổng thời gian giao hàng (ngày) & Tính từ \code{orders}\\ \hline
+\code{is\_late} & smallint & Cờ giao trễ (1: trễ, 0: đúng hạn) & Tính từ \code{orders}\\ \hline
+\code{review\_score} & smallint & Điểm đánh giá của đơn hàng (1-5) & \code{order\_reviews}\\ \hline
+\end{longtable}
+\endgroup
+
+Các cột trong bảng fact được chia thành ba nhóm:
+
+\begin{itemize}
+\item Khóa và mã nghiệp vụ: Mã đơn hàng và số thứ tự sản phẩm tạo thành khóa chính. Các khóa ngoại tham chiếu đến bảng chiều bằng surrogate key thay vì mã gốc của dữ liệu nguồn.
+\item Các cột ngày: Sáu cột ngày cùng tham chiếu đến bảng \code{dim\_date}, mỗi cột ứng với một mốc trong vòng đời đơn hàng. Các mốc chưa xảy ra, ví dụ ngày nhận hàng của đơn chưa giao, được gán về một khóa đặc biệt đại diện cho giá trị không xác định.
+\item Các thước đo: Giá bán và phí vận chuyển là thước đo cộng được. Các khoảng thời gian, cờ giao trễ và điểm đánh giá là thước đo theo đơn hàng, được tổng hợp theo nguyên tắc đã nêu ở mục~\ref{sec:dodo}.
+\end{itemize}
 
 \subsubsection{Thiết kế bảng chiều}
-\CacBuoc
-\begin{enumerate}
-\item Thiết kế từng bảng chiều: tên cột, kiểu dữ liệu, nguồn và ý nghĩa.
-\item Định nghĩa khóa thay thế (surrogate key) và giữ lại khóa nghiệp vụ.
-\item Thiết kế chiều thời gian theo các phân cấp cần phân tích.
-\item Chọn cách xử lý thay đổi của thuộc tính theo thời gian (Slowly Changing Dimension).
-\item Xác định bản ghi đại diện cho giá trị không xác định.
-\end{enumerate}
-\TaiLieu{Ch3 tr.22, 31--34. Khóa thay thế và Slowly Changing Dimension không có trong slide, xem Kimball \cite{kimball}.}
-\KetQua{Bảng mô tả cột của từng bảng chiều.}
-\PhanNhom{mô tả các bảng chiều}
+
+Data Mart gồm tám bảng chiều. Bảng~\ref{tab:dim} mô tả cấu trúc của từng bảng chiều.
+
+\begingroup\small\setstretch{1.1}
+\begin{longtable}{|P{2.6cm}|P{5.6cm}|P{5.5cm}|}
+\caption{Cấu trúc các bảng chiều}\label{tab:dim}\\
+\hline
+\textbf{Bảng chiều} & \textbf{Các cột} & \textbf{Nguồn và ghi chú}\\ \hline \endfirsthead
+\hline
+\textbf{Bảng chiều} & \textbf{Các cột} & \textbf{Nguồn và ghi chú}\\ \hline \endhead
+\code{dim\_date} & \code{date\_key}, \code{full\_date}, \code{day}, \code{month}, \code{quarter}, \code{year}, \code{day\_of\_week} & Sinh tự động cho các ngày từ 01/1/2016 đến 31/12/2018\\ \hline
+\code{dim\_product} & \code{product\_key}, \code{product\_id}, \code{category\_key}, \code{weight\_g}, \code{length\_cm}, \code{height\_cm}, \code{width\_cm}, \code{photos\_qty} & \code{products}\\ \hline
+\code{dim\_category} & \code{category\_key}, \code{category\_name\_pt}, \code{category\_name\_en} & \code{products} và \code{category\_translation}\\ \hline
+\code{dim\_customer} & \code{customer\_key}, \code{customer\_unique\_id}, \code{zip\_code\_prefix}, \code{city\_key} & \code{customers}, mỗi khách hàng thật một dòng\\ \hline
+\code{dim\_seller} & \code{seller\_key}, \code{seller\_id}, \code{zip\_code\_prefix}, \code{city\_key} & \code{sellers}\\ \hline
+\code{dim\_city} & \code{city\_key}, \code{city\_name}, \code{latitude}, \code{longitude}, \code{state\_key} & Tên thành phố từ \code{customers} và \code{sellers}, tọa độ trung bình từ \code{geolocation}\\ \hline
+\code{dim\_state} & \code{state\_key}, \code{state\_code}, \code{state\_name}, \code{region} & Mã bang từ dữ liệu nguồn, tên bang và vùng do nhóm bổ sung\\ \hline
+\end{longtable}
+\endgroup
+
+Các bảng chiều được thiết kế theo các nguyên tắc sau:
+
+\begin{itemize}
+\item Surrogate key: Mỗi bảng chiều có một khóa thay thế dạng số nguyên (surrogate key) làm khóa chính, đồng thời giữ lại mã gốc của dữ liệu nguồn như \code{product\_id}, \code{seller\_id}, \code{customer\_unique\_id} để đối chiếu \cite{kimball}. Surrogate key giúp các phép kết nối nhanh hơn so với mã dạng chuỗi 32 ký tự của dữ liệu nguồn và không phụ thuộc vào cách đặt mã của hệ thống nguồn. Riêng \code{date\_key} được biểu diễn theo dạng \code{YYYYMMDD}, ví dụ 20171124, để dễ đọc và dễ lọc theo khoảng thời gian.
+\item Bản ghi không xác định: Mỗi bảng chiều có một bản ghi đặc biệt đại diện cho giá trị không xác định. Bản ghi này được dùng khi dữ liệu nguồn bị thiếu, ví dụ 610 sản phẩm không có ngành hàng hoặc các đơn hàng chưa có ngày nhận hàng, giúp bảng fact không chứa khóa ngoại rỗng.
+\item Xử lý thay đổi theo thời gian: Dữ liệu nguồn là tập dữ liệu lịch sử cố định và không ghi nhận các thay đổi của thuộc tính, ví dụ người bán đổi địa chỉ. Vì vậy, nhóm áp dụng Slowly Changing Dimension loại 1 (ghi đè giá trị mới) \cite{kimball}. Khi hệ thống được mở rộng để nạp dữ liệu định kỳ, các chiều khách hàng và người bán có thể chuyển sang loại 2 để lưu lịch sử thay đổi.
+\end{itemize}
 
 \subsubsection{Dữ liệu dẫn xuất và bảng tổng hợp}
-\CacBuoc
-\begin{enumerate}
-\item Liệt kê các trường dẫn xuất cần tính, dựa trên Bảng~\ref{tab:kpi}.
-\item Xác định các truy vấn thường dùng cần tổng hợp sẵn.
-\item Thiết kế các bảng tổng hợp hoặc data mart nếu cần.
-\end{enumerate}
-\TaiLieu{Ch2-cont tr.9, 13; Ch3 tr.7.}
-\KetQua{Danh sách trường dẫn xuất và bảng tổng hợp.}
-\PhanNhom{trường dẫn xuất và bảng tổng hợp}
 
-\subsubsection{Sơ đồ lược đồ hoàn chỉnh}
-\CacBuoc
-\begin{enumerate}
-\item Vẽ sơ đồ gồm toàn bộ bảng sự kiện, bảng chiều, khóa và quan hệ.
-\item Kiểm tra lại sơ đồ có tính được toàn bộ chỉ số trong Bảng~\ref{tab:kpi} hay không.
-\end{enumerate}
-\TaiLieu{Ch3 tr.32, 34, 36 (các sơ đồ mẫu).}
-\KetQua{Sơ đồ lược đồ hoàn chỉnh của kho dữ liệu.}
-\HinhCho{Sơ đồ lược đồ của kho dữ liệu}{fig:schema}
+Dữ liệu dẫn xuất là dữ liệu được tính toán từ các dữ liệu có sẵn. Trong Data Mart, dữ liệu dẫn xuất gồm các trường được tính trong bước transformation và các view tổng hợp được tạo trên bảng fact \cite{inmon}.
+
+\begin{itemize}
+\item Các trường dẫn xuất trong bảng fact: Bốn khoảng thời gian (\code{approval\_days}, \code{handling\_days}, \code{shipping\_days}, \code{delivery\_days}) được tính từ các mốc thời gian của đơn hàng, và cờ giao trễ \code{is\_late} được tính bằng cách so sánh ngày nhận hàng với ngày giao dự kiến.
+\item Các trường dẫn xuất trong bảng chiều: Vùng địa lý (\code{region}) được gán từ mã bang, tọa độ của thành phố được tính trung bình từ tập \code{geolocation}, và các thuộc tính tháng, quý, năm được tính từ ngày.
+\item View theo đơn hàng: Nhóm tạo một view tổng hợp với mỗi dòng là một đơn hàng, chứa tổng giá trị đơn, phí vận chuyển và các thước đo theo đơn hàng. View này giúp tính đúng các chỉ số như thời gian giao hàng trung bình, tỷ lệ giao trễ và điểm đánh giá trung bình mà không bị tính lặp.
+\end{itemize}
+
+Nhóm không tạo thêm các bảng tổng hợp lưu sẵn (materialized), vì với quy mô dữ liệu hiện tại, các truy vấn tổng hợp trực tiếp trên bảng fact vẫn đáp ứng được yêu cầu hiệu năng đã đề ra. Khi dữ liệu tăng lên, các view tổng hợp theo tháng, bang và ngành hàng có thể được chuyển thành bảng lưu sẵn để tăng tốc độ truy vấn cho dashboard.
+
+\subsubsection{Sơ đồ schema hoàn chỉnh}
+
+Hình~\ref{fig:schema} trình bày sơ đồ snowflake schema hoàn chỉnh của Data Mart. Bảng fact \code{sales} nằm ở trung tâm và tham chiếu đến bốn bảng chiều trực tiếp là \texttt{product} (sản phẩm), \texttt{seller} (người bán), \texttt{customer} (khách hàng) và \texttt{date} (thời gian). Bảng chiều sản phẩm tiếp tục tham chiếu đến bảng \texttt{category} (ngành hàng), còn các bảng chiều \texttt{customer} và \texttt{seller} cùng tham chiếu đến bảng \texttt{city} (thành phố), rồi đến bảng \texttt{state} (bang).
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/schema-snowflake.png}
+\caption{Sơ đồ snowflake schema của Data Mart}
+\label{fig:schema}
+\end{figure}

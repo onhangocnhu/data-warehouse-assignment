@@ -1,0 +1,81 @@
+erDiagram
+    FACT_BAN_HANG {
+        varchar order_id PK "degenerate dimension"
+        int order_item_id PK
+        int product_key FK
+        int seller_key FK
+        int customer_key FK
+        int purchase_date_key FK
+        int approved_date_key FK
+        int carrier_date_key FK
+        int delivered_date_key FK
+        int estimated_date_key FK
+        int review_date_key FK
+        varchar order_status
+        decimal price "cong duoc"
+        decimal freight_value "cong duoc"
+        decimal approval_days "theo don"
+        decimal handling_days "theo don"
+        decimal shipping_days "theo don"
+        decimal delivery_days "theo don"
+        smallint is_late "theo don"
+        smallint review_score "theo don"
+    }
+    DIM_DATE {
+        int date_key PK
+        date full_date
+        int day
+        int month
+        int quarter
+        int year
+        varchar day_of_week
+    }
+    DIM_PRODUCT {
+        int product_key PK
+        varchar product_id
+        int category_key FK
+        int weight_g
+        int length_cm
+        int height_cm
+        int width_cm
+        int photos_qty
+    }
+    DIM_CATEGORY {
+        int category_key PK
+        varchar category_name_pt
+        varchar category_name_en
+    }
+    DIM_CUSTOMER {
+        int customer_key PK
+        varchar customer_unique_id
+        varchar zip_code_prefix
+        int city_key FK
+    }
+    DIM_SELLER {
+        int seller_key PK
+        varchar seller_id
+        varchar zip_code_prefix
+        int city_key FK
+    }
+    DIM_CITY {
+        int city_key PK
+        varchar city_name
+        decimal latitude
+        decimal longitude
+        int state_key FK
+    }
+    DIM_STATE {
+        int state_key PK
+        char state_code
+        varchar state_name
+        varchar region
+    }
+
+    DIM_PRODUCT ||--o{ FACT_BAN_HANG : "san pham"
+    DIM_SELLER ||--o{ FACT_BAN_HANG : "nguoi ban"
+    DIM_CUSTOMER ||--o{ FACT_BAN_HANG : "khach hang"
+    DIM_DATE ||--o{ FACT_BAN_HANG : "ngay mua, duyet, ban giao, nhan, du kien, danh gia"
+    DIM_CATEGORY ||--o{ DIM_PRODUCT : "nganh hang"
+    DIM_CITY ||--o{ DIM_CUSTOMER : "thanh pho"
+    DIM_CITY ||--o{ DIM_SELLER : "thanh pho"
+    DIM_STATE ||--o{ DIM_CITY : "bang"

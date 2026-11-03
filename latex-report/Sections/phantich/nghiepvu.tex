@@ -31,7 +31,7 @@ Sàn thương mại điện tử đóng vai trò trung gian kết nối khách h
 
 Bài toán đặt ra: \textit{Làm thế nào để tích hợp dữ liệu từ các nguồn rời rạc của sàn thương mại điện tử vào một kho dữ liệu thống nhất, cho phép nhà quản lý phân tích đa chiều về doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán, từ đó hỗ trợ đưa ra các quyết định kinh doanh và vận hành phù hợp.}
 
-Các hệ thống xử lý giao dịch trực tuyến (OLTP) được thiết kế để ghi nhận nhanh các giao dịch hằng ngày, không tối ưu cho các truy vấn tổng hợp trên dữ liệu lịch sử. Vì vậy, bài toán cần một kho dữ liệu với bốn đặc trưng theo định nghĩa của Inmon \cite{inmon,slides}. Bảng~\ref{tab:dactrung} trình bày ý nghĩa của từng đặc trưng trong bài toán này.
+Các hệ thống xử lý giao dịch trực tuyến (OLTP) được thiết kế để ghi nhận nhanh các giao dịch hằng ngày, không tối ưu cho các truy vấn tổng hợp trên dữ liệu lịch sử. Vì vậy, bài toán cần một kho dữ liệu với bốn đặc trưng cơ bản của kho dữ liệu \cite{inmon}. Bảng~\ref{tab:dactrung} trình bày ý nghĩa của từng đặc trưng trong bài toán này.
 
 \begin{table}[H]
 \centering
@@ -98,7 +98,7 @@ Thời gian chuẩn bị hàng & Thời điểm bàn giao vận chuyển $-$ Th�
 Thời gian vận chuyển & Thời điểm khách nhận hàng $-$ Thời điểm bàn giao vận chuyển & Đánh giá tốc độ vận chuyển theo vùng và tuyến giao hàng.\\ \hline
 Tỷ lệ giao trễ & Số đơn có ngày nhận hàng sau ngày dự kiến / Số đơn đã giao & Phát hiện vùng, tuyến và thời điểm thường giao trễ; đánh giá ảnh hưởng của giao trễ đến điểm đánh giá.\\ \hline
 Điểm đánh giá trung bình & Trung bình điểm đánh giá & Đo mức độ hài lòng theo ngành hàng, người bán và khu vực.\\ \hline
-Tỷ lệ đánh giá thấp & Số đánh giá 1 -- 2 sao / Tổng số đánh giá & Phát hiện ngành hàng và người bán có nhiều phản hồi tiêu cực.\\ \hline
+Tỷ lệ đánh giá thấp & Số đánh giá 1-2 sao / Tổng số đánh giá & Phát hiện ngành hàng và người bán có nhiều phản hồi tiêu cực.\\ \hline
 Số người bán hoạt động & Số người bán phân biệt có đơn hàng trong kỳ & So sánh phân bố người bán với nơi tập trung khách hàng.\\ \hline
 \end{longtable}
 \endgroup
