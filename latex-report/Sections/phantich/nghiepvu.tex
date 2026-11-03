@@ -1,0 +1,125 @@
+\subsection{Mô tả nghiệp vụ và xác định bài toán}
+% \subsubsection{Bối cảnh nghiệp vụ}
+
+% Sàn thương mại điện tử đóng vai trò trung gian kết nối khách hàng với nhiều người bán độc lập. Khách hàng đặt mua sản phẩm trên sàn, người bán chuẩn bị hàng và lựa chọn bàn giao cho đơn vị vận chuyển. Đơn vị vận chuyển giao hàng đến khách hàng. S`au khi nhận hàng, khách hàng có thể gửi đánh giá về trải nghiệm mua sắm.
+
+% Điểm đáng chú ý của mô hình này là một đơn hàng có thể bao gồm nhiều sản phẩm đến từ nhiều người bán khác nhau: bộ dữ liệu có 9.803 đơn hàng nhiều sản phẩm và 1.278 đơn hàng từ nhiều người bán. Khách hàng có mặt tại cả 27 bang của Brazil, trong khi người bán chỉ có mặt tại 23 bang và tập trung chủ yếu ở bang SP. Vì vậy, hàng hóa thường phải vận chuyển qua nhiều vùng, làm cho thời gian và chi phí giao hàng khác nhau đáng kể giữa các khu vực.
+
+\subsubsection{Quy trình nghiệp vụ chính}
+
+Vòng đời của một đơn hàng gồm các giai đoạn được mô tả trong Bảng~\ref{tab:quytrinh}. Mỗi giai đoạn tạo ra các dữ liệu khác nhau và đây là cơ sở để xác định các đối tượng cần phân tích.
+
+Sàn thương mại điện tử đóng vai trò trung gian kết nối khách hàng với nhiều người bán độc lập. Khách hàng đặt mua sản phẩm trên sàn, người bán chuẩn bị hàng và lựa chọn bàn giao cho đơn vị vận chuyển. Đơn vị vận chuyển giao hàng đến khách hàng. Sau khi nhận hàng, khách hàng có thể gửi đánh giá về trải nghiệm mua sắm.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Các giai đoạn trong quy trình nghiệp vụ của đơn hàng}
+\label{tab:quytrinh}
+\begin{tabularx}{\linewidth}{|c|p{3cm}|X|p{5.1cm}|}
+\hline
+\textbf{Bước} & \textbf{Giai đoạn} & \textbf{Mô tả nghiệp vụ} & \textbf{Dữ liệu ghi nhận}\\ \hline
+1 & Đặt hàng & Khách hàng chọn sản phẩm và tạo đơn hàng. & Thời điểm mua, khách hàng, sản phẩm, người bán, giá, phí vận chuyển.\\ \hline
+2 & Thanh toán và duyệt đơn & Khách hàng thanh toán bằng một hoặc nhiều phương thức, đơn hàng được duyệt. & Phương thức, số kỳ trả góp (nếu có), giá trị thanh toán, thời điểm duyệt.\\ \hline
+3 & Bàn giao vận chuyển & Người bán chuẩn bị hàng và bàn giao cho đơn vị vận chuyển. & Hạn bàn giao, thời điểm bàn giao.\\ \hline
+4 & Giao hàng & Đơn vị vận chuyển giao hàng đến khách hàng. & Thông tin người giao hàng, thời điểm nhận hàng, ngày giao dự kiến, trạng thái đơn hàng.\\ \hline
+5 & Đánh giá & Khách hàng chấm điểm từ 1 đến 5 sao và có thể để lại bình luận. & Điểm đánh giá, bình luận, thời điểm tạo và phản hồi đánh giá.\\ \hline
+\end{tabularx}
+\end{table}
+
+\subsubsection{Phát biểu bài toán}
+
+Bài toán đặt ra: \textit{Làm thế nào để tích hợp dữ liệu từ các nguồn rời rạc của sàn thương mại điện tử vào một kho dữ liệu thống nhất, cho phép nhà quản lý phân tích đa chiều về doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán, từ đó hỗ trợ đưa ra các quyết định kinh doanh và vận hành phù hợp.}
+
+Các hệ thống xử lý giao dịch trực tuyến (OLTP) được thiết kế để ghi nhận nhanh các giao dịch hằng ngày, không tối ưu cho các truy vấn tổng hợp trên dữ liệu lịch sử. Vì vậy, bài toán cần một kho dữ liệu với bốn đặc trưng theo định nghĩa của Inmon \cite{inmon,slides}. Bảng~\ref{tab:dactrung} trình bày ý nghĩa của từng đặc trưng trong bài toán này.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Bốn đặc trưng của kho dữ liệu trong bài toán}
+\label{tab:dactrung}
+\begin{tabularx}{\linewidth}{|p{3.6cm}|X|}
+\hline
+\textbf{Đặc trưng} & \textbf{Ý nghĩa trong bài toán}\\ \hline
+Hướng chủ đề (Subject-oriented) & Dữ liệu được tổ chức theo các chủ đề doanh thu, giao hàng, đánh giá và người bán thay vì theo từng chức năng của ứng dụng.\\ \hline
+Tích hợp (Integrated) & Dữ liệu được chuẩn hóa về tên gọi, định dạng và cách mã hóa.\\ \hline
+Biến đổi theo thời gian (Time-variant) & Dữ liệu lịch sử được lưu giữ để so sánh và phân tích xu hướng theo tháng, quý, năm.\\ \hline
+Không biến động (Non-volatile) & Dữ liệu sau khi nạp được giữ ổn định, phục vụ truy vấn chỉ đọc và cho kết quả nhất quán.\\ \hline
+\end{tabularx}
+\end{table}
+
+% \subsubsection{Các câu hỏi phân tích nghiệp vụ}
+
+% Do báo cáo này không sử dụng use-case như một dự án phần mềm, nhóm mô tả nhu cầu của người dùng thông qua các câu hỏi phân tích nghiệp vụ (Business Question -- BQ), được trình bày trong Bảng~\ref{tab:bq}. Đây là cơ sở để xác định các chiều và độ đo khi thiết kế kho dữ liệu.
+
+% \begingroup\small\setstretch{1.1}
+% \begin{longtable}{|c|p{2.3cm}|p{10.5cm}|}
+% \caption{Các câu hỏi phân tích nghiệp vụ}\label{tab:bq}\\
+% \hline
+% \textbf{Mã} & \textbf{Chủ đề} & \textbf{Câu hỏi phân tích}\\ \hline \endfirsthead
+% \hline
+% \textbf{Mã} & \textbf{Chủ đề} & \textbf{Câu hỏi phân tích}\\ \hline \endhead
+% BQ01 & Doanh thu & Doanh thu và số đơn hàng thay đổi như thế nào theo tháng, quý, năm?\\ \hline
+% BQ02 & Doanh thu & Những bang, thành phố nào đóng góp nhiều doanh thu nhất?\\ \hline
+% BQ03 & Doanh thu & Những ngành hàng nào có doanh thu cao nhất và tăng trưởng tốt nhất?\\ \hline
+% BQ04 & Doanh thu & Giá trị đơn hàng trung bình và tỷ lệ phí vận chuyển trên giá trị hàng hóa khác nhau như thế nào giữa các vùng?\\ \hline
+% BQ05 & Doanh thu & Cơ cấu phương thức thanh toán và số kỳ trả góp thay đổi như thế nào theo ngành hàng và vùng?\\ \hline
+% BQ06 & Giao hàng & Thời gian giao hàng trung bình theo bang và theo ngành hàng là bao nhiêu?\\ \hline
+% BQ07 & Giao hàng & Tỷ lệ giao trễ cao ở những vùng, tuyến (bang người bán đến bang khách hàng) và thời điểm nào?\\ \hline
+% BQ08 & Giao hàng & Công đoạn nào chiếm nhiều thời gian nhất: duyệt đơn, người bán chuẩn bị hàng hay vận chuyển?\\ \hline
+% BQ09 & Hài lòng & Điểm đánh giá trung bình theo ngành hàng, người bán và khu vực là bao nhiêu?\\ \hline
+% BQ10 & Hài lòng & Giao trễ ảnh hưởng như thế nào đến điểm đánh giá của khách hàng?\\ \hline
+% BQ11 & Hài lòng & Những ngành hàng nào có tỷ lệ đánh giá thấp (1 -- 2 sao) cao nhất?\\ \hline
+% BQ12 & Người bán & Những người bán nào có doanh thu cao nhất theo vùng và ngành hàng?\\ \hline
+% BQ13 & Người bán & Người bán nào có doanh thu cao nhưng chất lượng giao hàng hoặc đánh giá thấp?\\ \hline
+% BQ14 & Người bán & Người bán phân bố ở vùng nào so với nơi tập trung khách hàng?\\ \hline
+% \end{longtable}
+% \endgroup
+
+\subsubsection{Các chỉ số đánh giá (KPI)}
+
+Để các bộ phận sử dụng cùng một cách tính, nhóm định nghĩa các chỉ số trong Bảng~\ref{tab:kpi}.
+
+\begingroup\small\setstretch{1.1}
+\begin{longtable}{|P{3.4cm}|P{5.3cm}|P{5.3cm}|}
+\caption{Danh sách các chỉ số đánh giá}\label{tab:kpi}\\
+\hline
+\textbf{Chỉ số} & \textbf{Cách tính} & \textbf{Mục đích sử dụng}\\ \hline \endfirsthead
+\hline
+\textbf{Chỉ số} & \textbf{Cách tính} & \textbf{Mục đích sử dụng}\\ \hline \endhead
+Doanh thu hàng hóa & Tổng giá của các dòng sản phẩm đã bán & Theo dõi xu hướng doanh thu theo thời gian, vùng, ngành hàng và người bán.\\ \hline
+Tổng phí vận chuyển & Tổng phí vận chuyển của các dòng sản phẩm & So sánh chi phí vận chuyển giữa các vùng.\\ \hline
+Số đơn hàng & Số đơn hàng phân biệt & Đo quy mô hoạt động của sàn theo thời gian và khu vực.\\ \hline
+Giá trị đơn hàng trung bình & Doanh thu hàng hóa / Số đơn hàng & So sánh sức mua giữa các vùng và ngành hàng.\\ \hline
+Tỷ lệ phí vận chuyển & Tổng phí vận chuyển / Doanh thu hàng hóa & Nhận diện các vùng có phí vận chuyển cao so với giá trị hàng hóa.\\ \hline
+Thời gian giao hàng & Thời điểm khách nhận hàng $-$ Thời điểm mua & So sánh tốc độ giao hàng theo bang và ngành hàng.\\ \hline
+Thời gian duyệt đơn & Thời điểm duyệt $-$ Thời điểm mua & Đánh giá tốc độ xử lý đơn hàng của sàn.\\ \hline
+Thời gian chuẩn bị hàng & Thời điểm bàn giao vận chuyển $-$ Thời điểm duyệt & Đánh giá tốc độ chuẩn bị hàng của người bán.\\ \hline
+Thời gian vận chuyển & Thời điểm khách nhận hàng $-$ Thời điểm bàn giao vận chuyển & Đánh giá tốc độ vận chuyển theo vùng và tuyến giao hàng.\\ \hline
+Tỷ lệ giao trễ & Số đơn có ngày nhận hàng sau ngày dự kiến / Số đơn đã giao & Phát hiện vùng, tuyến và thời điểm thường giao trễ; đánh giá ảnh hưởng của giao trễ đến điểm đánh giá.\\ \hline
+Điểm đánh giá trung bình & Trung bình điểm đánh giá & Đo mức độ hài lòng theo ngành hàng, người bán và khu vực.\\ \hline
+Tỷ lệ đánh giá thấp & Số đánh giá 1 -- 2 sao / Tổng số đánh giá & Phát hiện ngành hàng và người bán có nhiều phản hồi tiêu cực.\\ \hline
+Số người bán hoạt động & Số người bán phân biệt có đơn hàng trong kỳ & So sánh phân bố người bán với nơi tập trung khách hàng.\\ \hline
+\end{longtable}
+\endgroup
+
+\subsubsection{Các quyết định được hỗ trợ}
+
+Bảng~\ref{tab:quyetdinh} trình bày các quyết định mà hệ thống có thể hỗ trợ cho từng nhóm người dùng.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Các quyết định được hỗ trợ bởi kho dữ liệu}
+\label{tab:quyetdinh}
+\begin{tabularx}{\linewidth}{|P{3.3cm}|>{\raggedright\arraybackslash}X|P{5.4cm}|}
+\hline
+\textbf{Người ra quyết định} & \textbf{Quyết định} & \textbf{Thông tin cần theo dõi}\\ \hline
+Ban điều hành sàn & Chọn thị trường và ngành hàng cần ưu tiên đầu tư. & Doanh thu, số đơn hàng và giá trị đơn hàng trung bình theo thời gian, vùng và ngành hàng; cơ cấu phương thức thanh toán.\\ \hline
+Quản lý vận hành & Điều chỉnh ngày giao dự kiến và ưu tiên cải thiện các tuyến giao trễ. & Thời gian giao hàng, thời gian từng công đoạn và tỷ lệ giao trễ theo vùng và tuyến giao hàng.\\ \hline
+Quản lý ngành hàng và người bán & Hỗ trợ, khuyến khích hoặc cảnh báo người bán; xác định vùng cần phát triển thêm người bán. & Doanh thu, tỷ lệ giao trễ và điểm đánh giá của từng người bán; phân bố người bán theo vùng.\\ \hline
+Chăm sóc khách hàng & Ưu tiên xử lý các nhóm ngành hàng và người bán có nhiều đánh giá thấp. & Điểm đánh giá trung bình, tỷ lệ đánh giá thấp và mức chênh lệch điểm giữa đơn giao đúng hạn và giao trễ.\\ \hline
+\end{tabularx}
+\end{table}
+
+% --------------------------------------------------------------------------

@@ -1,0 +1,87 @@
+\subsection{Phân tích yêu cầu}
+\subsubsection{Yêu cầu chức năng}
+
+\paragraph{Ban điều hành sàn}
+\begin{itemize}
+\item Ban điều hành có thể xem tổng quan doanh thu, số đơn hàng, giá trị đơn hàng trung bình và điểm đánh giá trung bình của toàn sàn.
+\item Ban điều hành có thể so sánh các chỉ số theo tháng, quý, năm và xem xu hướng tăng trưởng.
+\item Ban điều hành có thể phân tích doanh thu theo bang, thành phố và ngành hàng, đồng thời xem chi tiết từ cấp tổng hợp đến cấp thấp hơn.
+\item Ban điều hành có thể xem cơ cấu phương thức thanh toán và trả góp.
+\end{itemize}
+
+\paragraph{Quản lý vận hành và giao hàng}
+\begin{itemize}
+\item Quản lý vận hành có thể theo dõi thời gian giao hàng trung bình và tỷ lệ giao trễ theo thời gian, bang và ngành hàng.
+\item Quản lý vận hành có thể phân tích theo tuyến giao hàng, từ bang của người bán đến bang của khách hàng.
+\item Quản lý vận hành có thể xem thời gian của từng công đoạn: duyệt đơn, chuẩn bị hàng và vận chuyển.
+\item Quản lý vận hành có thể so sánh ngày giao thực tế với ngày giao dự kiến.
+\end{itemize}
+
+\paragraph{Quản lý ngành hàng và người bán}
+\begin{itemize}
+\item Quản lý có thể xếp hạng người bán và ngành hàng theo doanh thu, số đơn hàng, tỷ lệ giao trễ và điểm đánh giá.
+\item Quản lý có thể lọc kết quả theo vùng, ngành hàng và khoảng thời gian.
+\item Quản lý có thể nhận diện người bán có doanh thu cao nhưng chất lượng dịch vụ thấp.
+\item Quản lý có thể so sánh phân bố người bán với nơi tập trung khách hàng.
+\end{itemize}
+
+\paragraph{Bộ phận chăm sóc khách hàng}
+\begin{itemize}
+\item Nhân viên có thể theo dõi điểm đánh giá trung bình và phân bố điểm từ 1 đến 5 sao.
+\item Nhân viên có thể xem tỷ lệ đánh giá thấp theo ngành hàng, người bán và khu vực.
+\item Nhân viên có thể so sánh điểm đánh giá giữa đơn giao đúng hạn và đơn giao trễ.
+\end{itemize}
+
+\paragraph{Các yêu cầu đối với ETL và kho dữ liệu}
+\begin{itemize}
+\item Hệ thống phải trích xuất được dữ liệu từ 9 tập tin CSV nguồn.
+\item Hệ thống phải làm sạch, chuẩn hóa và tích hợp dữ liệu theo các quy tắc xử lý cho các vấn đề đã nêu trong Bảng~\ref{tab:chatluong}.
+\item Hệ thống phải tính được các trường dẫn xuất phục vụ các chỉ số trong Bảng~\ref{tab:kpi}.
+\item Hệ thống phải lưu dữ liệu theo mô hình đa chiều và hỗ trợ các phép toán OLAP: slice, dice, drill-down, roll-up và pivot.
+\item Hệ thống phải ghi nhận nhật ký mỗi lần chạy ETL và số bản ghi bị loại hoặc bị sửa.
+\item Hệ thống phải cung cấp dữ liệu cho dashboard và thành phần DSS ở giai đoạn sau.
+\end{itemize}
+
+\subsubsection{Yêu cầu phi chức năng}
+\paragraph{Performance -- Hiệu năng}
+\begin{itemize}
+\item Các truy vấn tổng hợp trên dashboard trả kết quả trong tối đa 5 giây.
+\item Toàn bộ quy trình ETL hoàn thành trong tối đa 30 phút với dữ liệu hiện có.
+\end{itemize}
+
+\paragraph{Data Quality -- Chất lượng dữ liệu}
+\begin{itemize}
+\item Số liệu tổng trong kho khớp với dữ liệu nguồn sau khi đã trừ các bản ghi bị loại có chủ đích.
+\item Mọi bản ghi trong bảng sự kiện đều tham chiếu đến một bản ghi hợp lệ trong bảng chiều.
+\item Các bản ghi bị loại hoặc bị sửa đều được ghi nhận lại và có thể truy vết.
+\end{itemize}
+
+\paragraph{Scalability -- Khả năng mở rộng}
+\begin{itemize}
+\item Thiết kế cho phép bổ sung nguồn dữ liệu, chiều phân tích hoặc độ đo mới mà không phải thay đổi toàn bộ cấu trúc.
+\item Hệ thống có thể xử lý lượng dữ liệu gấp 10 lần hiện tại với thời gian phản hồi chấp nhận được.
+\end{itemize}
+
+\paragraph{Reliability -- Tính tin cậy}
+\begin{itemize}
+\item Quy trình ETL có thể chạy lại mà không làm trùng lặp dữ liệu.
+\item Khi một bước ETL gặp lỗi, hệ thống dừng lại, ghi nhận lỗi và không nạp dữ liệu dang dở vào kho.
+\end{itemize}
+
+\paragraph{Security -- Tính bảo mật}
+\begin{itemize}
+\item Người dùng phân tích chỉ có quyền đọc dữ liệu trong kho; quyền ghi chỉ dành cho quy trình ETL.
+\item Thông tin kết nối cơ sở dữ liệu không được lưu trực tiếp trong mã nguồn.
+\end{itemize}
+
+\paragraph{Usability -- Tính khả dụng}
+\begin{itemize}
+\item Nhà quản lý không cần biết SQL vẫn có thể lọc và xem dữ liệu trên dashboard.
+\item Tên các chiều và độ đo rõ ràng, thể hiện đúng ý nghĩa nghiệp vụ.
+\end{itemize}
+
+\paragraph{Maintainability -- Tính duy trì}
+\begin{itemize}
+\item Có tài liệu mô tả cấu trúc kho dữ liệu, nguồn gốc dữ liệu và các quy tắc chuyển đổi (metadata).
+\item Mã nguồn ETL được chia thành các bước độc lập, dễ kiểm tra và chỉnh sửa.
+\end{itemize}

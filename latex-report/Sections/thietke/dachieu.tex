@@ -1,0 +1,61 @@
+% !TeX root = ../../main.tex
+\subsection{Mô hình dữ liệu đa chiều}
+
+\subsubsection{Xác định quy trình nghiệp vụ}
+\CacBuoc
+\begin{enumerate}
+\item Liệt kê các quy trình nghiệp vụ từ Bảng~\ref{tab:quytrinh}.
+\item Đối chiếu từng quy trình với các chỉ số trong Bảng~\ref{tab:kpi} và các quyết định trong Bảng~\ref{tab:quyetdinh}.
+\item Chọn các quy trình cần mô hình hóa và nêu lý do.
+\end{enumerate}
+\TaiLieu{Ch3 tr.3 (tính hướng chủ đề); phương pháp thiết kế bốn bước của Kimball \cite{kimball}, không có trong slide.}
+\KetQua{Danh sách quy trình nghiệp vụ được mô hình hóa.}
+\PhanNhom{các quy trình nghiệp vụ được chọn}
+
+\subsubsection{Xác định độ mịn dữ liệu (grain)}
+\CacBuoc
+\begin{enumerate}
+\item Xác định các mức chi tiết có thể chọn, dựa trên mục~\ref{sec:quanhe}.
+\item Định nghĩa rõ một dòng của mỗi bảng sự kiện biểu diễn điều gì.
+\item Kiểm tra độ mịn đã chọn có tính được toàn bộ chỉ số trong Bảng~\ref{tab:kpi} hay không.
+\item Xác định cách xử lý dữ liệu ở mức đơn hàng (đánh giá, thanh toán) khi đơn có nhiều người bán.
+\item Ước lượng số dòng và dung lượng lưu trữ.
+\end{enumerate}
+\TaiLieu{Ch2-cont tr.5--9; Ch2 tr.3.}
+\KetQua{Định nghĩa độ mịn của từng bảng sự kiện và ước lượng dung lượng.}
+\PhanNhom{độ mịn dữ liệu và ước lượng dung lượng}
+
+\subsubsection{Xác định các chiều và phân cấp}
+\CacBuoc
+\begin{enumerate}
+\item Rút ra các chiều phân tích từ cụm ``theo ...'' trong Bảng~\ref{tab:kpi} và Bảng~\ref{tab:quyetdinh}, ví dụ theo thời gian, vùng, ngành hàng, người bán.
+\item Liệt kê thuộc tính của từng chiều và nguồn dữ liệu tương ứng.
+\item Xác định phân cấp của từng chiều để phục vụ roll-up và drill-down.
+\item Kiểm tra một chiều có đồng thời đóng nhiều vai trò hay không.
+\end{enumerate}
+\TaiLieu{Ch3 tr.22; Ch2 tr.11, 15.}
+\KetQua{Bảng các chiều, thuộc tính và phân cấp.}
+\PhanNhom{danh sách chiều, thuộc tính và phân cấp}
+
+\subsubsection{Xác định các độ đo}
+\CacBuoc
+\begin{enumerate}
+\item Rút ra các độ đo từ các chỉ số trong Bảng~\ref{tab:kpi}.
+\item Phân loại mỗi độ đo: cộng được, cộng được một phần hoặc không cộng được.
+\item Xác định hàm tổng hợp phù hợp cho từng độ đo.
+\item Xác định độ đo nào được lưu sẵn và độ đo nào được tính khi truy vấn.
+\end{enumerate}
+\TaiLieu{Ch3 tr.24--25; Ch2 tr.11, 15. Phân loại tính cộng được xem thêm tại Kimball \cite{kimball}.}
+\KetQua{Bảng độ đo, công thức, hàm tổng hợp và tính cộng được.}
+\PhanNhom{danh sách độ đo}
+
+\subsubsection{Data Cube và các phép toán OLAP}
+\CacBuoc
+\begin{enumerate}
+\item Xác định các khối dữ liệu từ các chiều và độ đo đã chọn.
+\item Viết ví dụ cho từng phép slice, dice, drill-down, roll-up và pivot dựa trên các nhu cầu phân tích ở Bảng~\ref{tab:quyetdinh}.
+\item Chọn kiến trúc máy chủ OLAP: ROLAP, MOLAP hoặc HOLAP và nêu lý do.
+\end{enumerate}
+\TaiLieu{Ch3 tr.26--30, 38, 42--44; Ch2 tr.16, 23--24.}
+\KetQua{Mô tả khối dữ liệu và bảng ánh xạ phép toán OLAP với nhu cầu phân tích.}
+\PhanNhom{khối dữ liệu và các phép toán OLAP}

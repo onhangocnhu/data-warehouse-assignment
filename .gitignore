@@ -1,0 +1,22 @@
+# macOS
+.DS_Store
+
+# LaTeX build files
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.log
+*.out
+*.toc
+*.synctex.gz
+*.synctex(busy)
+*.bbl
+*.blg
+*.bcf
+*.run.xml
+*.xdv
+
+# Archives
+*.zip

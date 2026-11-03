@@ -1,0 +1,53 @@
+\subsection{Thiết kế mức khái niệm}
+
+\subsubsection{Mô hình kho dữ liệu}
+
+Dựa trên phạm vi đề tài đã xác định ở mục~\ref{sec:phamvi}, trong ba mô hình kho dữ liệu: Enterprise Data Warehouse -- EDW, Data Mart và Virtual Data Warehouse \cite{slides}, đề tài được xây dựng theo mô hình \textit{Data Mart} trực tiếp từ bộ dữ liệu nguồn có sẵn. Lựa chọn này xuất phát từ các lý do sau:
+
+\begin{itemize}
+\item Phạm vi dữ liệu tập trung vào một mảng nghiệp vụ: Dữ liệu nguồn chỉ bao gồm hoạt động bán hàng và giao nhận trên sàn, không có dữ liệu về các phòng bàn khác như marketing hay nhân sự. Trong khi đó, EDW được thiết kế để tích hợp dữ liệu của toàn bộ tổ chức nên không phù hợp với phạm vi của đề tài.
+\item Nguồn dữ liệu đơn giản: Toàn bộ dữ liệu đến từ một nguồn duy nhất là 9 tập tin CSV của Olist (Bảng~\ref{tab:nguon}), do đó không cần đến quy trình tích hợp phức tạp giữa nhiều hệ thống như một EDW.
+\item Phù hợp với mô hình đa chiều: Data Mart thường được thiết kế theo star schema hoặc snowflake schema, phù hợp với yêu cầu thiết kế kho dữ liệu theo mô hình đa chiều.
+\end{itemize}
+
+Mô hình Virtual Data Warehouse không được lựa chọn vì mô hình này không lưu trữ dữ liệu đã qua xử lý, trong khi dữ liệu nguồn có nhiều vấn đề cần làm sạch trước khi sử dụng (Bảng~\ref{tab:chatluong}) và mô hình này có hiệu năng truy vấn thấp hơn khi làm việc với dữ liệu lớn.
+
+Mặc dù hệ thống phục vụ nhiều nhóm người dùng như ban điều hành, quản lý vận hành và bộ phận chăm sóc khách hàng, các nhóm này đều khai thác cùng một mảng dữ liệu là \textit{đơn hàng} của sàn. Hạn chế của Data Mart là có thể trở thành nguồn dữ liệu tách biệt khi tổ chức bổ sung thêm các nguồn dữ liệu khác. Để khắc phục, nhóm thiết kế các chiều dùng chung như thời gian, địa lý và sản phẩm, tạo điều kiện để tích hợp Data Mart vào một kho dữ liệu lớn hơn trong tương lai.
+
+\subsubsection{Hướng tiếp cận xây dựng mô hình}
+
+Nhóm lựa chọn hướng tiếp cận \textit{Bottom-up} vì đây là hướng phù hợp với mô hình Data Mart đã chọn ở mục trước. Lựa chọn này xuất phát từ các lý do sau:
+
+\begin{itemize}
+\item Nhất quán với mô hình Data Mart: Hướng Bottom-up lấy Data Mart làm điểm khởi đầu.
+\item Triển khai nhanh và tiết kiệm chi phí: Hướng Bottom-up tập trung vào một nhu cầu cụ thể nên có thể đưa vào sử dụng sớm, với chi phí và thời gian phát triển thấp hơn.
+\item Đáp ứng trực tiếp nhu cầu phân tích: Data Mart được xây dựng xoay quanh các chỉ số và quyết định đã xác định ở Bảng~\ref{tab:kpi} và Bảng~\ref{tab:quyetdinh}, giúp người dùng khai thác được kết quả ngay.
+\item Phù hợp với quy mô đề tài: Hướng Bottom-up phù hợp với các tổ chức vừa và nhỏ có nhu cầu phân tích cụ thể và nguồn lực hạn chế.
+\end{itemize}
+
+% Hướng Top-down không phù hợp vì đòi hỏi xây dựng trước một EDW với thời gian phát triển dài, chi phí lớn và cần dữ liệu của toàn bộ tổ chức, trong khi dữ liệu nguồn chỉ có một mảng nghiệp vụ. Hướng Hybrid cũng không phù hợp vì yêu cầu phối hợp đồng thời giữa EDW và các Data Mart.
+
+Áp dụng hướng Bottom-up, đề tài được triển khai theo các bước sau:
+
+\begin{enumerate}
+\item Xây dựng Data Mart cho mảng bán hàng và giao nhận của sàn, phục vụ các nhu cầu phân tích về doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán.
+\item Xây dựng quy trình ETL để trích xuất, làm sạch và nạp dữ liệu từ các tập tin nguồn Olist vào Data Mart.
+\item Xây dựng các công cụ báo cáo và phân tích OLAP trên Data Mart để phục vụ người dùng.
+\item Khi có thêm nguồn dữ liệu mới, xây dựng thêm các Data Mart khác và tích hợp với Data Mart hiện tại thông qua các chiều dùng chung.
+\end{enumerate}
+
+Hạn chế của hướng Bottom-up là các Data Mart có thể trở nên rời rạc và khó tích hợp nếu không được thiết kế thống nhất. Như đã trình bày ở mục trước, nhóm khắc phục hạn chế này bằng cách thiết kế các chiều dùng chung như thời gian, địa lý và sản phẩm ngay từ đầu.
+
+
+
+\subsubsection{Kiến trúc tổng thể của hệ thống}
+\CacBuoc
+\begin{enumerate}
+\item Xác định các thành phần ở mỗi tầng: nguồn dữ liệu và ETL, kho dữ liệu và OLAP, công cụ trình bày.
+\item Xác định vị trí của khu vực staging và kho metadata.
+\item Chọn công nghệ cho từng tầng.
+\item Vẽ sơ đồ kiến trúc ba tầng của hệ thống.
+\end{enumerate}
+\TaiLieu{Ch3 tr.5--9; Ch2 tr.18.}
+\KetQua{Sơ đồ kiến trúc và mô tả vai trò từng tầng.}
+\HinhCho{Sơ đồ kiến trúc ba tầng của hệ thống}{fig:kientruc}

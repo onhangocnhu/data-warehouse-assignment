@@ -1,0 +1,59 @@
+% !TeX root = ../../main.tex
+\subsection{Thiết kế mức logic}
+
+\subsubsection{Lựa chọn lược đồ}
+\CacBuoc
+\begin{enumerate}
+\item So sánh star schema, snowflake schema và fact constellation.
+\item Đánh giá từng lược đồ theo độ dư thừa, độ phức tạp truy vấn và số bảng sự kiện cần có.
+\item Chọn lược đồ và nêu lý do.
+\end{enumerate}
+\TaiLieu{Ch3 tr.31--37.}
+\KetQua{Bảng so sánh và lược đồ được chọn kèm lý do.}
+\PhanNhom{lược đồ được chọn}
+
+\subsubsection{Thiết kế bảng sự kiện}
+\CacBuoc
+\begin{enumerate}
+\item Đặt tên từng bảng sự kiện và ghi rõ độ mịn.
+\item Liệt kê các khóa ngoại đến bảng chiều.
+\item Liệt kê các độ đo, kiểu dữ liệu và nguồn dữ liệu.
+\item Xác định khóa chính và cách lưu các mã nghiệp vụ như \code{order\_id}.
+\end{enumerate}
+\TaiLieu{Ch3 tr.24, 31--32; Ch2 tr.11.}
+\KetQua{Bảng mô tả cột của từng bảng sự kiện.}
+\PhanNhom{mô tả các bảng sự kiện}
+
+\subsubsection{Thiết kế bảng chiều}
+\CacBuoc
+\begin{enumerate}
+\item Thiết kế từng bảng chiều: tên cột, kiểu dữ liệu, nguồn và ý nghĩa.
+\item Định nghĩa khóa thay thế (surrogate key) và giữ lại khóa nghiệp vụ.
+\item Thiết kế chiều thời gian theo các phân cấp cần phân tích.
+\item Chọn cách xử lý thay đổi của thuộc tính theo thời gian (Slowly Changing Dimension).
+\item Xác định bản ghi đại diện cho giá trị không xác định.
+\end{enumerate}
+\TaiLieu{Ch3 tr.22, 31--34. Khóa thay thế và Slowly Changing Dimension không có trong slide, xem Kimball \cite{kimball}.}
+\KetQua{Bảng mô tả cột của từng bảng chiều.}
+\PhanNhom{mô tả các bảng chiều}
+
+\subsubsection{Dữ liệu dẫn xuất và bảng tổng hợp}
+\CacBuoc
+\begin{enumerate}
+\item Liệt kê các trường dẫn xuất cần tính, dựa trên Bảng~\ref{tab:kpi}.
+\item Xác định các truy vấn thường dùng cần tổng hợp sẵn.
+\item Thiết kế các bảng tổng hợp hoặc data mart nếu cần.
+\end{enumerate}
+\TaiLieu{Ch2-cont tr.9, 13; Ch3 tr.7.}
+\KetQua{Danh sách trường dẫn xuất và bảng tổng hợp.}
+\PhanNhom{trường dẫn xuất và bảng tổng hợp}
+
+\subsubsection{Sơ đồ lược đồ hoàn chỉnh}
+\CacBuoc
+\begin{enumerate}
+\item Vẽ sơ đồ gồm toàn bộ bảng sự kiện, bảng chiều, khóa và quan hệ.
+\item Kiểm tra lại sơ đồ có tính được toàn bộ chỉ số trong Bảng~\ref{tab:kpi} hay không.
+\end{enumerate}
+\TaiLieu{Ch3 tr.32, 34, 36 (các sơ đồ mẫu).}
+\KetQua{Sơ đồ lược đồ hoàn chỉnh của kho dữ liệu.}
+\HinhCho{Sơ đồ lược đồ của kho dữ liệu}{fig:schema}

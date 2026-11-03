@@ -1,0 +1,69 @@
+\subsection{Động lực, mục tiêu và phạm vi của đề tài}
+
+\subsubsection{Động lực của đề tài}
+
+Trong những năm gần đây, thương mại điện tử đã trở thành một kênh mua sắm quen thuộc của người tiêu dùng. Trên một sàn thương mại điện tử, mỗi đơn hàng không chỉ là một giao dịch mua bán mà còn kéo theo chuỗi hoạt động liên quan đến nhiều bên: khách hàng, người bán, đơn vị vận chuyển và đơn vị thanh toán. Mỗi hoạt động đều sinh ra dữ liệu và dữ liệu này ngày càng lớn theo sự phát triển của sàn.
+
+% Bộ dữ liệu công khai của Olist \cite{olist}, một doanh nghiệp thương mại điện tử tại Brazil, là một ví dụ điển hình. Từ tháng 09/2016 đến tháng 10/2018, bộ dữ liệu ghi nhận 99.441 đơn hàng từ 96.096 khách hàng, với sự tham gia của 3.095 người bán và 32.951 sản phẩm thuộc 73 ngành hàng. Số đơn hàng mỗi tháng tăng từ 800 đơn vào tháng 01/2017 lên khoảng 6.100 -- 7.300 đơn mỗi tháng trong năm 2018. 
+Quy mô của các sàn thương mại điện tử như Shopee, Amazon,\dots đủ lớn để việc theo dõi hoạt động bằng các báo cáo rời rạc không còn phù hợp. Tuy nhiên trong thực tế, việc khai thác dữ liệu để phục vụ công tác quản lý sàn vẫn còn tồn tại nhiều hạn chế:
+
+\begin{itemize}
+\item Dữ liệu phân tán: Thông tin về đơn hàng, sản phẩm, thanh toán, đánh giá và người bán nằm ở các bảng dữ liệu tách biệt. Để tìm được được ngành hàng nào giao trễ nhiều và bị đánh giá thấp, người phân tích phải tự kết nối nhiều nguồn dữ liệu.
+\item Thiếu góc nhìn tổng quan: Doanh thu, thời gian giao hàng và mức độ hài lòng thường được xem riêng lẻ trong khi các chỉ số này có liên quan với nhau. Nhà quản lý khó nhận ra một vấn đề về vận hành đang ảnh hưởng đến trải nghiệm khách hàng hay doanh thu ở một khu vực.
+\item Hạn chế trong phân tích theo thời gian: Hệ thống giao dịch chỉ tập trung vào trạng thái hiện tại của đơn hàng, không được tổ chức để so sánh xu hướng theo tháng, quý hoặc năm.
+\item Khó đánh giá hiệu quả người bán: Sàn có hàng nghìn người bán với phân bố không đồng đều. Việc so sánh công bằng giữa người bán theo vùng và ngành hàng đòi hỏi các chỉ số thống nhất.
+\item Chênh lệch về chất lượng dịch vụ: Chỉ số thời gian giao hàng trung bình không phản ánh đúng các đơn hàng giao trễ nghiêm trọng. Nếu không có công cụ phân tích, nhà quản lý khó xác định các vấn đề này tập trung ở đâu.
+\item Chất lượng dữ liệu chưa đồng nhất: Dữ liệu nguồn có các giá trị thiếu, trùng lặp và không nhất quán. Nếu không được làm sạch và tích hợp, các báo cáo có thể cho kết quả sai lệch.
+\end{itemize}
+
+Xuất phát từ những vấn đề trên, việc xây dựng một kho dữ liệu là cần thiết nhằm tích hợp dữ liệu vào một nơi thống nhất, đồng thời hỗ trợ nhà quản lý sàn ra quyết định dựa trên số liệu thay vì cảm tính.
+
+\subsubsection{Mục tiêu của đề tài}
+
+Đề tài được xây dựng nhằm giúp nhà quản lý sàn thương mại điện tử theo dõi doanh thu, thời gian giao hàng, mức độ hài lòng của khách hàng và hiệu quả người bán theo vùng và ngành hàng. Cụ thể, đề tài hướng tới các mục tiêu sau:
+
+\begin{itemize}
+\item Tích hợp dữ liệu: Hợp nhất dữ liệu đơn hàng, sản phẩm, khách hàng, người bán, thanh toán, đánh giá và địa lý thành một nguồn dữ liệu thống nhất, nhất quán cho toàn bộ hoạt động phân tích.
+\item Theo dõi doanh thu: Cho phép phân tích doanh thu theo thời gian, khu vực và ngành hàng, qua đó nhận diện xu hướng tăng trưởng, mùa cao điểm và nhóm ngành hàng chủ lực.
+\item Đánh giá hiệu quả giao hàng: Đo lường thời gian giao hàng, tỷ lệ giao trễ và từng công đoạn trong quy trình giao hàng theo khu vực, ngành hàng và người bán.
+\item Đo lường mức độ hài lòng: Theo dõi điểm đánh giá của khách hàng và làm rõ mối liên hệ giữa điểm đánh giá với chất lượng giao hàng.
+\item Đánh giá hiệu quả người bán: Xếp hạng và so sánh người bán dựa trên một bộ chỉ số thống nhất về doanh thu, giao hàng và đánh giá.
+\item Hỗ trợ ra quyết định: Tạo nền tảng dữ liệu cho hệ hỗ trợ quyết định (DSS) và dashboard quan sát.
+\end{itemize}
+
+\subsubsection{Phạm vi của đề tài}\label{sec:phamvi}
+
+Đề tài tập trung vào hoạt động phân tích sau bán hàng trên một sàn thương mại điện tử, sử dụng bộ dữ liệu có sẵn làm nguồn phân tích. Phạm vi của đề tài bao gồm các nội dung chính sau:
+
+\begin{itemize}
+\item Phân tích doanh thu: Doanh thu, chi phí vận chuyển, số đơn hàng và giá trị đơn hàng theo thời gian, vùng địa lý và ngành hàng.
+\item Phân tích giao hàng: Thời gian xử lý, thời gian vận chuyển, tổng thời gian giao hàng và tình trạng giao đúng hạn.
+\item Phân tích mức độ hài lòng: Điểm đánh giá của khách hàng theo ngành hàng, người bán, khu vực và tình trạng giao hàng.
+\item Phân tích hiệu quả người bán: Kết quả kinh doanh và chất lượng phục vụ của người bán theo vùng và ngành hàng.
+\item Phân tích thanh toán: Cơ cấu phương thức thanh toán và số kỳ trả góp.
+\end{itemize}
+
+% \textbf{Giới hạn về dữ liệu.} Toàn bộ số tiền được ghi nhận bằng đồng Real Brazil (BRL). Dữ liệu trải từ 04/09/2016 đến 17/10/2018, nhưng giai đoạn ổn định để phân tích xu hướng là 01/2017 -- 08/2018, do các tháng ngoài khoảng này có rất ít đơn hàng.
+
+% \textbf{Ngoài phạm vi:} Đề tài không phân tích các nội dung sau:
+
+% \begin{itemize}
+% \item So sánh giữa các kênh bán hàng (website, ứng dụng, cửa hàng): Bộ dữ liệu không có thông tin kênh bán.
+% \item Phân tích lợi nhuận: Bộ dữ liệu không có giá vốn và chi phí vận hành của sàn.
+% \item Phân tích hành vi trên website, tồn kho và marketing: Bộ dữ liệu không ghi nhận các hoạt động này.
+% \item Xử lý dữ liệu theo thời gian thực: Dữ liệu là tập dữ liệu lịch sử, được nạp theo lô.
+% \end{itemize}
+
+\subsubsection{Stakeholder và lợi ích của các bên}
+
+Kho dữ liệu không chỉ phục vụ nhu cầu báo cáo của một bộ phận mà còn mang lại giá trị cho nhiều bên liên quan (stakeholder). Mỗi nhóm stakeholder đều nhận được những lợi ích cụ thể từ việc triển khai và sử dụng hệ thống.
+
+\begin{itemize}
+\item \textbf{Ban điều hành sàn:} Có một nguồn số liệu thống nhất để theo dõi tình hình kinh doanh toàn sàn, nhận diện xu hướng và đưa ra các quyết định chiến lược về thị trường và ngành hàng trọng điểm.
+\item \textbf{Quản lý vận hành và giao hàng:} Xác định được các tuyến, khu vực và người bán thường xuyên giao trễ, từ đó điều chỉnh cam kết thời gian giao hàng và cải thiện quy trình vận hành.
+\item \textbf{Quản lý ngành hàng và người bán:} Đánh giá hiệu quả của từng ngành hàng và người bán, qua đó có cơ sở để hỗ trợ, khuyến khích hoặc xử lý người bán chưa đạt chất lượng.
+\item \textbf{Bộ phận chăm sóc khách hàng:} Nhận biết các nhóm sản phẩm, người bán và khu vực có nhiều đánh giá thấp để ưu tiên xử lý và cải thiện trải nghiệm khách hàng.
+\item \textbf{Người bán:} Gián tiếp được hưởng lợi khi sàn có các tiêu chí đánh giá rõ ràng và có cơ sở để hỗ trợ người bán cải thiện kết quả kinh doanh.
+\item \textbf{Khách hàng:} Gián tiếp được hưởng lợi khi chất lượng giao hàng và chất lượng người bán trên sàn được cải thiện.
+\item \textbf{Nhóm phát triển đề tài:} Có cơ hội áp dụng kiến thức về kho dữ liệu và hệ hỗ trợ quyết định vào một bài toán thực tế, từ phân tích yêu cầu đến thiết kế và triển khai.
+\end{itemize}

@@ -1,0 +1,76 @@
+% !TeX root = ../../main.tex
+\subsection{Thiết kế quy trình ETL}
+
+\subsubsection{Tổng quan quy trình ETL}
+\CacBuoc
+\begin{enumerate}
+\item Xác định các khu vực dữ liệu: nguồn, staging và kho dữ liệu.
+\item Chọn công cụ ETL và cách thực hiện (ETL hoặc ELT).
+\item Xác định thứ tự chạy các bước và phần phụ thuộc giữa các bảng.
+\item Vẽ sơ đồ luồng ETL.
+\end{enumerate}
+\TaiLieu{Ch1 tr.15--16; Ch2 tr.6, 8--9, 18.}
+\KetQua{Sơ đồ và mô tả luồng ETL.}
+\HinhCho{Sơ đồ luồng ETL}{fig:etl}
+
+\subsubsection{Extract -- Trích xuất dữ liệu}
+\CacBuoc
+\begin{enumerate}
+\item Lập danh sách nguồn dựa trên Bảng~\ref{tab:nguon}.
+\item Xác định định dạng, bảng mã và kiểu dữ liệu của từng tập tin.
+\item Thiết kế các bảng staging chứa dữ liệu thô.
+\item Kiểm tra số dòng sau khi trích xuất so với số dòng của tập nguồn.
+\end{enumerate}
+\TaiLieu{Ch2 tr.8.}
+\KetQua{Bảng ánh xạ từ tập nguồn đến bảng staging.}
+\PhanNhom{thiết kế bước Extract}
+
+\subsubsection{Transform -- Biến đổi dữ liệu}
+\CacBuoc
+\begin{enumerate}
+\item Làm sạch: lập quy tắc xử lý cho từng vấn đề trong Bảng~\ref{tab:chatluong}, gồm giữ lại, sửa, gán giá trị mặc định hoặc loại bỏ.
+\item Ánh xạ: chuẩn hóa kiểu dữ liệu, định dạng ngày, tên cột, tên thành phố và tên ngành hàng.
+\item Tích hợp: kết nối các nguồn và xử lý mã khách hàng, dữ liệu địa lý như đã nêu ở mục~\ref{sec:quanhe}.
+\item Áp dụng quy tắc nghiệp vụ: thống nhất định nghĩa doanh thu, đơn hợp lệ và giao trễ theo Bảng~\ref{tab:kpi}.
+\item Tính các trường dẫn xuất và các nhóm giá trị nếu cần.
+\item Xác định cách phân bổ dữ liệu giữa mức đơn hàng và mức dòng sản phẩm.
+\end{enumerate}
+\TaiLieu{Ch2 tr.8; Ch2-cont tr.10--13.}
+\KetQua{Bảng quy tắc biến đổi và bảng ánh xạ từ cột nguồn đến cột đích.}
+\PhanNhom{quy tắc biến đổi dữ liệu}
+
+\subsubsection{Load -- Nạp dữ liệu}
+\CacBuoc
+\begin{enumerate}
+\item Xác định thứ tự nạp giữa bảng chiều và bảng sự kiện.
+\item Chọn cách nạp: nạp toàn bộ hoặc nạp tăng dần, và nêu lý do.
+\item Xác định cách tra cứu khóa thay thế khi nạp bảng sự kiện.
+\item Xác định cách chạy lại để không làm trùng lặp dữ liệu.
+\item Xác định chỉ mục hoặc phân vùng cần tạo.
+\end{enumerate}
+\TaiLieu{Ch2 tr.3, 8.}
+\KetQua{Thứ tự và chiến lược nạp dữ liệu.}
+\PhanNhom{chiến lược nạp dữ liệu}
+
+\subsubsection{Kiểm tra chất lượng và đối soát số liệu}
+\CacBuoc
+\begin{enumerate}
+\item Đối soát số dòng giữa nguồn, staging và kho dữ liệu.
+\item Đối soát tổng doanh thu, phí vận chuyển và số đơn hàng.
+\item Kiểm tra toàn vẹn tham chiếu giữa bảng sự kiện và bảng chiều.
+\item Ghi nhận số bản ghi bị loại hoặc bị sửa cùng lý do.
+\end{enumerate}
+\TaiLieu{Ch1 tr.9, 13, 32; Ch2-cont tr.17.}
+\KetQua{Bảng kết quả đối soát sau khi chạy ETL.}
+\PhanNhom{kết quả kiểm tra chất lượng}
+
+\subsubsection{Quản lý metadata}
+\CacBuoc
+\begin{enumerate}
+\item Lập từ điển dữ liệu cho các bảng trong kho.
+\item Ghi lại nguồn gốc dữ liệu và các phép biến đổi.
+\item Thiết kế bảng nhật ký cho mỗi lần chạy ETL.
+\end{enumerate}
+\TaiLieu{Ch2-cont tr.14--15; Ch2 tr.13.}
+\KetQua{Từ điển dữ liệu và cấu trúc bảng nhật ký ETL.}
+\PhanNhom{metadata của hệ thống}

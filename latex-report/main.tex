@@ -1,0 +1,84 @@
+\documentclass[12pt,a4paper]{article}
+\input{Sections/preamp}
+
+\begin{document}
+\fontsize{13pt}{19.5pt}\selectfont
+\setstretch{1.5}
+\hypersetup{pageanchor=false}
+\begin{titlepage}
+ \begin{tikzpicture}[remember picture,overlay,inner sep=0,outer sep=0]
+     \draw[blue!70!black,line width=4pt] ([xshift=-1.5cm,yshift=-2cm]current page.north east) coordinate (A)--([xshift=2.4cm,yshift=-2cm]current page.north west) coordinate(B)--([xshift=2.4cm,yshift=2cm]current page.south west) coordinate (C)--([xshift=-1.5cm,yshift=2cm]current page.south east) coordinate(D)--cycle;
+
+     \draw ([yshift=0.5cm,xshift=-0.5cm]A)-- ([yshift=0.5cm,xshift=0.5cm]B)--
+     ([yshift=-0.5cm,xshift=0.5cm]B) --([yshift=-0.5cm,xshift=-0.5cm]B)--([yshift=0.5cm,xshift=-0.5cm]C)--([yshift=0.5cm,xshift=0.5cm]C)--([yshift=-0.5cm,xshift=0.5cm]C)-- ([yshift=-0.5cm,xshift=-0.5cm]D)--([yshift=0.5cm,xshift=-0.5cm]D)--([yshift=0.5cm,xshift=0.5cm]D)--([yshift=-0.5cm,xshift=0.5cm]A)--([yshift=-0.5cm,xshift=-0.5cm]A)--([yshift=0.5cm,xshift=-0.5cm]A);
+
+
+     \draw ([yshift=-0.3cm,xshift=0.3cm]A)-- ([yshift=-0.3cm,xshift=-0.3cm]B)--
+     ([yshift=0.3cm,xshift=-0.3cm]B) --([yshift=0.3cm,xshift=0.3cm]B)--
+     ([yshift=-0.3cm,xshift=0.3cm]C)--([yshift=-0.3cm,xshift=-0.3cm]C)--([yshift=0.3cm,xshift=-0.3cm]C)-- ([yshift=0.3cm,xshift=0.3cm]D)--([yshift=-0.3cm,xshift=0.3cm]D)--([yshift=-0.3cm,xshift=-0.3cm]D)--([yshift=0.3cm,xshift=-0.3cm]A)--([yshift=0.3cm,xshift=0.3cm]A)--([yshift=-0.3cm,xshift=0.3cm]A);
+   \end{tikzpicture}
+\begin{center}
+
+{\Large ĐẠI HỌC QUỐC GIA THÀNH PHỐ HỒ CHÍ MINH} \\
+{\Large TRƯỜNG ĐẠI HỌC BÁCH KHOA} \\
+\textbf{\Large KHOA KHOA HỌC VÀ KỸ THUẬT MÁY TÍNH}\par
+
+\vspace{0.9cm}
+\includegraphics[scale=0.7]{Pictures/hcmut.png}\par
+\vspace{0.6cm}
+
+{\setstretch{1.15}
+\Large\bfseries
+BÁO CÁO BÀI TẬP LỚN\par
+\vspace{0.25cm}
+MÔN HỌC: KHO DỮ LIỆU VÀ HỆ HỖ TRỢ RA QUYẾT ĐỊNH\par}
+\vspace{0.6cm}
+\color{blue}
+\hrule
+
+\vspace{0.65cm}
+{\setstretch{1.3}
+\Large\bfseries
+Xây dựng kho dữ liệu phân tích hiệu quả kinh doanh sàn thương mại điện tử\par}
+\vspace{0.45cm}
+
+\hrule
+\vspace{0.75cm}
+
+{\fontsize{11pt}{12pt}\selectfont
+    \begin{tabular}{@{}r@{\hspace{1cm}}l@{}}
+        Giảng viên hướng dẫn: & ThS. Đỗ Thanh Thái \\
+        Lớp: & L01 \\
+        Nhóm: & 10 \\
+        Sinh viên thực hiện: & Ôn Hà Ngọc Như -- 2312538 \\
+        & Nguyễn Duy Thịnh -- 2313280 \\
+        & Đặng Nguyên Bảo -- 2310211 \\
+        Link video: & \TODO{Link video}
+    \end{tabular}
+}
+
+\end{center}
+
+\vfill
+\centerline{\normalsize THÀNH PHỐ HỒ CHÍ MINH -- 11/2026}
+\end{titlepage}
+\hypersetup{pageanchor=true}
+\newpage
+\setstretch{1.5}
+\renewcommand{\listtablename}{Danh mục bảng biểu}
+\renewcommand{\listfigurename}{Danh mục hình ảnh}
+\tableofcontents
+\clearpage
+\input{Sections/workload}
+\clearpage
+\listoftables
+\clearpage
+\listoffigures
+\clearpage
+\input{Sections/phantich}
+\clearpage
+\input{Sections/thietke}
+\clearpage
+\input{Sections/tailieuthamkhao}
+
+\end{document}
