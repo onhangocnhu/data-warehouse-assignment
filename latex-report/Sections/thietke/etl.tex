@@ -1,76 +1,130 @@
-% !TeX root = ../../main.tex
 \subsection{Thiết kế quy trình ETL}
-
 \subsubsection{Tổng quan quy trình ETL}
-\CacBuoc
-\begin{enumerate}
-\item Xác định các khu vực dữ liệu: nguồn, staging và kho dữ liệu.
-\item Chọn công cụ ETL và cách thực hiện (ETL hoặc ELT).
-\item Xác định thứ tự chạy các bước và phần phụ thuộc giữa các bảng.
-\item Vẽ sơ đồ luồng ETL.
-\end{enumerate}
-\TaiLieu{Ch1 tr.15--16; Ch2 tr.6, 8--9, 18.}
-\KetQua{Sơ đồ và mô tả luồng ETL.}
-\HinhCho{Sơ đồ luồng ETL}{fig:etl}
+
+ETL là quy trình đưa dữ liệu từ các hệ thống nguồn vào kho dữ liệu thông qua ba bước: trích xuất (Extract), biến đổi (Transform) và nạp (Load). Dữ liệu được xử lý tại khu vực staging, nằm giữa nguồn dữ liệu và kho dữ liệu, trước khi được nạp vào kho \cite{kimball}. Hình~\ref{fig:etl} trình bày luồng ETL của hệ thống.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/etl-flow.png}
+\caption{Sơ đồ luồng ETL}
+\label{fig:etl}
+\end{figure}
+
+Quy trình ETL được thiết kế với các đặc điểm sau:
+
+\begin{itemize}
+\item Công nghệ: Quy trình được viết bằng Python, kết hợp với các câu lệnh SQL chạy trên PostgreSQL. Khu vực staging là một schema riêng (\code{staging}) trong cùng cơ sở dữ liệu với Data Mart.
+\item Hình thức ETL thay vì ELT: Dữ liệu được làm sạch và biến đổi tại khu vực staging trước khi nạp vào Data Mart. Với cách làm ELT, tức nạp dữ liệu trước rồi mới biến đổi, dữ liệu chưa được làm sạch sẽ nằm trong kho và có thể bị sử dụng nhầm, làm giảm độ tin cậy của kho dữ liệu nếu không được quản lý chặt chẽ.
+\item Thứ tự thực hiện: Quy trình gồm bốn giai đoạn tuần tự là Extract, Transformation, Load và kiểm tra chất lượng. Mỗi giai đoạn ghi lại kết quả vào nhật ký ETL để phục vụ giám sát và truy vết.
+\end{itemize}
 
 \subsubsection{Extract -- Trích xuất dữ liệu}
-\CacBuoc
-\begin{enumerate}
-\item Lập danh sách nguồn dựa trên Bảng~\ref{tab:nguon}.
-\item Xác định định dạng, bảng mã và kiểu dữ liệu của từng tập tin.
-\item Thiết kế các bảng staging chứa dữ liệu thô.
-\item Kiểm tra số dòng sau khi trích xuất so với số dòng của tập nguồn.
-\end{enumerate}
-\TaiLieu{Ch2 tr.8.}
-\KetQua{Bảng ánh xạ từ tập nguồn đến bảng staging.}
-\PhanNhom{thiết kế bước Extract}
 
-\subsubsection{Transform -- Biến đổi dữ liệu}
-\CacBuoc
-\begin{enumerate}
-\item Làm sạch: lập quy tắc xử lý cho từng vấn đề trong Bảng~\ref{tab:chatluong}, gồm giữ lại, sửa, gán giá trị mặc định hoặc loại bỏ.
-\item Ánh xạ: chuẩn hóa kiểu dữ liệu, định dạng ngày, tên cột, tên thành phố và tên ngành hàng.
-\item Tích hợp: kết nối các nguồn và xử lý mã khách hàng, dữ liệu địa lý như đã nêu ở mục~\ref{sec:quanhe}.
-\item Áp dụng quy tắc nghiệp vụ: thống nhất định nghĩa doanh thu, đơn hợp lệ và giao trễ theo Bảng~\ref{tab:kpi}.
-\item Tính các trường dẫn xuất và các nhóm giá trị nếu cần.
-\item Xác định cách phân bổ dữ liệu giữa mức đơn hàng và mức dòng sản phẩm.
-\end{enumerate}
-\TaiLieu{Ch2 tr.8; Ch2-cont tr.10--13.}
-\KetQua{Bảng quy tắc biến đổi và bảng ánh xạ từ cột nguồn đến cột đích.}
-\PhanNhom{quy tắc biến đổi dữ liệu}
+Ở bước Extract, chín tập tin CSV của bộ dữ liệu Olist (Bảng~\ref{tab:nguon}) được đọc và nạp nguyên trạng vào các bảng thô trong schema \code{staging}, với tên bảng có tiền tố \code{stg\_}, ví dụ \code{stg\_orders}, \code{stg\_order\_items}. Bước này tuân theo các nguyên tắc sau:
+
+\begin{itemize}
+\item Giữ nguyên dữ liệu gốc: Tất cả các cột được đọc dưới dạng chuỗi ký tự và chưa áp dụng bất kỳ phép biến đổi nào. Nhờ đó, nếu bước sau gặp lỗi, quy trình có thể chạy lại từ dữ liệu thô mà không cần đọc lại tập tin nguồn.
+\item Đọc đúng định dạng: Các tập tin được đọc theo bảng mã UTF-8, trong đó tập tin \code{product\_category\_name\_translation} có ký tự đánh dấu thứ tự byte (BOM) ở đầu cần được loại bỏ. Mã bưu chính được giữ ở dạng chuỗi để không mất các số 0 ở đầu, ví dụ \code{01037}.
+\item Kiểm tra số dòng: Sau khi trích xuất, số dòng của mỗi bảng thô được đối chiếu với số dòng của tập tin nguồn trong Bảng~\ref{tab:nguon}, ví dụ 99.441 dòng đơn hàng và 112.650 dòng sản phẩm trong đơn.
+\end{itemize}
+
+\subsubsection{Transformation -- Biến đổi dữ liệu}
+
+Bước transformation chuyển dữ liệu thô thành dữ liệu sạch, nhất quán và sẵn sàng để nạp vào Data Mart. Bước này bao gồm làm sạch dữ liệu, ánh xạ dữ liệu và áp dụng các quy tắc nghiệp vụ \cite{han}. Kết quả được lưu vào các bảng đã làm sạch trong schema \code{staging}.
+
+\paragraph{Làm sạch dữ liệu}
+
+Bảng~\ref{tab:quytac} trình bày quy tắc xử lý cho các vấn đề chất lượng dữ liệu đã phát hiện ở Bảng~\ref{tab:chatluong}. Nguyên tắc chung là giữ lại tối đa dữ liệu hợp lệ, chỉ để trống các thước đo bị ảnh hưởng thay vì loại bỏ cả bản ghi.
+
+\begingroup\small\setstretch{1.1}
+\begin{longtable}{|P{5.3cm}|P{8.6cm}|}
+\caption{Quy tắc xử lý các vấn đề chất lượng dữ liệu}\label{tab:quytac}\\
+\hline
+\textbf{Vấn đề} & \textbf{Quy tắc xử lý}\\ \hline \endfirsthead
+\hline
+\textbf{Vấn đề} & \textbf{Quy tắc xử lý}\\ \hline \endhead
+Đơn hàng thiếu thời điểm duyệt, bàn giao vận chuyển hoặc nhận hàng & Giữ lại đơn hàng. Cột ngày tương ứng được gán về bản ghi không xác định, các khoảng thời gian liên quan và cờ giao trễ để trống.\\ \hline
+Đơn hàng đã giao nhưng thiếu thời điểm nhận hàng (8 đơn) & Giữ lại, xử lý như đơn chưa có ngày nhận hàng và không tính vào các chỉ số giao hàng.\\ \hline
+Thời điểm bàn giao vận chuyển sau thời điểm nhận hàng (23 đơn) & Giữ tổng thời gian giao hàng, để trống thời gian chuẩn bị hàng và thời gian vận chuyển vì không xác định được thứ tự đúng.\\ \hline
+Thời điểm bàn giao vận chuyển trước thời điểm duyệt (1.359 đơn) & Giữ các mốc thời gian, để trống thời gian chuẩn bị hàng vì giá trị bị âm.\\ \hline
+Đơn hàng không có dòng sản phẩm (775 đơn) & Không nạp vào bảng fact, ghi nhận vào nhật ký ETL.\\ \hline
+Đơn hàng không có đánh giá (768 đơn) & Điểm đánh giá để trống, ngày đánh giá gán về bản ghi không xác định.\\ \hline
+Đơn hàng có nhiều đánh giá (547 đơn) & Chọn đánh giá có thời điểm phản hồi muộn nhất làm đánh giá chính thức của đơn hàng, vì có 202 đơn trong số này có các điểm đánh giá khác nhau.\\ \hline
+Một \code{review\_id} xuất hiện trên nhiều đơn hàng (789 mã) & Không xử lý riêng, vì đánh giá được gắn vào bảng fact theo \code{order\_id}.\\ \hline
+Phí vận chuyển bằng 0 (383 dòng) & Giữ nguyên, xem là đơn hàng được miễn phí vận chuyển.\\ \hline
+Sản phẩm thiếu ngành hàng (610 sản phẩm) & Gán vào ngành hàng ``không xác định''.\\ \hline
+Sản phẩm thiếu hoặc có khối lượng, kích thước bằng 0 (6 sản phẩm) & Để trống các thuộc tính này.\\ \hline
+Ngành hàng chưa có bản dịch (2 ngành hàng) & Bổ sung tên tiếng Anh thủ công vào bảng ngành hàng.\\ \hline
+Tên thành phố của người bán không chuẩn & Chuyển về chữ thường, bỏ dấu, bỏ phần mã bang thừa như ``/ sp'' hoặc ``- sp''; trường hợp tên là chuỗi số thì lấy tên thành phố theo mã bưu chính.\\ \hline
+Dòng trùng lặp trong \code{geolocation} (261.831 dòng) & Loại bỏ, chỉ giữ lại 738.332 dòng phân biệt.\\ \hline
+Tọa độ nằm ngoài lãnh thổ Brazil (42 dòng) & Loại bỏ trước khi tính tọa độ trung bình của thành phố.\\ \hline
+Mã bưu chính thuộc nhiều bang (8 mã) & Chọn bang xuất hiện nhiều nhất của mã bưu chính đó.\\ \hline
+Mã bưu chính không có trong \code{geolocation} (278 khách hàng, 7 người bán) & Vẫn lấy tên thành phố và bang từ bảng khách hàng hoặc người bán; tọa độ để trống.\\ \hline
+Các mã thanh toán bất thường (giá trị 0, phương thức không xác định) & Không ảnh hưởng đến Data Mart vì dữ liệu thanh toán không được nạp vào bảng fact; chỉ lưu lại trong khu vực staging.\\ \hline
+\end{longtable}
+\endgroup
+
+\paragraph{Ánh xạ và tích hợp dữ liệu}
+
+\begin{itemize}
+\item Chuẩn hóa kiểu dữ liệu: Các cột thời gian được chuyển sang kiểu \code{timestamp}, giá và phí vận chuyển sang kiểu số thập phân, điểm đánh giá sang kiểu số nguyên.
+\item Chuẩn hóa tên cột: Các tên cột viết sai chính tả trong dữ liệu nguồn như \code{product\_name\_lenght} được đổi thành \code{product\_name\_length}.
+\item Tích hợp mã khách hàng: Mã \code{customer\_id} theo từng đơn hàng được ánh xạ sang \code{customer\_unique\_id} để mỗi khách hàng thật chỉ có một dòng trong bảng chiều khách hàng.
+\item Tích hợp dữ liệu địa lý: Thành phố của khách hàng và người bán được hợp nhất thành một danh sách thành phố duy nhất theo cặp tên thành phố và mã bang. Tọa độ của mỗi thành phố là trung bình tọa độ của các mã bưu chính thuộc thành phố đó.
+\item Tích hợp ngành hàng: Tên ngành hàng tiếng Bồ Đào Nha được kết nối với bảng dịch để có tên tiếng Anh.
+\end{itemize}
+
+\paragraph{Quy tắc nghiệp vụ và trường dẫn xuất}
+
+\begin{itemize}
+\item Tính các khoảng thời gian: \code{approval\_days}, \code{handling\_days}, \code{shipping\_days} và \code{delivery\_days} được tính bằng hiệu giữa các mốc thời gian, đơn vị là ngày.
+\item Xác định giao trễ: \code{is\_late} bằng 1 khi ngày nhận hàng sau ngày giao dự kiến (so sánh theo ngày) và bằng 0 trong trường hợp ngược lại. Cờ này chỉ được tính cho các đơn đã có ngày nhận hàng.
+\item Gán vùng địa lý: Mỗi bang được gán vào một trong năm vùng của Brazil là Norte, Nordeste, Centro-Oeste, Sudeste và Sul.
+\item Doanh thu: Doanh thu hàng hóa được tính từ giá bán của dòng sản phẩm, không bao gồm phí vận chuyển. Trạng thái đơn hàng được lưu trong bảng fact để người dùng có thể lọc riêng các đơn đã giao hoặc loại các đơn bị hủy khi cần.
+\end{itemize}
 
 \subsubsection{Load -- Nạp dữ liệu}
-\CacBuoc
-\begin{enumerate}
-\item Xác định thứ tự nạp giữa bảng chiều và bảng sự kiện.
-\item Chọn cách nạp: nạp toàn bộ hoặc nạp tăng dần, và nêu lý do.
-\item Xác định cách tra cứu khóa thay thế khi nạp bảng sự kiện.
-\item Xác định cách chạy lại để không làm trùng lặp dữ liệu.
-\item Xác định chỉ mục hoặc phân vùng cần tạo.
-\end{enumerate}
-\TaiLieu{Ch2 tr.3, 8.}
-\KetQua{Thứ tự và chiến lược nạp dữ liệu.}
-\PhanNhom{chiến lược nạp dữ liệu}
+
+Sau khi được làm sạch, dữ liệu được nạp từ khu vực staging vào Data Mart theo các nguyên tắc sau:
+
+\begin{itemize}
+\item Thứ tự nạp: Các bảng chiều được nạp trước bảng fact, theo thứ tự từ bảng cha đến bảng con: \code{dim\_date}, \code{dim\_state}, \code{dim\_city}, \code{dim\_category}, \code{dim\_product}, \code{dim\_customer} và \code{dim\_seller}. Thứ tự này đảm bảo khi một bảng được nạp, các bảng mà nó tham chiếu đến đã có sẵn dữ liệu.
+\item Tra cứu surrogate key: Khi nạp bảng fact, mỗi mã gốc như \code{product\_id}, \code{seller\_id}, \code{customer\_unique\_id} và các mốc thời gian được tra cứu sang surrogate key tương ứng trong bảng chiều. Các giá trị không tìm thấy được gán về bản ghi không xác định.
+\item Nạp toàn bộ: Do dữ liệu nguồn là tập dữ liệu lịch sử cố định, nhóm áp dụng hình thức nạp toàn bộ (full load): mỗi lần chạy, dữ liệu cũ trong Data Mart được xóa và nạp lại. Khi hệ thống được kết nối với nguồn dữ liệu phát sinh liên tục, quy trình có thể chuyển sang nạp tăng dần (incremental load) dựa trên thời điểm mua của đơn hàng \cite{kimball}.
+\item Chạy lại an toàn: Toàn bộ bước Load được thực hiện trong một giao dịch (transaction). Nếu có lỗi, giao dịch được hủy và Data Mart giữ nguyên dữ liệu của lần chạy trước, tránh tình trạng nạp dang dở hoặc trùng lặp dữ liệu.
+\item Chỉ mục: Chỉ mục được tạo trên các khóa ngoại của bảng fact và trên \code{order\_id} để tăng tốc các phép kết nối và các truy vấn tổng hợp theo đơn hàng. Với quy mô dữ liệu hiện tại, nhóm chưa cần phân vùng (partition) bảng fact.
+\end{itemize}
 
 \subsubsection{Kiểm tra chất lượng và đối soát số liệu}
-\CacBuoc
-\begin{enumerate}
-\item Đối soát số dòng giữa nguồn, staging và kho dữ liệu.
-\item Đối soát tổng doanh thu, phí vận chuyển và số đơn hàng.
-\item Kiểm tra toàn vẹn tham chiếu giữa bảng sự kiện và bảng chiều.
-\item Ghi nhận số bản ghi bị loại hoặc bị sửa cùng lý do.
-\end{enumerate}
-\TaiLieu{Ch1 tr.9, 13, 32; Ch2-cont tr.17.}
-\KetQua{Bảng kết quả đối soát sau khi chạy ETL.}
-\PhanNhom{kết quả kiểm tra chất lượng}
+
+Sau mỗi lần chạy ETL, hệ thống thực hiện các bước kiểm tra để đảm bảo dữ liệu trong Data Mart khớp với dữ liệu nguồn, đáp ứng yêu cầu về chất lượng dữ liệu đã đề ra. Bảng~\ref{tab:doisoat} trình bày các tiêu chí đối soát cùng giá trị kỳ vọng, được tính trực tiếp từ dữ liệu nguồn.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Tiêu chí đối soát số liệu sau khi chạy ETL}
+\label{tab:doisoat}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{4.4cm}|}
+\hline
+\textbf{Tiêu chí đối soát} & \textbf{Giá trị kỳ vọng}\\ \hline
+Số dòng của bảng fact so với số dòng sản phẩm trong đơn của nguồn & 112.650 dòng\\ \hline
+Số đơn hàng phân biệt trong bảng fact & 98.666 đơn\\ \hline
+Tổng giá bán & Khoảng 13,59 triệu BRL\\ \hline
+Tổng phí vận chuyển & Khoảng 2,25 triệu BRL\\ \hline
+Số khóa ngoại không tìm thấy bản ghi tương ứng trong bảng chiều & 0\\ \hline
+Tỷ lệ giao trễ tính trên đơn hàng phân biệt & 6,77\%\\ \hline
+Điểm đánh giá trung bình tính trên đơn hàng phân biệt & Xấp xỉ 4,1 điểm\\ \hline
+\end{tabularx}
+\end{table}
+
+Ngoài các tiêu chí trên, số bản ghi bị loại hoặc bị sửa ở bước transformation, cùng với lý do, được ghi vào nhật ký ETL. Nếu một tiêu chí không đạt, quy trình được đánh dấu là thất bại để nhóm kiểm tra lại trước khi dữ liệu được sử dụng.
 
 \subsubsection{Quản lý metadata}
-\CacBuoc
-\begin{enumerate}
-\item Lập từ điển dữ liệu cho các bảng trong kho.
-\item Ghi lại nguồn gốc dữ liệu và các phép biến đổi.
-\item Thiết kế bảng nhật ký cho mỗi lần chạy ETL.
-\end{enumerate}
-\TaiLieu{Ch2-cont tr.14--15; Ch2 tr.13.}
-\KetQua{Từ điển dữ liệu và cấu trúc bảng nhật ký ETL.}
-\PhanNhom{metadata của hệ thống}
+
+Metadata là "dữ liệu về dữ liệu" giúp người dùng và người phân tích hiểu được cấu trúc, nguồn gốc và quá trình biến đổi của dữ liệu trong kho \cite{han}. Metadata của hệ thống được lưu trong kho metadata trên PostgreSQL như đã trình bày ở mục~\ref{sec:kientruc}, gồm ba thành phần:
+
+\begin{itemize}
+\item Từ điển dữ liệu: Mô tả từng bảng và từng cột trong Data Mart, gồm tên, kiểu dữ liệu, ý nghĩa nghiệp vụ và đơn vị tính.
+\item Nguồn gốc dữ liệu: Ghi nhận mỗi cột trong Data Mart được lấy từ tập tin và cột nào của dữ liệu nguồn, cùng với quy tắc transformation đã áp dụng.
+\item Nhật ký ETL: Mỗi lần chạy ETL ghi lại mã lần chạy, thời điểm bắt đầu và kết thúc, tên bước, số dòng đầu vào, số dòng đầu ra, số dòng bị loại, trạng thái và thông báo lỗi nếu có. Nhật ký này phục vụ chức năng giám sát (Monitoring) trong kiến trúc hệ thống.
+\end{itemize}

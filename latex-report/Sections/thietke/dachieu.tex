@@ -1,61 +1,124 @@
 % !TeX root = ../../main.tex
 \subsection{Mô hình dữ liệu đa chiều}
 
-\subsubsection{Xác định quy trình nghiệp vụ}
-\CacBuoc
-\begin{enumerate}
-\item Liệt kê các quy trình nghiệp vụ từ Bảng~\ref{tab:quytrinh}.
-\item Đối chiếu từng quy trình với các chỉ số trong Bảng~\ref{tab:kpi} và các quyết định trong Bảng~\ref{tab:quyetdinh}.
-\item Chọn các quy trình cần mô hình hóa và nêu lý do.
-\end{enumerate}
-\TaiLieu{Ch3 tr.3 (tính hướng chủ đề); phương pháp thiết kế bốn bước của Kimball \cite{kimball}, không có trong slide.}
-\KetQua{Danh sách quy trình nghiệp vụ được mô hình hóa.}
-\PhanNhom{các quy trình nghiệp vụ được chọn}
+Nhóm thiết kế mô hình đa chiều theo phương pháp thiết kế bốn bước gồm xác định quy trình nghiệp vụ, xác định granularity, xác định các chiều và xác định các thước đo \cite{kimball}. Các bước này được trình bày lần lượt trong các mục dưới đây.
 
-\subsubsection{Xác định độ mịn dữ liệu (grain)}
-\CacBuoc
-\begin{enumerate}
-\item Xác định các mức chi tiết có thể chọn, dựa trên mục~\ref{sec:quanhe}.
-\item Định nghĩa rõ một dòng của mỗi bảng sự kiện biểu diễn điều gì.
-\item Kiểm tra độ mịn đã chọn có tính được toàn bộ chỉ số trong Bảng~\ref{tab:kpi} hay không.
-\item Xác định cách xử lý dữ liệu ở mức đơn hàng (đánh giá, thanh toán) khi đơn có nhiều người bán.
-\item Ước lượng số dòng và dung lượng lưu trữ.
-\end{enumerate}
-\TaiLieu{Ch2-cont tr.5--9; Ch2 tr.3.}
-\KetQua{Định nghĩa độ mịn của từng bảng sự kiện và ước lượng dung lượng.}
-\PhanNhom{độ mịn dữ liệu và ước lượng dung lượng}
+\subsubsection{Xác định quy trình nghiệp vụ}
+
+Quy trình nghiệp vụ là một hoạt động thực tế của doanh nghiệp, tạo ra các sự kiện có thể đo lường được. Dựa trên vòng đời đơn hàng ở Bảng~\ref{tab:quytrinh} và các chỉ số ở Bảng~\ref{tab:kpi}, nhóm xác định ba quy trình nghiệp vụ cần mô hình hóa:
+
+\begin{itemize}
+\item Bán hàng: Ghi nhận từng sản phẩm được bán trong đơn hàng, cùng với giá bán, phí vận chuyển và người bán. Đây là \textit{quy trình trung tâm}, vì các chỉ số về doanh thu và hiệu quả người bán đều được tính từ quy trình này.
+\item Giao hàng: Ghi nhận các mốc thời gian của đơn hàng, từ lúc mua, duyệt, bàn giao vận chuyển đến khi khách hàng nhận hàng, so với ngày giao dự kiến. Quy trình này phục vụ các chỉ số về thời gian giao hàng và tỷ lệ giao trễ.
+\item Đánh giá: Ghi nhận điểm đánh giá của khách hàng sau khi nhận hàng, phục vụ các chỉ số về mức độ hài lòng.
+\end{itemize}
+
+Quy trình thanh toán không được mô hình hóa, vì một đơn hàng có thể có nhiều khoản thanh toán và quy trình này chỉ phục vụ một chỉ số phụ về cơ cấu phương thức thanh toán.
+
+Do ba quy trình trên là các giai đoạn liên tiếp trong vòng đời của cùng một đơn hàng, nhóm mô hình hóa chúng trong một bảng fact duy nhất theo dạng \textit{accumulating snapshot} \cite{kimball}. Với dạng bảng fact này, mỗi dòng biểu diễn một đối tượng đi qua toàn bộ quy trình, mỗi mốc của quy trình được ghi nhận bằng một cột ngày riêng, và các thước đo gồm cả giá trị phát sinh lẫn khoảng thời gian giữa các mốc. Cách thiết kế này cho phép phân tích đồng thời doanh thu, giao hàng và đánh giá trên cùng một bảng fact, đồng thời phù hợp với snowflake schema đã nêu ở mục~\ref{sec:kientruc}.
+
+\subsubsection{Xác định granularity}\label{sec:granularity}
+
+Granularity (mức độ chi tiết của dữ liệu) là một trong những quyết định quan trọng nhất trong thiết kế kho dữ liệu, vì nó ảnh hưởng trực tiếp đến dung lượng lưu trữ và các loại truy vấn có thể thực hiện \cite{inmon}. Nhóm lựa chọn granularity cho bảng fact như sau:
+
+\begin{center}
+\textit{Mỗi dòng của bảng fact biểu diễn một sản phẩm trong một đơn hàng}, được xác định bởi cặp khóa (\code{order\_id}, \code{order\_item\_id}).
+\end{center}
+
+Lựa chọn này xuất phát từ các lý do sau:
+
+\begin{itemize}
+\item Mức chi tiết thấp nhất của dữ liệu nguồn: Giá bán, phí vận chuyển, sản phẩm và người bán đều được ghi nhận theo từng dòng sản phẩm. Nếu chọn granularity theo đơn hàng, kho dữ liệu sẽ mất thông tin về sản phẩm và người bán trong các đơn có nhiều sản phẩm hoặc nhiều người bán.
+\item Đáp ứng các chỉ số đã đề ra: Từ mức dòng sản phẩm, có thể tổng hợp lên mức đơn hàng, người bán, ngành hàng và khu vực để tính toàn bộ các chỉ số trong Bảng~\ref{tab:kpi}.
+\item Quy mô dữ liệu phù hợp: Bảng fact có khoảng 112.650 dòng, tương ứng với 98.666 đơn hàng có sản phẩm. Với khoảng 20 cột, dung lượng ước tính của bảng fact vào khoảng 15-20 MB, chưa tính chỉ mục, nên không cần tổng hợp trước để giảm dung lượng.
+\end{itemize}
+
+Với granularity này, thông tin giao hàng và đánh giá vốn được ghi nhận theo đơn hàng sẽ được lặp lại trên mọi dòng sản phẩm của cùng một đơn. Nếu tính trung bình trực tiếp trên bảng fact, các đơn có nhiều sản phẩm sẽ bị tính nhiều lần. Vì vậy, các thước đo theo đơn hàng được tổng hợp trên tập đơn hàng phân biệt như trình bày ở mục~\ref{sec:dodo}.
+
+Bên cạnh đó, có 775 đơn hàng không có dòng sản phẩm nào, chủ yếu ở trạng thái \code{unavailable} (603 đơn) và \code{canceled} (164 đơn). Các đơn hàng này không xuất hiện trong bảng fact nên không được tính vào các chỉ số của kho dữ liệu.
 
 \subsubsection{Xác định các chiều và phân cấp}
-\CacBuoc
-\begin{enumerate}
-\item Rút ra các chiều phân tích từ cụm ``theo ...'' trong Bảng~\ref{tab:kpi} và Bảng~\ref{tab:quyetdinh}, ví dụ theo thời gian, vùng, ngành hàng, người bán.
-\item Liệt kê thuộc tính của từng chiều và nguồn dữ liệu tương ứng.
-\item Xác định phân cấp của từng chiều để phục vụ roll-up và drill-down.
-\item Kiểm tra một chiều có đồng thời đóng nhiều vai trò hay không.
-\end{enumerate}
-\TaiLieu{Ch3 tr.22; Ch2 tr.11, 15.}
-\KetQua{Bảng các chiều, thuộc tính và phân cấp.}
-\PhanNhom{danh sách chiều, thuộc tính và phân cấp}
 
-\subsubsection{Xác định các độ đo}
-\CacBuoc
-\begin{enumerate}
-\item Rút ra các độ đo từ các chỉ số trong Bảng~\ref{tab:kpi}.
-\item Phân loại mỗi độ đo: cộng được, cộng được một phần hoặc không cộng được.
-\item Xác định hàm tổng hợp phù hợp cho từng độ đo.
-\item Xác định độ đo nào được lưu sẵn và độ đo nào được tính khi truy vấn.
-\end{enumerate}
-\TaiLieu{Ch3 tr.24--25; Ch2 tr.11, 15. Phân loại tính cộng được xem thêm tại Kimball \cite{kimball}.}
-\KetQua{Bảng độ đo, công thức, hàm tổng hợp và tính cộng được.}
-\PhanNhom{danh sách độ đo}
+Các chiều phân tích được xác định từ cách các chỉ số trong Bảng~\ref{tab:kpi} và các thông tin trong Bảng~\ref{tab:quyetdinh} cần được theo dõi: theo thời gian, theo sản phẩm và ngành hàng, theo khách hàng, theo người bán và theo khu vực. Bảng~\ref{tab:chieu} trình bày các chiều, phân cấp (hierarchies) và quy mô ước tính của từng chiều.
 
-\subsubsection{Data Cube và các phép toán OLAP}
-\CacBuoc
-\begin{enumerate}
-\item Xác định các khối dữ liệu từ các chiều và độ đo đã chọn.
-\item Viết ví dụ cho từng phép slice, dice, drill-down, roll-up và pivot dựa trên các nhu cầu phân tích ở Bảng~\ref{tab:quyetdinh}.
-\item Chọn kiến trúc máy chủ OLAP: ROLAP, MOLAP hoặc HOLAP và nêu lý do.
-\end{enumerate}
-\TaiLieu{Ch3 tr.26--30, 38, 42--44; Ch2 tr.16, 23--24.}
-\KetQua{Mô tả khối dữ liệu và bảng ánh xạ phép toán OLAP với nhu cầu phân tích.}
-\PhanNhom{khối dữ liệu và các phép toán OLAP}
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Các chiều phân tích và phân cấp}
+\label{tab:chieu}
+\begin{tabularx}{\linewidth}{|P{2.2cm}|>{\raggedright\arraybackslash}X|P{4.3cm}|P{2.4cm}|}
+\hline
+\textbf{Chiều} & \textbf{Thuộc tính chính} & \textbf{Phân cấp} & \textbf{Số dòng ước tính}\\ \hline
+Thời gian & Ngày, tháng, quý, năm, thứ trong tuần & Ngày $\rightarrow$ Tháng $\rightarrow$ Quý $\rightarrow$ Năm & 1.096 (các năm 2016-2018)\\ \hline
+Sản phẩm & Mã sản phẩm, khối lượng, kích thước, số ảnh & Sản phẩm $\rightarrow$ Ngành hàng & 32.951\\ \hline
+Ngành hàng & Tên ngành hàng tiếng Bồ Đào Nha và tiếng Anh & -- & 74\\ \hline
+Khách hàng & Mã khách hàng (\code{customer\_unique\_id}), mã bưu chính & Khách hàng $\rightarrow$ Thành phố $\rightarrow$ Bang $\rightarrow$ Vùng & 96.096\\ \hline
+Người bán & Mã người bán, mã bưu chính & Người bán $\rightarrow$ Thành phố $\rightarrow$ Bang $\rightarrow$ Vùng & 3.095\\ \hline
+Thành phố & Tên thành phố, vĩ độ, kinh độ & Thành phố $\rightarrow$ Bang & Khoảng 4.400 (trước khi chuẩn hóa)\\ \hline
+Bang & Mã bang, tên bang, vùng & Bang $\rightarrow$ Vùng & 27\\ \hline
+\end{tabularx}
+\end{table}
+
+Các chiều trên được thiết kế với các đặc điểm sau:
+
+\begin{itemize}
+\item Chiều thời gian đóng nhiều vai trò: Bảng fact có sáu cột ngày, gồm ngày mua, ngày duyệt, ngày bàn giao vận chuyển, ngày nhận hàng, ngày giao dự kiến và ngày đánh giá. Cả sáu cột cùng tham chiếu đến một chiều thời gian duy nhất, mỗi cột đóng một vai trò khác nhau (role-playing dimension) \cite{kimball}. Chiều thời gian được sinh đầy đủ cho các năm 2016-2018 để bao phủ toàn bộ các mốc thời gian trong dữ liệu, từ 04/9/2016 đến 12/11/2018.
+\item Chiều địa lý dùng chung: Khách hàng và người bán cùng tham chiếu đến chiều thành phố và chiều bang, cho phép phân tích tuyến giao hàng từ bang của người bán đến bang của khách hàng. Các chiều địa lý này cũng được thiết kế theo dạng chiều đồng nhất như đã nêu ở mục~\ref{sec:mohinhkho}.
+\item Chuẩn hóa theo dạng snowflake: Chiều sản phẩm được tách ra chiều ngành hàng, chiều khách hàng và người bán được tách ra chiều thành phố và chiều bang. Cách tách này giúp tránh lặp lại thông tin ngành hàng và địa lý, đồng thời thể hiện rõ các phân cấp phục vụ \texttt{roll-up} và \texttt{drill-down}.
+\item Thuộc tính vùng được bổ sung: Dữ liệu nguồn không có thông tin vùng. Nhóm bổ sung thuộc tính này bằng cách gán 27 bang vào năm vùng địa lý của Brazil (Norte, Nordeste, Centro-Oeste, Sudeste và Sul) trong bước transformation của quy trình ETL.
+\item Mã đơn hàng nằm trong bảng fact: Mã đơn hàng (\code{order\_id}) không có thuộc tính mô tả riêng nên được giữ trực tiếp trong bảng fact (degenerate dimension) \cite{kimball}, dùng để nhóm các dòng sản phẩm theo đơn hàng.
+\end{itemize}
+
+\subsubsection{Xác định các thước đo}\label{sec:dodo}
+
+Các thước đo được rút ra từ các chỉ số trong Bảng~\ref{tab:kpi}. Thước đo được phân loại theo khả năng cộng dồn: thước đo cộng được (additive) có thể cộng theo mọi chiều, thước đo cộng được một phần (semi-additive) chỉ cộng được theo một số chiều, và thước đo không cộng được (non-additive) phải được tổng hợp bằng các hàm khác như trung bình hoặc tỷ lệ \cite{kimball}. Bảng~\ref{tab:dodo} trình bày các thước đo được lưu trong bảng fact.
+
+\begingroup\small\setstretch{1.1}
+\begin{longtable}{|P{3.2cm}|P{4.4cm}|P{2.4cm}|P{3.6cm}|}
+\caption{Các thước đo trong bảng fact}\label{tab:dodo}\\
+\hline
+\textbf{Thước đo} & \textbf{Cách tính} & \textbf{Loại} & \textbf{Hàm tổng hợp}\\ \hline \endfirsthead
+\hline
+\textbf{Thước đo} & \textbf{Cách tính} & \textbf{Loại} & \textbf{Hàm tổng hợp}\\ \hline \endhead
+Giá bán (\code{price}) & Giá của dòng sản phẩm & Cộng được & Tổng\\ \hline
+Phí vận chuyển (\code{freight\_value}) & Phí vận chuyển của dòng sản phẩm & Cộng được & Tổng\\ \hline
+Thời gian duyệt đơn & Thời điểm duyệt $-$ Thời điểm mua (ngày) & Không cộng được, theo đơn & Trung bình trên đơn hàng phân biệt\\ \hline
+Thời gian chuẩn bị hàng & Thời điểm bàn giao vận chuyển $-$ Thời điểm duyệt (ngày) & Không cộng được, theo đơn & Trung bình trên đơn hàng phân biệt\\ \hline
+Thời gian vận chuyển & Thời điểm nhận hàng $-$ Thời điểm bàn giao vận chuyển (ngày) & Không cộng được, theo đơn & Trung bình trên đơn hàng phân biệt\\ \hline
+Thời gian giao hàng & Thời điểm nhận hàng $-$ Thời điểm mua (ngày) & Không cộng được, theo đơn & Trung bình trên đơn hàng phân biệt\\ \hline
+Cờ giao trễ & Bằng 1 nếu ngày nhận hàng sau ngày giao dự kiến, ngược lại bằng 0 & Không cộng được, theo đơn & Tỷ lệ trên đơn hàng phân biệt\\ \hline
+Điểm đánh giá & Điểm từ 1 đến 5 sao của đơn hàng & Không cộng được, theo đơn & Trung bình trên đơn hàng phân biệt\\ \hline
+\end{longtable}
+\endgroup
+
+Các thước đo được thiết kế theo các nguyên tắc sau:
+
+\begin{itemize}
+\item Thước đo theo dòng sản phẩm: Giá bán và phí vận chuyển được ghi nhận đúng ở granularity của bảng fact, nên có thể cộng trực tiếp theo mọi chiều.
+\item Thước đo theo đơn hàng: Các khoảng thời gian, cờ giao trễ và điểm đánh giá có cùng giá trị trên mọi dòng sản phẩm của một đơn. Khi tổng hợp, các thước đo này được lấy một giá trị cho mỗi đơn hàng (nhóm theo \code{order\_id}) trước khi tính trung bình hoặc tỷ lệ, nhằm tránh tính lặp như đã nêu ở mục~\ref{sec:granularity}.
+\item Thước đo dẫn xuất được tính khi truy vấn: Các chỉ số như số đơn hàng, giá trị đơn hàng trung bình và tỷ lệ phí vận chuyển không được lưu sẵn mà được tính từ các thước đo cơ bản khi truy vấn, vì đây là các thước đo không cộng được và giá trị của chúng phụ thuộc vào mức tổng hợp.
+\end{itemize}
+
+Do dữ liệu nguồn chỉ có một điểm đánh giá cho mỗi đơn hàng, các đơn hàng có nhiều người bán (1.278 đơn) sử dụng chung một điểm đánh giá cho tất cả người bán trong đơn. Đây là giới hạn của dữ liệu nguồn cần được lưu ý khi đánh giá mức độ hài lòng theo người bán.
+
+\subsubsection{Data Cube và các phép toán OLAP}\label{sec:datacube}
+
+Data Cube là mô hình dữ liệu đa chiều, trong đó mỗi chiều biểu diễn một góc nhìn phân tích và mỗi ô của khối chứa giá trị tổng hợp của các thước đo tại giao điểm của các chiều \cite{han}. Từ bảng fact và các chiều đã thiết kế, khối dữ liệu của hệ thống có các chiều chính là thời gian, sản phẩm (ngành hàng), khu vực của khách hàng và người bán, với các thước đo là doanh thu, phí vận chuyển, thời gian giao hàng, tỷ lệ giao trễ và điểm đánh giá. Mỗi ô của khối biểu diễn giá trị tổng hợp tại một tổ hợp cụ thể, ví dụ doanh thu của ngành hàng \code{health\_beauty} tại bang SP trong tháng 11/2017.
+
+Như đã trình bày ở mục~\ref{sec:kientruc}, khối dữ liệu được xây dựng theo mô hình ROLAP, trong đó các phép toán OLAP được thực hiện bằng truy vấn SQL trên các bảng của Data Mart. Bảng~\ref{tab:olap} trình bày ví dụ áp dụng các phép toán OLAP vào nhu cầu phân tích của hệ thống.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Ví dụ áp dụng các phép toán OLAP}
+\label{tab:olap}
+\begin{tabularx}{\linewidth}{|P{2.2cm}|>{\raggedright\arraybackslash}X|P{4.6cm}|}
+\hline
+\textbf{Phép toán} & \textbf{Ví dụ áp dụng} & \textbf{Nhu cầu phân tích}\\ \hline
+Roll-up & Tổng hợp doanh thu từ theo ngày lên theo tháng, quý, năm; tổng hợp từ thành phố lên bang và vùng. & Theo dõi xu hướng doanh thu theo thời gian và khu vực.\\ \hline
+Drill-down & Từ tỷ lệ giao trễ của một vùng, đi xuống từng bang rồi từng thành phố. & Xác định khu vực có tỷ lệ giao trễ cao.\\ \hline
+Slice & Chọn một giá trị trên chiều thời gian, ví dụ chỉ xem dữ liệu năm 2018. & So sánh kết quả kinh doanh trong một kỳ.\\ \hline
+Dice & Chọn đồng thời giá trị trên nhiều chiều, ví dụ một số ngành hàng tại các bang SP, RJ, MG trong quý 4/2017. & Phân tích sâu một nhóm ngành hàng tại các thị trường chính.\\ \hline
+Pivot & Hoán đổi trục ngành hàng và trục bang trong bảng điểm đánh giá trung bình. & So sánh mức độ hài lòng theo nhiều góc nhìn.\\ \hline
+\end{tabularx}
+\end{table}

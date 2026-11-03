@@ -51,7 +51,7 @@ latex-report/
   - **2.1.1 "Mô hình kho dữ liệu" (warehouse model):** chose an **Independent Data Mart**.
     - EDW was rejected: the data covers only one business area and comes from one source.
     - Virtual DW was rejected: the data needs cleansing and the assignment requires ETL.
-    - The "data silo" weakness is addressed with shared dimensions: time, geography, product.
+    - The "data silo" weakness is addressed with conformed dimensions ("chiều đồng nhất (conformed dimensions)", cited to Kimball): time, geography, product. In the report, "dùng chung" means shared between customer and seller inside the Data Mart; "chiều đồng nhất" means reusable across Data Marts.
   - **2.1.2 "Hướng tiếp cận xây dựng mô hình" (build approach):** chose **Bottom-up**, to stay consistent with the Data Mart choice. Top-down and Hybrid were rejected.
   - **Remaining subsections** still use the skeleton macros: `\CacBuoc`, `\TaiLieu{}`, `\KetQua{}`, `\PhanNhom{}`, `\HinhCho{}{}`.
     - When the user settles a subsection, delete its skeleton block and replace it with prose.
@@ -70,12 +70,22 @@ Follow `sample written report/CO3103_L06_Nhom10_Report.pdf`:
 - **Do not use** use-case, activity, sequence, or class diagrams. This is a DW report, not a software project.
 - **Do not number content with codes** such as BQ01 or UC01 unless the user asks.
 - **Numbers:** Vietnamese format, with a dot for thousands and a comma for decimals (99.441; 12,6 ngày; 6,8%). Currency is BRL.
+- **Dates:** a full date is `DD/M/YYYY`: the day keeps two digits, the month drops its leading zero (`04/9/2016`, `01/1/2016`, `31/9/2026`, `12/11/2018`). A month written on its own (month/year, month ranges) keeps two digits: `09/2018`, `09-10/2018`, `01/2017-08/2018`. Code formats such as `YYYYMMDD` (`date_key`) are not affected.
+- **Ranges ("đến"):** use a single hyphen with no spaces: `09-10/2018`, `15-20 MB`, `1-2 sao`, `2016-2018`, `(1-5)`. Keep ` -- ` only where it does not mean "đến": bilingual titles (`Performance -- Hiệu năng`, `Extract -- Trích xuất dữ liệu`), relationship cardinality (`1 -- nhiều`), "Name -- MSSV" on the cover, empty table cells.
+- **Schema names:** write **"snowflake schema"** and **"star schema"**, never "lược đồ snowflake" or "lược đồ bông tuyết".
+- **Terminology:**
+  - Use the Vietnamese terms **chiều**, **bảng chiều**, **phân cấp**, **thước đo**. The English name appears in parentheses only at the first mention in the whole report: "bảng chiều (dimension table)", "chiều phân tích (dimensions)", "thước đo (measures)" (all in `phantich/yeucau.tex`), "phân cấp (hierarchies)" (`thietke/dachieu.tex`, 2.2.3).
+  - Keep the English terms **granularity**, **transformation**, **staging**, **surrogate key**, **snowflake schema**, **bảng fact** as they are.
+  - Named Kimball techniques keep their English name in parentheses: role-playing dimension, degenerate dimension, Slowly Changing Dimension, accumulating snapshot.
 - **Citations:**
-  - `\cite{slides}` for the course slides;
-  - `\cite{kimball}` for concepts found only in Kimball's book (4-step design / grain, surrogate key, SCD, conformed dimension);
-  - `\cite{inmon}` for the four DW characteristics;
-  - `\cite{olist}` for the dataset;
-  - `\cite{tmq}` for relational database concepts.
+  - **Do not name the author in the sentence.** No "Theo Han và cộng sự…", "Theo Kimball…", "theo định nghĩa của Inmon…", "phương pháp của Kimball…". Write the statement itself and put `\cite{...}` at the end of the cited sentence, e.g. "Bước này bao gồm làm sạch dữ liệu, ánh xạ dữ liệu và áp dụng các quy tắc nghiệp vụ \cite{han}."
+  - **Never cite the course slides.** There is no `slides` entry. Cite the textbook the slide content comes from:
+    - `\cite{han}` [6] (Han, Kamber, Pei) for the three DW models, three-tier architecture, star/snowflake/fact constellation, Data Cube and OLAP, data quality, transformation, metadata;
+    - `\cite{inmon}` [1] for the four DW characteristics, granularity, derived data;
+    - `\cite{kimball}` [2] for ETL and staging, incremental load, 4-step design, accumulating snapshot, surrogate key, SCD, role-playing/degenerate/conformed dimensions;
+    - `\cite{tmq}` [8] for relational database concepts;
+    - `\cite{olist}` [9] for the dataset.
+  - The bibliography lists all 8 syllabus references in syllabus order, plus the Olist dataset as [9]. Keys `turban`, `elmasri`, `sharda`, `burstein` are available for the DSS parts.
 
 ## 5. LaTeX conventions
 
@@ -156,7 +166,7 @@ Profile with the **Python standard library** (`python3 -I`, `csv` module), since
 | Products | 32,951 |
 | Product categories | 73 (2 have no English translation) |
 | States with customers / with sellers | 27 / 23 |
-| Date range | 04/09/2016 – 17/10/2018; stable period 01/2017 – 08/2018 (349 orders fall outside it) |
+| Date range | 04/9/2016-17/10/2018; stable period 01/2017-08/2018 (349 orders fall outside it) |
 | Item value / freight | ≈ 13.59 / 2.25 million BRL |
 | Mean delivery time | 12.6 days (median 10.2; max 209.6) |
 | Late delivery rate | 6.8% |
