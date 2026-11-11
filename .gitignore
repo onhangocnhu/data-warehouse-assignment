@@ -35,5 +35,10 @@ drawio-files/export/
 # DSS model artifacts (keep metrics.json, ignore large binaries)
 src/dss/models/*.joblib
 
+# Course material and sample reports (kept locally, not part of the submission)
+Documents/
+sample_report/
+sample written report/
+
 # Report figures are committed as PNG only (make_figures.py renders through a temporary PDF)
 latex-report/Pictures/*.pdf
