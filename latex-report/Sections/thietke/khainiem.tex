@@ -1,64 +1,32 @@
+% !TeX root = ../../main.tex
 \subsection{Thiết kế ý niệm}
 
 \subsubsection{Mô hình kho dữ liệu}\label{sec:mohinhkho}
 
-Dựa trên phạm vi đề tài đã xác định ở mục~\ref{sec:phamvi}, trong ba mô hình kho dữ liệu: Enterprise Data Warehouse -- EDW, Data Mart và Virtual Data Warehouse \cite{han}, đề tài được xây dựng theo mô hình \textit{Data Mart} trực tiếp từ bộ dữ liệu nguồn có sẵn. Lựa chọn này xuất phát từ các lý do sau:
+Có ba mô hình kho dữ liệu thường được nhắc tới: kho dữ liệu doanh nghiệp (Enterprise Data Warehouse -- EDW), Data Mart và kho dữ liệu ảo (Virtual Data Warehouse) \cite{han}. Với phạm vi đã xác định ở mục~\ref{sec:phamvi}, đề tài xây dựng một \textit{Data Mart} lấy dữ liệu trực tiếp từ bộ dữ liệu nguồn.
 
-\begin{itemize}
-\item Phạm vi dữ liệu tập trung vào một mảng nghiệp vụ: Dữ liệu nguồn chỉ bao gồm hoạt động bán hàng và giao nhận trên sàn, không có dữ liệu về các phòng bàn khác như marketing hay nhân sự. Trong khi đó, EDW được thiết kế để tích hợp dữ liệu của toàn bộ tổ chức nên không phù hợp với phạm vi của đề tài.
-\item Nguồn dữ liệu đơn giản: Toàn bộ dữ liệu đến từ một nguồn duy nhất là 9 tập tin CSV của Olist (Bảng~\ref{tab:nguon}), do đó không cần đến quy trình tích hợp phức tạp giữa nhiều hệ thống như một EDW.
-\item Phù hợp với mô hình đa chiều: Data Mart thường được thiết kế theo star schema hoặc snowflake schema, phù hợp với yêu cầu thiết kế kho dữ liệu theo mô hình đa chiều.
-\end{itemize}
+EDW được thiết kế để gom dữ liệu của cả tổ chức, từ bán hàng đến nhân sự, kế toán, marketing, và thường phải tích hợp nhiều hệ thống nguồn khác nhau. Dữ liệu của đề tài thì chỉ có một mảng nghiệp vụ là đơn hàng và giao nhận, đến từ một nguồn duy nhất là 9 tập tin CSV của Olist (Bảng~\ref{tab:nguon}). Xây một EDW cho phạm vi này vừa thừa vừa không có dữ liệu để lấp đầy. Kho dữ liệu ảo cũng không phù hợp: mô hình này truy vấn thẳng trên dữ liệu nguồn mà không lưu bản đã xử lý, trong khi dữ liệu nguồn có hàng loạt vấn đề phải làm sạch trước (Bảng~\ref{tab:chatluong}) và truy vấn trên dữ liệu thô sẽ chậm hơn nhiều. Data Mart, ngược lại, tập trung vào một chủ đề và thường được tổ chức theo star schema hoặc snowflake schema, đúng với yêu cầu thiết kế đa chiều của đề tài.
 
-Mô hình Virtual Data Warehouse không được lựa chọn vì mô hình này không lưu trữ dữ liệu đã qua xử lý, trong khi dữ liệu nguồn có nhiều vấn đề cần làm sạch trước khi sử dụng (Bảng~\ref{tab:chatluong}) và mô hình này có hiệu năng truy vấn thấp hơn khi làm việc với dữ liệu lớn.
-
-Mặc dù hệ thống phục vụ nhiều nhóm người dùng như ban điều hành, quản lý vận hành và bộ phận chăm sóc khách hàng, các nhóm này đều khai thác cùng một mảng dữ liệu là \textit{đơn hàng} của sàn. Hạn chế của Data Mart là có thể trở thành nguồn dữ liệu tách biệt khi tổ chức bổ sung thêm các nguồn dữ liệu khác. Để khắc phục, nhóm thiết kế các chiều thời gian, địa lý và sản phẩm theo dạng chiều đồng nhất (conformed dimensions) \cite{kimball}, tức có cùng cấu trúc và cách mã hóa để các Data Mart khác có thể sử dụng lại, tạo điều kiện tích hợp Data Mart vào một kho dữ liệu lớn hơn trong tương lai.
+Hệ thống phục vụ nhiều nhóm người dùng (ban điều hành, vận hành, quản lý người bán, chăm sóc khách hàng), nhưng tất cả đều khai thác cùng một mảng dữ liệu là \textit{đơn hàng}, nên một Data Mart vẫn đủ. Điểm yếu thường được nhắc tới của Data Mart là dễ trở thành một ``ốc đảo'' dữ liệu khi tổ chức có thêm nguồn khác. Để hạn chế điều này, các chiều thời gian, địa lý và sản phẩm được thiết kế theo dạng chiều đồng nhất (conformed dimensions) \cite{kimball}, tức có cấu trúc và cách mã hóa đủ chung để Data Mart khác dùng lại được, chẳng hạn một Data Mart thanh toán trong tương lai.
 
 \subsubsection{Hướng tiếp cận xây dựng mô hình}
 
-Nhóm lựa chọn hướng tiếp cận \textit{Bottom-up} vì đây là hướng phù hợp với mô hình Data Mart đã chọn ở mục trước. Lựa chọn này xuất phát từ các lý do sau:
+Đi kèm với lựa chọn Data Mart, hệ thống được xây dựng theo hướng \textit{Bottom-up}: bắt đầu từ một Data Mart phục vụ một nhu cầu cụ thể, rồi mở rộng dần. Hướng này phù hợp với quy mô và thời gian của đề tài, vì Data Mart được thiết kế quanh đúng các chỉ số ở Bảng~\ref{tab:kpi} và các quyết định ở Bảng~\ref{tab:quyetdinh}, nên có thể đưa vào sử dụng ngay sau khi nạp dữ liệu, với chi phí và thời gian phát triển thấp.
 
-\begin{itemize}
-\item Nhất quán với mô hình Data Mart: Hướng Bottom-up lấy Data Mart làm điểm khởi đầu.
-\item Triển khai nhanh và tiết kiệm chi phí: Hướng Bottom-up tập trung vào một nhu cầu cụ thể nên có thể đưa vào sử dụng sớm, với chi phí và thời gian phát triển thấp hơn.
-\item Đáp ứng trực tiếp nhu cầu phân tích: Data Mart được xây dựng xoay quanh các chỉ số và quyết định đã xác định ở Bảng~\ref{tab:kpi} và Bảng~\ref{tab:quyetdinh}, giúp người dùng khai thác được kết quả ngay.
-\item Phù hợp với quy mô đề tài: Hướng Bottom-up phù hợp với các tổ chức vừa và nhỏ có nhu cầu phân tích cụ thể và nguồn lực hạn chế.
-\end{itemize}
-
-% Hướng Top-down không phù hợp vì đòi hỏi xây dựng trước một EDW với thời gian phát triển dài, chi phí lớn và cần dữ liệu của toàn bộ tổ chức, trong khi dữ liệu nguồn chỉ có một mảng nghiệp vụ. Hướng Hybrid cũng không phù hợp vì yêu cầu phối hợp đồng thời giữa EDW và các Data Mart.
-
-Áp dụng hướng Bottom-up, đề tài được triển khai theo các bước sau:
-
-\begin{enumerate}
-\item Xây dựng Data Mart cho mảng bán hàng và giao nhận của sàn, phục vụ các nhu cầu phân tích về doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán.
-\item Xây dựng quy trình ETL để trích xuất, làm sạch và nạp dữ liệu từ các tập tin nguồn Olist vào Data Mart.
-\item Xây dựng các công cụ báo cáo và phân tích OLAP trên Data Mart để phục vụ người dùng.
-\item Khi có thêm nguồn dữ liệu mới, xây dựng thêm các Data Mart khác và tích hợp với Data Mart hiện tại thông qua các chiều đồng nhất.
-\end{enumerate}
-
-Hạn chế của hướng Bottom-up là các Data Mart có thể trở nên rời rạc và khó tích hợp nếu không được thiết kế thống nhất. Như đã trình bày ở mục~\ref{sec:mohinhkho}, nhóm khắc phục hạn chế này bằng cách thiết kế các chiều thời gian, địa lý và sản phẩm theo dạng chiều đồng nhất ngay từ đầu.
-
-
+Thứ tự triển khai là: xây Data Mart cho mảng bán hàng và giao nhận; xây quy trình ETL để làm sạch và nạp dữ liệu Olist vào Data Mart; xây các truy vấn OLAP, dashboard và thành phần DSS trên Data Mart. Khi có thêm nguồn dữ liệu, các Data Mart mới sẽ nối với Data Mart hiện tại qua các chiều đồng nhất nói trên. Đây cũng là cách khắc phục nhược điểm lớn nhất của Bottom-up, là các Data Mart xây riêng lẻ dễ rời rạc và khó tích hợp về sau.
 
 \subsubsection{Kiến trúc tổng thể của hệ thống}\label{sec:kientruc}
 
-Hệ thống được thiết kế theo kiến trúc ba tầng của kho dữ liệu. Kiến trúc này tách biệt việc lưu trữ, xử lý phân tích và trình bày dữ liệu, giúp mỗi tầng có thể được phát triển và mở rộng độc lập. Hình~\ref{fig:kientruc} trình bày kiến trúc tổng thể của hệ thống.
+Hệ thống theo kiến trúc ba tầng của kho dữ liệu \cite{han}, tách riêng phần lưu trữ, phần xử lý phân tích và phần trình bày để mỗi tầng phát triển độc lập. Hình~\ref{fig:kientruc} mô tả kiến trúc này.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\linewidth]{Pictures/kien-truc.png}
-\caption{Sơ đồ kiến trúc ba tầng của hệ thống}
-\label{fig:kientruc}
-\end{figure}
+\input{Sections/hinh/kientruc}
 
-Các thành phần của kiến trúc được mô tả như sau:
+Dữ liệu nguồn là 9 tập tin CSV của Olist. Quy trình ETL viết bằng Python đọc các tập tin này, nạp nguyên trạng vào khu vực staging rồi làm sạch, biến đổi và nạp vào Data Mart. Khu vực staging là một schema riêng trong PostgreSQL, chứa cả dữ liệu thô lẫn dữ liệu đã làm sạch, và là nơi xử lý toàn bộ các vấn đề ở Bảng~\ref{tab:chatluong}.
 
-\begin{itemize}
-\item Dữ liệu nguồn (Data): Gồm 9 tập tin CSV của bộ dữ liệu Olist (Bảng~\ref{tab:nguon}). Dữ liệu được đưa vào kho thông qua quy trình ETL viết bằng Python, gồm các bước trích xuất (Extract), làm sạch (Clean), biến đổi (Transform), nạp (Load) và làm mới (Refresh). Trong quá trình này, dữ liệu được lưu tạm tại khu vực staging, là một schema riêng trong PostgreSQL, chứa cả dữ liệu thô và dữ liệu đã làm sạch. Đây là nơi xử lý các vấn đề chất lượng dữ liệu đã nêu ở Bảng~\ref{tab:chatluong} trước khi nạp vào Data Mart.
-\item Tầng dưới (Bottom tier) -- Data Mart: Là nơi lưu trữ dữ liệu đã được tích hợp, gồm Data Mart bán hàng và giao nhận được tổ chức theo snowflake schema trên PostgreSQL. Đi kèm Data Mart là kho metadata (metadata repository) lưu từ điển dữ liệu và nguồn gốc dữ liệu, cùng với hai chức năng giám sát (Monitoring) qua nhật ký chạy ETL và quản trị (Administrator) qua phân quyền chỉ đọc cho người dùng phân tích.
-\item Tầng giữa (Middle tier) -- OLAP server: Nhóm sử dụng mô hình ROLAP, trong đó khối dữ liệu đa chiều được xây dựng trực tiếp trên Data Mart và các phép toán \texttt{slice}, \texttt{dice}, \texttt{drill-down}, \texttt{roll-up}, \texttt{pivot} được thực hiện bằng truy vấn SQL trên PostgreSQL. Mô hình này phù hợp vì dữ liệu đã được lưu trong cơ sở dữ liệu quan hệ và quy mô dữ liệu cho phép tổng hợp trực tiếp với thời gian phản hồi chấp nhận được.
-\item Tầng trên (Top tier) -- Presentation Layer: Gồm các công cụ truy vấn và báo cáo, dashboard phân tích về doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán, cùng với thành phần hệ hỗ trợ quyết định (DSS) khai thác dữ liệu từ kho.
-\end{itemize}
+Tầng dưới (Bottom tier) là Data Mart bán hàng và giao nhận, tổ chức theo snowflake schema trên PostgreSQL. Bên cạnh Data Mart có kho metadata (metadata repository) lưu từ điển dữ liệu và nguồn gốc dữ liệu, cùng hai chức năng: giám sát (Monitoring) qua nhật ký chạy ETL, và quản trị (Administrator) qua việc chỉ cấp quyền đọc cho người dùng phân tích.
 
-%% update in future when change the technology stack
-Về công nghệ, nhóm sử dụng Python để xây dựng quy trình ETL và PostgreSQL để lưu trữ khu vực staging, Data Mart và metadata. Việc sử dụng một hệ quản trị cơ sở dữ liệu duy nhất cho các thành phần lưu trữ giúp hệ thống đơn giản, dễ triển khai và dễ bảo trì, phù hợp với quy mô của bài tập lớn.
+Tầng giữa (Middle tier) là OLAP server theo mô hình ROLAP. Khối dữ liệu đa chiều được biểu diễn trực tiếp bằng các bảng của Data Mart, và các phép \texttt{slice}, \texttt{dice}, \texttt{drill-down}, \texttt{roll-up}, \texttt{pivot} được viết thành truy vấn SQL. ROLAP được chọn vì dữ liệu đã nằm sẵn trong cơ sở dữ liệu quan hệ và quy mô hiện tại cho phép tổng hợp trực tiếp mà vẫn đủ nhanh; nếu dùng MOLAP thì phải thêm một máy chủ khối riêng và một bước xử lý khối mỗi lần nạp dữ liệu.
+
+Tầng trên (Top tier) gồm công cụ truy vấn và báo cáo, dashboard theo dõi doanh thu, giao hàng, đánh giá và người bán, cùng thành phần hệ hỗ trợ quyết định khai thác dữ liệu từ kho.
+
+Toàn bộ phần lưu trữ (staging, Data Mart, metadata) dùng chung một hệ quản trị cơ sở dữ liệu là PostgreSQL. Với một bài tập lớn, cách làm này giúp hệ thống dễ cài đặt và bảo trì hơn so với việc tách ra nhiều hệ quản trị khác nhau.

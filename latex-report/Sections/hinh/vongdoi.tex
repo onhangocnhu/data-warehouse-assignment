@@ -1,0 +1,37 @@
+% !TeX root = ../../main.tex
+% Vòng đời đơn hàng: các mốc thời gian được ghi nhận và các khoảng thời gian được tính trong kho dữ liệu
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[x=1cm, y=1cm,
+    milestone/.style={circle, fill=dwBlue, text=white, font=\footnotesize\bfseries, inner sep=0pt, minimum size=17pt},
+    title/.style={font=\footnotesize\bfseries, text=dwInk, align=center, text width=2.8cm},
+    stamp/.style={font=\scriptsize\ttfamily, text=dwInkTwo, align=center, text width=2.9cm},
+    band/.style={rounded corners=2pt, minimum height=14pt, font=\scriptsize\ttfamily, text=white, inner sep=0pt}]
+\def\xs{{0.8,4.0,7.2,10.4,13.6}}
+\draw[line width=1.6pt, dwLine, -{Stealth[length=3mm]}] (0,0) -- (14.9,0);
+\foreach \i/\t/\s in {1/{Đặt hàng}/{order\_purchase\\\_timestamp},
+                      2/{Thanh toán,\\duyệt đơn}/{order\_approved\_at},
+                      3/{Người bán bàn giao\\vận chuyển}/{order\_delivered\\\_carrier\_date},
+                      4/{Khách hàng\\nhận hàng}/{order\_delivered\\\_customer\_date},
+                      5/{Khách hàng\\đánh giá}/{review\_creation\\\_date}} {
+  \pgfmathsetmacro{\x}{\xs[\i-1]}
+  \node[milestone] (s\i) at (\x,0) {\i};
+  \node[title, anchor=south] at (\x,0.35) {\t};
+  \node[stamp, anchor=north] at (\x,-0.35) {\s};
+}
+% estimated delivery date
+\draw[dwOrange, line width=0.8pt, dashed] (12.0,1.95) -- (12.0,-0.2);
+\node[font=\scriptsize, text=dwOrange, align=center, fill=white, inner sep=1pt, anchor=south] at (12.0,1.95)
+  {ngày giao dự kiến\\[-1pt]\texttt{order\_estimated\_delivery\_date}};
+\node[font=\scriptsize, text=dwOrange, align=left, anchor=west] at (10.6,-1.75) {nhận hàng sau ngày dự kiến\\[-1pt]$\Rightarrow$ \texttt{is\_late = 1}};
+% durations
+\node[band, fill=dwInkTwo, minimum width=3.15cm, anchor=west] at (0.82,-1.75) {approval\_days};
+\node[band, fill=dwAqua, minimum width=3.15cm, anchor=west] at (4.02,-1.75) {handling\_days};
+\node[band, fill=dwBlue, minimum width=3.15cm, anchor=west] at (7.22,-1.75) {shipping\_days};
+\node[band, fill=dwOrange, minimum width=9.55cm, anchor=west] at (0.82,-2.3) {delivery\_days};
+\node[font=\scriptsize, text=dwMuted, anchor=west] at (10.6,-2.45) {(các khoảng thời gian tính bằng ngày)};
+\end{tikzpicture}}
+\caption{Vòng đời của một đơn hàng, các mốc thời gian được ghi nhận và các khoảng thời gian được tính trong kho dữ liệu}
+\label{fig:vongdoi}
+\end{figure}

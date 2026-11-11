@@ -1,0 +1,53 @@
+% !TeX root = ../../main.tex
+% Kiến trúc ba tầng của hệ thống
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[
+    tier/.style={rounded corners=4pt, fill=#1, draw=none, minimum width=15.2cm, anchor=south west, inner sep=0pt},
+    tlabel/.style={font=\tiny\bfseries, text=white, rotate=90, anchor=center},
+    box/.style={dwbox=#1, text width=3.3cm, minimum height=1.0cm},
+    db/.style 2 args={dwdb=#1, text width=#2, font=\footnotesize},
+    file/.style={draw=dwLine, fill=white, line width=0.4pt, font=\tiny\ttfamily, minimum width=1.4cm,
+                 minimum height=0.5cm, inner sep=1pt}]
+% tiers (bottom to top)
+\node[tier=dwPaper, minimum height=1.65cm] (T0) at (0,0) {};
+\node[tier=dwBlue!5, minimum height=4.35cm] (T1) at (0,1.9) {};
+\node[tier=dwViolet!6, minimum height=2.0cm] (T2) at (0,6.5) {};
+\node[tier=dwOrange!6, minimum height=2.1cm] (T3) at (0,8.75) {};
+\foreach \T/\c/\l in {T0/dwMuted/NGUỒN, T1/dwBlue/TẦNG DƯỚI, T2/dwViolet/TẦNG GIỮA, T3/dwOrange/TẦNG TRÊN} {
+  \fill[\c, rounded corners=4pt] (\T.south west) rectangle ([xshift=0.5cm]\T.north west);
+  \fill[\c] ([xshift=0.25cm]\T.south west) rectangle ([xshift=0.5cm]\T.north west);
+  \node[tlabel] at ([xshift=0.25cm]\T.west) {\l};
+}
+% sources
+\foreach \n [count=\i] in {orders, order\_items, payments, reviews, customers, sellers, products, geolocation, translation}
+  \node[file] at (1.45+\i*1.55-1.55, 0.55) {\n};
+\node[font=\scriptsize, text=dwMuted, anchor=north east] at ([shift={(-5pt,-4pt)}]T0.north east) {9 tập tin CSV của Olist, 1.550.922 dòng};
+% bottom tier
+\node[dwbox=dwInkTwo, text width=5.2cm, minimum height=0.85cm] (etl) at (6.2,2.65)
+  {\textbf{ETL} (Python + SQL)\\[-1pt]{\scriptsize Extract $\rightarrow$ Transformation $\rightarrow$ Load $\rightarrow$ Kiểm tra}};
+\node[db={dwYellow}{2.6cm}] (stg) at (12.2,2.65) {\textbf{Staging}\\[-1pt]{\scriptsize\texttt{raw\_*}, \texttt{stg\_*}}};
+\node[db={dwBlue}{3.3cm}] (dm) at (6.2,4.75) {\textbf{Data Mart}\\[-1pt]{\scriptsize snowflake schema \texttt{dm}}\\[-1pt]{\scriptsize\texttt{fact\_sales} + 7 bảng chiều}};
+\node[db={dwAqua}{2.8cm}] (meta) at (2.55,4.75) {\textbf{Metadata}\\[-1pt]{\scriptsize từ điển, nguồn gốc dữ liệu,}\\[-1pt]{\scriptsize nhật ký ETL, đối soát}};
+\node[db={dwOrange}{2.6cm}] (dss) at (12.2,4.75) {\textbf{Kết quả DSS}\\[-1pt]{\scriptsize schema \texttt{dss}}};
+% middle tier
+\node[box=dwViolet, text width=7.4cm] (olap) at (7.4,7.5)
+  {\textbf{ROLAP trên PostgreSQL}\\[-1pt]{\scriptsize roll-up, drill-down, slice, dice, pivot bằng \texttt{GROUP BY}, \texttt{ROLLUP}, \texttt{CUBE}}};
+% top tier
+\node[box=dwOrange] (rep) at (2.7,9.8) {\textbf{Truy vấn, báo cáo}\\[-1pt]{\scriptsize thư viện truy vấn OLAP}};
+\node[box=dwOrange] (dash) at (7.4,9.8) {\textbf{Dashboard}\\[-1pt]{\scriptsize doanh thu, giao hàng, đánh giá}};
+\node[box=dwOrange] (dssui) at (12.2,9.8) {\textbf{Hệ hỗ trợ quyết định}\\[-1pt]{\scriptsize cảnh báo giao trễ}};
+% flows
+\draw[dwarrow] (6.2,1.65) -- (etl.south);
+\draw[dwarrow, {Stealth[length=2mm,width=1.5mm]}-{Stealth[length=2mm,width=1.5mm]}] (etl.east) -- (stg.west);
+\draw[dwarrow] (etl.north) -- (dm.south);
+\draw[dwdash, rounded corners=3pt] (etl.west) -| (meta.south);
+\draw[dwarrow] (dm.north) -- (dm.north |- olap.south);
+\draw[dwarrow, rounded corners=3pt] (olap.west) -| (rep.south);
+\draw[dwarrow] (olap.north) -- (dash.south);
+\draw[dwarrow] (dm.east) -- node[dwlabel, above] {đặc trưng} (dss.west);
+\draw[dwarrow, {Stealth[length=2mm,width=1.5mm]}-{Stealth[length=2mm,width=1.5mm]}] (dss.north) -- (dssui.south);
+\end{tikzpicture}
+\caption{Sơ đồ kiến trúc ba tầng của hệ thống}
+\label{fig:kientruc}
+\end{figure}

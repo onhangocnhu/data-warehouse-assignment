@@ -1,0 +1,43 @@
+% !TeX root = ../../main.tex
+% Quan hệ giữa 9 tập dữ liệu nguồn
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[rel/.style={line width=0.6pt, draw=dwInkTwo, rounded corners=2pt},
+                    geo/.style={line width=0.6pt, draw=dwYellow!80!black, dashed, rounded corners=2pt},
+                    card/.style={font=\scriptsize, text=dwInkTwo},
+                    end/.style={font=\scriptsize\bfseries, text=dwInk, fill=white, inner sep=1pt}]
+\dwtable{orders}{0,0}{orders}{dwOrange}{2.7cm}{99.441 dòng, PK: order\_id}
+\dwtable{items}{0,-2.4}{order\_items}{dwOrange}{2.7cm}{112.650 dòng, PK: order\_id + order\_item\_id}
+\dwtable{customers}{-5.0,0}{customers}{dwBlue}{2.7cm}{99.441 dòng, PK: customer\_id}
+\dwtable{payments}{5.2,0.75}{order\_payments}{dwBlue}{3.1cm}{103.886 dòng}
+\dwtable{reviews}{5.2,-1.15}{order\_reviews}{dwBlue}{3.1cm}{99.224 dòng}
+\dwtable{products}{-2.6,-4.9}{products}{dwBlue}{2.7cm}{32.951 dòng, PK: product\_id}
+\dwtable{sellers}{2.6,-4.9}{sellers}{dwBlue}{2.7cm}{3.095 dòng, PK: seller\_id}
+\dwtable{trans}{-2.6,-7.3}{category\_translation}{dwBlue}{3.9cm}{71 dòng}
+\dwtable{geo}{-5.0,-2.4}{geolocation}{dwYellow}{2.7cm}{1.000.163 dòng, không có khóa}
+% one-to-one / one-to-many
+\draw[rel] (customers-1.east) -- node[end, pos=0.12] {1} node[end, pos=0.88] {1}
+           node[font=\scriptsize\ttfamily, text=dwMuted, above=2pt, pos=0.5] {customer\_id} (orders-1.west);
+\draw[rel] (orders-2.south) -- node[end, pos=0.15] {1} node[end, pos=0.75] {n}
+           node[font=\scriptsize\ttfamily, text=dwMuted, right=3pt, pos=0.45] {order\_id} (items.north);
+\draw[rel] (orders-1.east) -- ++(0.55,0) |- node[end, pos=0.92] {n} (payments.west);
+\draw[rel] (orders-1.east) -- ++(0.55,0) |- node[end, pos=0.92] {n} (reviews.west);
+\node[end] at ($(orders-1.east)+(0.25,0)$) {1};
+\draw[rel] (items-2.south) -- ++(0,-0.35) -| node[end, pos=0.9] {1} (products.north);
+\draw[rel] (items-2.south) -- ++(0,-0.35) -| node[end, pos=0.9] {1} (sellers.north);
+\node[end] at ($(items-2.south)+(0,-0.2)$) {n};
+\node[font=\scriptsize\ttfamily, text=dwMuted, anchor=south] at ($(items-2.south)+(-1.45,-0.35)$) {product\_id};
+\node[font=\scriptsize\ttfamily, text=dwMuted, anchor=south] at ($(items-2.south)+(1.4,-0.35)$) {seller\_id};
+\draw[rel] (products-2.south) -- node[end, pos=0.2] {n} node[end, pos=0.8] {1} (trans.north);
+% zip prefix links (no unique key)
+\draw[geo] (geo.north) -- node[font=\scriptsize, text=dwYellow!70!black, fill=white, inner sep=1pt] {mã bưu chính} (customers-2.south);
+\draw[geo] (geo-2.south) -- ++(0,-2.95) -| node[font=\scriptsize, text=dwYellow!70!black, fill=white, inner sep=1pt, pos=0.25] {mã bưu chính} (sellers-2.south);
+% legend
+\node[font=\scriptsize, text=dwInkTwo, align=left, anchor=north west] at (0.2,-6.75)
+  {\textcolor{dwOrange}{\rule{6pt}{6pt}} bảng trung tâm của đơn hàng\\[1pt]
+   \textcolor{dwYellow}{\rule{6pt}{6pt}} dữ liệu địa lý, nối qua mã bưu chính\\[1pt]
+   \textbf{1}, \textbf{n}: số dòng ở mỗi đầu quan hệ};
+\end{tikzpicture}
+\caption{Quan hệ giữa các tập dữ liệu nguồn (nét đứt: liên kết qua tiền tố mã bưu chính, không có khóa duy nhất)}
+\label{fig:quanhenguon}
+\end{figure}

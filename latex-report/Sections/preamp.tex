@@ -63,13 +63,67 @@
     showstringspaces=false,
     tabsize=4,
 }
+\lstdefinestyle{SQLStyle}{
+    language=SQL,
+    basicstyle=\ttfamily\footnotesize,
+    keywordstyle=\color{blue}\bfseries,
+    stringstyle=\color{red},
+    commentstyle=\color{green!50!black}\itshape,
+    backgroundcolor=\color{yellow!10},
+    frame=single,
+    breaklines=true,
+    showstringspaces=false,
+    columns=fullflexible,
+    keepspaces=true,
+    morekeywords={ROLLUP,CUBE,FILTER,OVER,PARTITION,ROW_NUMBER,COALESCE,TO_CHAR,EXTRACT,EPOCH,INTERVAL},
+}
 
 \lstdefinestyle{mat}{language=Matlab,basicstyle=\ttfamily\footnotesize,
   commentstyle=\color{gray},keywordstyle=\color{blue},numbers=left,
   numberstyle=\tiny,breaklines=true,frame=single,columns=fixed,
   keepspaces=true,showstringspaces=false}
 
-\usetikzlibrary{arrows,backgrounds,positioning}
+\usetikzlibrary{arrows,arrows.meta,backgrounds,positioning,calc,fit,shapes.multipart,shapes.geometric,decorations.pathreplacing}
+
+% ---------- Bộ màu và style dùng chung cho mọi sơ đồ (trùng với biểu đồ trong src/report/make_figures.py)
+\definecolor{dwBlue}{HTML}{2A78D6}
+\definecolor{dwBlueDark}{HTML}{184F95}
+\definecolor{dwOrange}{HTML}{EB6834}
+\definecolor{dwAqua}{HTML}{1BAF7A}
+\definecolor{dwYellow}{HTML}{EDA100}
+\definecolor{dwViolet}{HTML}{6250D6}
+\definecolor{dwInk}{HTML}{0B0B0B}
+\definecolor{dwInkTwo}{HTML}{52514E}
+\definecolor{dwMuted}{HTML}{898781}
+\definecolor{dwLine}{HTML}{C3C2B7}
+\definecolor{dwPaper}{HTML}{F7F6F2}
+\tikzset{
+  dwbox/.style={draw=#1!70!black, line width=0.5pt, fill=#1!7, rounded corners=3pt, align=center,
+                font=\footnotesize, inner sep=4pt},
+  dwbox/.default=dwBlue,
+  dwhead/.style={draw=#1!80!black, line width=0.5pt, fill=#1, text=white, font=\footnotesize\bfseries,
+                 rounded corners=0pt, inner sep=3pt, align=center},
+  dwhead/.default=dwBlue,
+  dwfield/.style={draw=dwLine, line width=0.4pt, fill=white, font=\scriptsize\ttfamily, inner sep=2pt,
+                  anchor=north, align=left},
+  dwarrow/.style={-{Stealth[length=2.2mm,width=1.6mm]}, line width=0.6pt, draw=dwInkTwo},
+  dwdash/.style={-{Stealth[length=2mm,width=1.5mm]}, line width=0.5pt, draw=dwMuted, dashed},
+  dwlabel/.style={font=\scriptsize, text=dwInkTwo, fill=white, inner sep=1.2pt},
+  dwnote/.style={font=\scriptsize, text=dwMuted, align=center},
+  dwdb/.style={cylinder, shape border rotate=90, aspect=0.18, draw=#1!70!black, line width=0.5pt, fill=#1!10,
+               align=center, font=\footnotesize, inner sep=3pt},
+  dwdb/.default=dwBlue,
+}
+% \dwtable{tên node}{vị trí}{tiêu đề}{màu}{bề rộng}{danh sách cột, cách nhau bởi dấu phẩy}
+% Tạo node <tên> (tiêu đề) và <tên>-1, <tên>-2, ... cho từng cột để vẽ liên kết tới đúng cột.
+\newcommand{\dwtable}[6]{%
+  \node[dwhead=#4, text width=#5, inner sep=2.5pt] (#1) at (#2) {#3};
+  \xdef\dwprev{#1}%
+  \foreach \dwf [count=\dwi] in {#6} {%
+    \node[dwfield, text width=#5, inner sep=2.5pt] (#1-\dwi) at (\dwprev.south) {\dwf};
+    \xdef\dwprev{#1-\dwi}%
+  }%
+}
 
 %\usepackage{pstcol} % PSTricks with the standard color package
 \usepackage[normalem]{ulem}

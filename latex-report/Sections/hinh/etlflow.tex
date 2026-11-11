@@ -1,0 +1,41 @@
+% !TeX root = ../../main.tex
+% Luồng ETL
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+    stage/.style={dwbox=#1, text width=3.3cm, minimum height=1.55cm},
+    store/.style={dwdb=#1, text width=2.7cm, font=\footnotesize},
+    num/.style={circle, fill=#1, text=white, font=\scriptsize\bfseries, inner sep=0pt, minimum size=13pt}]
+\node[draw=dwLine, fill=white, line width=0.5pt, text width=2.6cm, align=center, font=\footnotesize, minimum height=1.4cm] (src) at (0,0)
+  {\textbf{Dữ liệu nguồn}\\[-1pt]{\scriptsize 9 tập tin CSV và\\2 bảng tham chiếu}};
+\node[stage=dwBlue] (ex) at (4.1,0)
+  {\textbf{Extract}\\[-1pt]{\scriptsize \texttt{extract.py}: kiểm tra tiêu đề, \texttt{COPY}, đối chiếu số dòng}};
+\node[store=dwYellow] (raw) at (8.3,0) {\textbf{Bảng thô}\\[-1pt]{\scriptsize\texttt{raw\_*}, \texttt{ref\_*}}\\[-1pt]{\scriptsize kiểu chuỗi}};
+\node[stage=dwViolet] (tr) at (8.3,-2.75)
+  {\textbf{Transformation}\\[-1pt]{\scriptsize \texttt{10\_transform.sql}: làm sạch, ánh xạ, tích hợp, quy tắc nghiệp vụ}};
+\node[store=dwYellow] (stg) at (4.1,-2.75) {\textbf{Bảng đã làm sạch}\\[-1pt]{\scriptsize\texttt{stg\_*}}};
+\node[stage=dwAqua] (ld) at (0,-5.5)
+  {\textbf{Load} (một giao dịch)\\[-1pt]{\scriptsize tạo lại Data Mart, nạp bảng chiều rồi bảng fact}};
+\node[store=dwBlue] (dm) at (4.1,-5.5) {\textbf{Data Mart}\\[-1pt]{\scriptsize\texttt{fact\_sales}}\\[-1pt]{\scriptsize + 7 bảng chiều}};
+\node[stage=dwOrange] (dq) at (8.3,-5.5)
+  {\textbf{Kiểm tra chất lượng}\\[-1pt]{\scriptsize \texttt{40\_dq\_checks.sql}: 20 tiêu chí đối soát}};
+\node[dwdb=dwAqua, text width=2.5cm, font=\footnotesize] (meta) at (12.6,-2.75)
+  {\textbf{Metadata}\\[1pt]{\scriptsize\texttt{etl\_run\_log}\\\texttt{rejected\_record}\\\texttt{dq\_result}}};
+\foreach \n/\c/\l in {ex/dwBlue/1, tr/dwViolet/2, ld/dwAqua/3, dq/dwOrange/4}
+  \node[num=\c] at (\n.north west) {\l};
+\draw[dwarrow] (src) -- (ex);
+\draw[dwarrow] (ex) -- (raw);
+\draw[dwarrow] (raw) -- (tr);
+\draw[dwarrow] (tr) -- (stg);
+\draw[dwarrow, rounded corners=3pt] (stg.south) -- ++(0,-0.55) -| (ld.north);
+\draw[dwarrow] (ld) -- (dm);
+\draw[dwarrow] (dm) -- (dq);
+\draw[dwdash, rounded corners=3pt] (ex.north) -- ++(0,0.75) -| (meta.north);
+\draw[dwdash] (tr.east) -- node[dwlabel, above] {ghi nhật ký} (meta.west);
+\draw[dwdash, rounded corners=3pt] (dq.east) -| (meta.south);
+\draw[dwdash, rounded corners=3pt] (ld.south) -- ++(0,-0.45) -| ([xshift=0.7cm]meta.south);
+\end{tikzpicture}}
+\caption{Sơ đồ luồng ETL: bốn giai đoạn và các bảng trung gian; nét đứt là luồng ghi nhật ký vào kho metadata}
+\label{fig:etl}
+\end{figure}

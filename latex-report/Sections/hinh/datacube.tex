@@ -1,0 +1,31 @@
+% !TeX root = ../../main.tex
+% Minh họa khối dữ liệu ba chiều: thời gian x ngành hàng x khu vực
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[x={(1cm,0cm)}, y={(0cm,1cm)}, z={(0.55cm,0.36cm)}, font=\footnotesize, line join=round]
+\foreach \i in {0,...,3} \foreach \j in {0,...,2}
+  \draw[white, line width=0.8pt, fill=dwBlue!10] (\i,\j,0) -- ++(1,0,0) -- ++(0,1,0) -- ++(-1,0,0) -- cycle;
+\foreach \i in {0,...,3} \foreach \k in {0,...,2}
+  \draw[white, line width=0.8pt, fill=dwBlue!22] (\i,3,\k) -- ++(1,0,0) -- ++(0,0,1) -- ++(-1,0,0) -- cycle;
+\foreach \j in {0,...,2} \foreach \k in {0,...,2}
+  \draw[white, line width=0.8pt, fill=dwBlue!35] (4,\j,\k) -- ++(0,0,1) -- ++(0,1,0) -- ++(0,0,-1) -- cycle;
+\draw[dwBlue!60!black, line width=0.5pt] (0,0,0) -- (4,0,0) -- (4,3,0) -- (0,3,0) -- cycle;
+\draw[dwBlue!60!black, line width=0.5pt] (0,3,0) -- (0,3,3) -- (4,3,3) -- (4,0,3) -- (4,0,0);
+\draw[dwBlue!60!black, line width=0.5pt] (4,3,0) -- (4,3,3);
+\draw[white, line width=0.8pt, fill=dwOrange] (2,1,0) -- ++(1,0,0) -- ++(0,1,0) -- ++(-1,0,0) -- cycle;
+\node[font=\scriptsize\bfseries, text=white] at (2.5,1.5,0) {38,7};
+\foreach \i/\t in {0/Q1, 1/Q2, 2/Q3, 3/Q4} \node[below, text=dwInkTwo] at (\i+0.5,0,0) {\t};
+\node[below=0.42cm, text=dwInk] at (2,0,0) {\textbf{Thời gian} (quý, năm 2017)};
+\foreach \j/\t in {0/health\_beauty, 1/watches\_gifts, 2/bed\_bath\_table}
+  \node[left, font=\scriptsize\ttfamily, text=dwInkTwo] at (0,\j+0.5,0) {\t};
+\node[rotate=90, text=dwInk] at (-2.95,1.5,0) {\textbf{Ngành hàng}};
+\foreach \k/\t in {0/SP, 1/RJ, 2/MG} \node[right, font=\scriptsize, text=dwInkTwo] at (4,0,\k+0.5) {\t};
+\node[right, text=dwInk] at (4.6,0.2,3.5) {\textbf{Khu vực} (bang)};
+\draw[dwOrange, line width=0.6pt, -{Stealth[length=2mm]}] (3.05,1.5,0) -- (6.0,-0.15,0);
+\node[right, align=left, font=\scriptsize, text=dwInkTwo] at (6.05,-0.15,0)
+  {\textbf{Một ô của khối:} doanh thu (nghìn BRL)\\của \texttt{watches\_gifts} tại SP trong quý 3/2017,\\
+   tức \texttt{SUM(price)} của các dòng fact\\thỏa đồng thời cả ba điều kiện};
+\end{tikzpicture}
+\caption{Minh họa khối dữ liệu với ba chiều thời gian, ngành hàng và khu vực; thước đo trong mỗi ô là doanh thu}
+\label{fig:datacube}
+\end{figure}
