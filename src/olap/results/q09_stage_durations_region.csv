@@ -1,0 +1,7 @@
+region,delivered_orders,avg_approval_days,avg_handling_days,avg_shipping_days,avg_delivery_days
+Sudeste,66197,0.41,2.86,7.55,10.75
+,96470,0.43,2.85,9.33,12.56
+Sul,13812,0.47,2.83,10.79,14.03
+Centro-Oeste,5619,0.48,2.74,11.85,15.01
+Nordeste,9045,0.48,2.93,16.64,20.00
+Norte,1797,0.52,2.87,19.24,22.59
