@@ -1,5 +1,5 @@
 erDiagram
-    FACT_BAN_HANG {
+    FACT_SALES {
         varchar order_id PK "degenerate dimension"
         int order_item_id PK
         int product_key FK
@@ -71,10 +71,10 @@ erDiagram
         varchar region
     }
 
-    DIM_PRODUCT ||--o{ FACT_BAN_HANG : "san pham"
-    DIM_SELLER ||--o{ FACT_BAN_HANG : "nguoi ban"
-    DIM_CUSTOMER ||--o{ FACT_BAN_HANG : "khach hang"
-    DIM_DATE ||--o{ FACT_BAN_HANG : "ngay mua, duyet, ban giao, nhan, du kien, danh gia"
+    DIM_PRODUCT ||--o{ FACT_SALES : "san pham"
+    DIM_SELLER ||--o{ FACT_SALES : "nguoi ban"
+    DIM_CUSTOMER ||--o{ FACT_SALES : "khach hang"
+    DIM_DATE ||--o{ FACT_SALES : "ngay mua, duyet, ban giao, nhan, du kien, danh gia"
     DIM_CATEGORY ||--o{ DIM_PRODUCT : "nganh hang"
     DIM_CITY ||--o{ DIM_CUSTOMER : "thanh pho"
     DIM_CITY ||--o{ DIM_SELLER : "thanh pho"

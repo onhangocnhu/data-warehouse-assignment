@@ -21,9 +21,9 @@ Key design decisions:
 
 ## Data
 
-The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (Kaggle): 9 CSV files covering about 100,000 orders placed between 2016 and 2018. The files are in `Dataset/`.
+The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datasets/olistbr/brazilian-ecommerce) (Kaggle): 9 CSV files covering about 100,000 orders placed between 2016 and 2018. The files are in `data/raw/` (moved from `Dataset/` so the repository matches the submission layout `src/` + `data/` required by the assignment). Row counts and checksums are listed in [`data/README.md`](data/README.md).
 
-> `Dataset/olist_geolocation_dataset.csv` is about 58 MB. GitHub shows a warning on push but accepts it because it is under 100 MB.
+> `data/raw/olist_geolocation_dataset.csv` is about 58 MB. GitHub shows a warning on push but accepts it because it is under 100 MB.
 
 ## Repository layout
 
@@ -37,16 +37,67 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 │       ├── preamp.tex       Preamble: margins, fonts, header/footer, macros
 │       ├── workload.tex     Task assignment table
 │       ├── phantich/        Part 1: business requirements analysis
-│       ├── thietke/         Part 2: data warehouse and ETL design
+│       ├── eda.tex          Part 2: exploratory data analysis and preprocessing
+│       ├── thietke/         Part 3: data warehouse and ETL design
+│       ├── hienthuc/        Part 4: implementation (environment, ETL run, OLAP, dashboard)
+│       ├── dss.tex          Part 5: decision support (late-delivery warning at carrier handover)
+│       ├── danhgia.tex, ketluan.tex, phuluc.tex   Parts 6-7 and appendix
+│       ├── hinh/            TikZ diagrams
 │       └── tailieuthamkhao.tex   Bibliography
+├── src/                     Source code to submit (assignment rule 5.1)
+│   ├── sql/                 DDL (00-04) and ETL / OLAP SQL steps
+│   ├── eda/                 Exploratory data analysis (raw files and cleaned data)
+│   ├── etl/                 Python ETL orchestration
+│   ├── dss/                 Decision support component
+│   └── dashboard/           Streamlit dashboard
+├── data/
+│   ├── raw/                 Olist source data (9 CSV, read-only)
+│   └── reference/           Lookup tables added by the team (state -> region, translation patch)
+├── docker-compose.yml       PostgreSQL 16
+├── .env.example             Database settings template (copy to .env)
+├── requirements.txt         Python packages
 ├── drawio-files/            Diagram sources (draw.io, Mermaid)
 ├── drawio-mcp/start.sh      Script that starts the draw.io MCP server
-├── Dataset/                 Olist source data (CSV)
 ├── Documents/               Course lecture slides
-├── sample written report/   Sample report used as a writing-style reference
+├── sample_report/           CO4031 report of a previous group (chapter coverage reference)
 ├── CO4031_Assignment_HK261.pdf   Assignment rules
 └── AGENTS.md                Instructions for AI agents working in this repo
 ```
+
+## Running the system
+
+Prerequisites: Docker Desktop running, Python 3.11+ (tested with 3.14), and for the charts a TeX
+distribution with `pdflatex` and `pdftoppm` on PATH (MiKTeX or TeX Live).
+
+```bash
+copy .env.example .env               # Linux/macOS: cp .env.example .env; set DB_PASSWORD (DB_PORT=5433 if 5432 is taken)
+docker compose up -d                 # PostgreSQL 16
+python -m venv .venv && .venv\Scripts\activate   # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+python -m src.etl.run_etl --init     # schemas, tables and a full ETL run (~20 s)
+python -m src.eda.run_eda            # EDA before/after preprocessing -> src/eda/results/
+python -m src.olap.run_olap          # 14 OLAP queries -> src/olap/results/
+python -m src.dss.evaluate_models    # model selection on 01-05/2018 + walk-forward (~1-2 h); add --reuse to skip the search
+python -m src.dss.score_delay        # needs results/best_config.json from the step above; scores + backtest -> dss.*
+python -m src.report.make_figures    # report charts -> latex-report/Pictures/fig-*.png (filter: make_figures dss)
+```
+
+What to check after each step:
+
+| Step | Expected result |
+|---|---|
+| `run_etl --init` | `dm.fact_sales` has 112,650 rows; 20/20 checks pass in `meta.dq_result` |
+| `run_olap` | 14 CSV files + `timings.csv` in `src/olap/results/` |
+| `evaluate_models` | `src/dss/results/best_config.json` (chosen hyper-parameters), `search.csv`, `walkforward.csv`, `improved_summary.csv` |
+| `score_delay` | `dss.delay_risk_score` has 18,753 rows (handover orders of 06-08/2018); `scores.csv`, `policy_backtest.csv` |
+
+Windows note: if Python reports `DLL load failed ... An Application Control policy has blocked this file`
+(Smart App Control blocking the `psycopg` binary), use psycopg's pure-Python mode with the libpq of a local
+PostgreSQL install, for example in PowerShell:
+`$env:PSYCOPG_IMPL="python"; $env:PATH="C:\Program Files\PostgreSQL\18\bin;$env:PATH"`.
+Run scripts from the repository folder, not from a temporary folder.
+
+Details of every entry point are in [`src/README.md`](src/README.md); the report appendix ("Phụ lục") has the same steps in Vietnamese.
 
 ## Building the report
 
@@ -61,13 +112,18 @@ If your editor compiles automatically, do not run this command at the same time.
 
 ## Diagrams
 
-| Diagram | Source | Image used in the report |
-|---|---|---|
-| Three-tier architecture | `drawio-files/kien-truc.drawio` | `latex-report/Pictures/kien-truc.png` |
-| Snowflake schema | `drawio-files/schema-snowflake.drawio` | `latex-report/Pictures/schema-snowflake.png` |
-| ETL flow | `drawio-files/etl-flow.drawio` | `latex-report/Pictures/etl-flow.png` |
+All figures of the report share one visual style (same colours, fonts and line weights):
 
-Open the `.drawio` files with [app.diagrams.net](https://app.diagrams.net) or draw.io Desktop. After editing, export the PNG again into `latex-report/Pictures/` under the same file name.
+| Kind | Source | Notes |
+|---|---|---|
+| Diagrams (architecture, ETL flow, snowflake schema, order lifecycle, source relations, hierarchies, data cube, DSS flow) | TikZ files in `latex-report/Sections/hinh/` | Common colours and styles (`dwbox`, `dwdb`, `\dwtable`, ...) are defined in `Sections/preamp.tex` |
+| Data charts (`fig-*.png`) | `src/report/make_figures.py` | Built from the database with matplotlib's PGF backend (text in the report's own vntex font), then rasterised to PNG at 300 dpi with `pdftoppm` (ships with MiKTeX / TeX Live). Re-run after every ETL/DSS run |
+
+The draw.io files in `drawio-files/` are the earlier versions of the architecture, ETL and schema diagrams (kept for reference; the report no longer uses their PNG exports). To export them without installing draw.io:
+
+```bash
+docker run --rm -v "$PWD/drawio-files:/data" rlespinasse/drawio-export:v4.5.0 --format png --scale 2 --border 10 --output export
+```
 
 The draw.io MCP server requires Node.js:
 
