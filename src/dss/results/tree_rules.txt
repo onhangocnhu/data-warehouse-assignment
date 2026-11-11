@@ -1,0 +1,46 @@
+|--- cstate_hist_late <= 0.04
+|   |--- purchase_month <= 4.50
+|   |   |--- promised_days <= 24.50
+|   |   |   |--- distance_km <= 179.65
+|   |   |   |   |--- class: 0
+|   |   |   |--- distance_km >  179.65
+|   |   |   |   |--- class: 1
+|   |   |--- promised_days >  24.50
+|   |   |   |--- promised_days <= 33.50
+|   |   |   |   |--- class: 0
+|   |   |   |--- promised_days >  33.50
+|   |   |   |   |--- class: 0
+|   |--- purchase_month >  4.50
+|   |   |--- purchase_month <= 10.50
+|   |   |   |--- promised_days <= 18.50
+|   |   |   |   |--- class: 0
+|   |   |   |--- promised_days >  18.50
+|   |   |   |   |--- class: 0
+|   |   |--- purchase_month >  10.50
+|   |   |   |--- total_volume_cm3 <= 16596.00
+|   |   |   |   |--- class: 0
+|   |   |   |--- total_volume_cm3 >  16596.00
+|   |   |   |   |--- class: 1
+|--- cstate_hist_late >  0.04
+|   |--- promised_days <= 32.50
+|   |   |--- is_cross_state <= 0.50
+|   |   |   |--- distance_km <= 79.85
+|   |   |   |   |--- class: 0
+|   |   |   |--- distance_km >  79.85
+|   |   |   |   |--- class: 0
+|   |   |--- is_cross_state >  0.50
+|   |   |   |--- route_hist_n <= 2859.00
+|   |   |   |   |--- class: 1
+|   |   |   |--- route_hist_n >  2859.00
+|   |   |   |   |--- class: 1
+|   |--- promised_days >  32.50
+|   |   |--- route_hist_n <= 344.50
+|   |   |   |--- promised_days <= 40.50
+|   |   |   |   |--- class: 0
+|   |   |   |--- promised_days >  40.50
+|   |   |   |   |--- class: 0
+|   |   |--- route_hist_n >  344.50
+|   |   |   |--- route_hist_late <= 0.11
+|   |   |   |   |--- class: 1
+|   |   |   |--- route_hist_late >  0.11
+|   |   |   |   |--- class: 1

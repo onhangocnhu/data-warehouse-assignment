@@ -1,0 +1,25 @@
+% !TeX root = ../../main.tex
+\subsection{Môi trường và cấu trúc mã nguồn}\label{sec:trienkhai}
+
+Hệ thống chạy trên máy cá nhân của các thành viên. Cơ sở dữ liệu được đặt trong một container Docker, nhờ vậy ba người dùng cùng một phiên bản PostgreSQL và cùng cấu hình mà không phải cài đặt riêng. Bảng~\ref{tab:congnghe} liệt kê các thành phần và công nghệ sử dụng.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Thành phần và công nghệ của hệ thống}
+\label{tab:congnghe}
+\begin{tabularx}{\linewidth}{|P{3.4cm}|P{4.2cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Thành phần} & \textbf{Công nghệ} & \textbf{Vai trò}\\ \hline
+Cơ sở dữ liệu & PostgreSQL 16 (Docker) & Lưu khu vực staging, Data Mart, kho metadata và kết quả DSS trong bốn schema \code{staging}, \code{dm}, \code{meta}, \code{dss}\\ \hline
+Quy trình ETL & Python 3, psycopg 3, SQL & Python điều phối các bước và ghi nhật ký; các phép biến đổi viết bằng SQL và chạy trong cơ sở dữ liệu\\ \hline
+OLAP & SQL trên PostgreSQL (ROLAP) & Thư viện truy vấn \code{50\_olap\_queries.sql} và chương trình chạy, đo thời gian \code{run\_olap.py}\\ \hline
+Biểu đồ trong báo cáo & Python, matplotlib & Sinh lại toàn bộ biểu đồ dữ liệu từ cơ sở dữ liệu\\ \hline
+Hệ hỗ trợ quyết định & Python, pandas, scikit-learn & Xây dựng đặc trưng, huấn luyện và chấm điểm mô hình, ghi kết quả vào schema \code{dss}\\ \hline
+Dashboard & \TODO{Bảo bổ sung công nghệ} & Giao diện cho các nhóm người dùng\\ \hline
+\end{tabularx}
+\end{table}
+
+Mã nguồn được chia thư mục theo từng thành phần của kiến trúc. Thư mục \code{data} chứa chín tập tin CSV gốc (\code{data/raw}) và hai bảng tham chiếu do nhóm bổ sung (\code{data/reference}). Thư mục \code{src/sql} chứa các tập tin SQL đánh số theo thứ tự chạy: tạo schema (\code{00}-\code{05}), biến đổi (\code{10}), nạp bảng chiều (\code{20}), nạp bảng fact (\code{30}), kiểm tra chất lượng (\code{40}) và thư viện truy vấn OLAP (\code{50}). Phần Python nằm trong \code{src/etl} (điều phối ETL), \code{src/olap} (chạy truy vấn OLAP), \code{src/dss} (hệ hỗ trợ quyết định) và \code{src/report} (sinh biểu đồ).
+
+Để dựng hệ thống trên một máy mới, chỉ cần ba bước: khởi động cơ sở dữ liệu bằng \code{docker compose up -d}, cài các thư viện trong \code{requirements.txt}, rồi chạy \code{python -m src.etl.run\_etl --init}. Lệnh cuối tạo toàn bộ schema, bảng và thực hiện một lần ETL đầy đủ. Thông tin kết nối cơ sở dữ liệu nằm trong tập tin \code{.env} và không được đưa lên kho mã nguồn.

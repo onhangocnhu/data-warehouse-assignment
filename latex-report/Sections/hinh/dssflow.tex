@@ -1,0 +1,37 @@
+% !TeX root = ../../main.tex
+% Luồng của thành phần hỗ trợ quyết định: cảnh báo giao trễ lúc bàn giao vận chuyển
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[
+    b/.style={dwbox=#1, text width=2.55cm, minimum height=1.35cm, font=\scriptsize}]
+\node[dwdb=dwBlue, minimum width=2.4cm, minimum height=1.6cm, text width=2.2cm, font=\scriptsize] (dm) at (0,0)
+  {\textbf{Data Mart}\\\texttt{fact\_sales}\\+ 7 bảng chiều};
+\node[b=dwInkTwo, text width=2.75cm, minimum height=2.3cm] (ft) at (3.3,0)
+  {\textbf{Đặc trưng point-in-time}\\[1pt] thời gian chuẩn bị hàng, số ngày còn lại, cam kết giao, tuyến, khoảng cách, tỷ lệ trễ gần đây\\[1pt]
+   \textcolor{dwMuted}{chỉ dùng thông tin đã biết lúc bàn giao}};
+\node[b=dwBlue, text width=2.6cm, minimum height=2.3cm] (m) at (6.85,0)
+  {\textbf{Mô hình dự báo}\\[1pt] Gradient Boosting\\+ luật ``đã quá hạn''\\[1pt] $\rightarrow$ P(trễ), mức rủi ro, 3 lý do};
+\node[b=dwYellow, text width=2.75cm, minimum height=2.3cm] (pol) at (10.35,0)
+  {\textbf{Chính sách quyết định}\\[1pt] theo năng lực: top 5\% (ĐỎ), 5-15\% (VÀNG) mỗi ngày\\[1pt]
+   theo chi phí: $p \cdot C_{\text{trễ}} \cdot e > C_{\text{can thiệp}}$};
+\node[b=dwBlue, text width=2.3cm, minimum height=2.3cm] (a) at (13.65,0)
+  {\textbf{Hành động đề xuất}\\[1pt] báo trước cho khách, voucher, vận chuyển nhanh};
+\node[b=dwInkTwo, text width=2.3cm, minimum height=1.1cm] (hu) at (13.65,-3.4) {Người vận hành phê duyệt / từ chối};
+\node[dwdb=dwOrange, minimum width=2.6cm, minimum height=1.25cm, text width=2.4cm, font=\scriptsize] (out) at (9.9,-3.4)
+  {\textbf{schema \texttt{dss}}\\điểm rủi ro,\\nhật ký quyết định};
+\node[b=dwInkTwo, text width=3.0cm, minimum height=1.1cm, draw=dwMuted, dashed] (re) at (3.3,-3.4)
+  {\textbf{Huấn luyện lại hằng tháng}\\chỉ dùng đơn đã biết kết quả};
+\draw[dwarrow] (dm) -- (ft);
+\draw[dwarrow] (ft) -- (m);
+\draw[dwarrow] (m) -- (pol);
+\draw[dwarrow] (pol) -- (a);
+\draw[dwarrow] (a) -- (hu);
+\draw[dwarrow] (hu) -- node[dwlabel, above=1pt] {ghi lại} (out);
+\draw[dwarrow] (pol.south) -- node[dwlabel, right=1pt] {điểm rủi ro} (pol.south |- out.north);
+\draw[dwdash, rounded corners=3pt] (dm.south) |- node[dwlabel, pos=0.3, left=1pt] {kết quả thực tế} (re.west);
+\draw[dwdash, rounded corners=3pt] (re.east) -| (m.south);
+\end{tikzpicture}}
+\caption{Luồng của thành phần hỗ trợ quyết định: dự báo nguy cơ trễ lúc bàn giao vận chuyển, chính sách quyết định và vòng huấn luyện lại}
+\label{fig:dssflow}
+\end{figure}

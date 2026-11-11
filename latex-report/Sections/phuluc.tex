@@ -1,0 +1,62 @@
+% !TeX root = ../main.tex
+\section{Phụ lục: Hướng dẫn cài đặt và chạy hệ thống}\label{sec:phuluc}
+
+Phụ lục này mô tả cách dựng lại toàn bộ hệ thống trên một máy mới, từ cơ sở dữ liệu đến các kết quả và biểu đồ trong báo cáo. Mã nguồn và dữ liệu nằm trong kho GitHub của nhóm tại \url{https://github.com/onhangocnhu/data-warehouse-assignment}; bộ dữ liệu gốc cũng có thể tải từ Kaggle \cite{olist}.
+
+\subsection{Yêu cầu phần mềm}
+
+Máy cần có Docker (để chạy PostgreSQL 16), Python 3.11 trở lên (đã chạy thử với 3.14) và một bản phân phối \LaTeX{} có \code{pdflatex} với gói \code{vntex} nếu muốn biên dịch lại báo cáo và các biểu đồ. Các thư viện Python được liệt kê trong \code{requirements.txt}.
+
+\subsection{Các bước chạy}
+
+Tất cả lệnh dưới đây chạy từ thư mục gốc của kho mã nguồn. Bước 1 tạo tập tin cấu hình và khởi động cơ sở dữ liệu; nếu máy đã có sẵn một PostgreSQL chiếm cổng 5432, chỉ cần đổi \code{DB\_PORT} trong \code{.env} thành 5433.
+
+\begin{lstlisting}[style=SQLStyle, language=bash]
+# 1. Cấu hình và khởi động PostgreSQL 16 trong Docker
+copy .env.example .env            # sửa DB_PASSWORD
+docker compose up -d
+
+# 2. Môi trường Python
+python -m venv .venv
+.venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
+pip install -r requirements.txt
+
+# 3. Tạo schema, bảng và chạy ETL đầy đủ (khoảng 20 giây)
+python -m src.etl.run_etl --init
+python -m src.etl.verify_rollback # (tùy chọn) kiểm tra tính toàn vẹn khi lỗi
+
+# 4. EDA: khám phá dữ liệu thô và dữ liệu sau tiền xử lý
+python -m src.eda.run_eda
+
+# 5. OLAP: chạy 14 truy vấn, lưu kết quả và thời gian thực thi
+python -m src.olap.run_olap
+
+# 6. DSS: chọn mô hình, đánh giá walk-forward, chấm điểm đơn bàn giao
+python -m src.dss.evaluate_models # thêm --reuse để dùng lại best_config.json
+python -m src.dss.score_delay     # chạy sau bước trên
+
+# 7. Sinh lại biểu đồ cho báo cáo (PNG 300 dpi)
+python -m src.report.make_figures
+\end{lstlisting}
+
+Bước 6 chạy lâu nhất (khoảng một giờ trên máy 20 luồng; \code{score\_delay} thêm khoảng 3 phút) vì phải thử 124 cấu hình trên năm tháng validation rồi huấn luyện lại mô hình cho từng tháng trong 14 tháng đánh giá; tham số được chọn được lưu ở \code{src/dss/results/best\_config.json}, nên lần chạy sau có thể bỏ qua bước tìm kiếm bằng tùy chọn \code{--reuse}. Toàn bộ chạy trên CPU, dùng dưới 2 GB bộ nhớ, không cần GPU. Có thể kiểm tra kết quả từng bước như sau: sau bước 3, \code{dm.fact\_sales} có 112.650 dòng và cả 20 tiêu chí trong \code{meta.dq\_result} đều đạt; sau bước 6, \code{dss.delay\_risk\_score} có 18.753 dòng.
+
+Trên Windows bật Smart App Control, thư viện \code{psycopg} có thể bị chặn (lỗi \textit{DLL load failed\ldots Application Control policy}). Khi đó đặt biến môi trường \code{PSYCOPG\_IMPL=python} và thêm thư mục \code{bin} của một bản PostgreSQL cài trên máy vào \code{PATH} để dùng \code{libpq.dll} của bản đó.
+
+\subsection{Cấu trúc mã nguồn}
+
+\begin{lstlisting}[style=SQLStyle, language={}]
+data/raw/                 9 tập tin CSV gốc của Olist
+data/reference/           bảng vùng của 27 bang, bản dịch 2 ngành hàng còn thiếu
+src/sql/                  00-05 tạo schema và bảng; 10 transform; 20 nạp bảng chiều;
+                          30 nạp bảng fact; 40 kiểm tra chất lượng; 50 truy vấn OLAP
+src/etl/                  run_etl.py (điều phối), extract.py (COPY), db.py (nhật ký),
+                          verify_rollback.py
+src/eda/                  run_eda.py; results/ chứa kết quả khám phá dữ liệu
+src/olap/                 run_olap.py; results/ chứa kết quả và thời gian từng truy vấn
+src/dss/                  features.py (đặc trưng point-in-time), evaluate_models.py,
+                          score_delay.py; results/ chứa kết quả đánh giá
+src/report/               make_figures.py: sinh biểu đồ của báo cáo từ cơ sở dữ liệu
+latex-report/             mã nguồn LaTeX của báo cáo; Sections/hinh/ chứa các sơ đồ TikZ
+docker-compose.yml        PostgreSQL 16
+\end{lstlisting}

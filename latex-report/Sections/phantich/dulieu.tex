@@ -1,11 +1,10 @@
+% !TeX root = ../../main.tex
 \subsection{Phân tích dữ liệu nguồn}
 \subsubsection{Tổng quan bộ dữ liệu}
 
-Đề tài sử dụng bộ dữ liệu \textit{Brazilian E-Commerce Public Dataset by Olist} \cite{olist} được công bố công khai trên Kaggle. Olist là một doanh nghiệp thương mại điện tử tại Brazil, kết nối các người bán vừa và nhỏ với khách hàng thông qua các sàn thương mại điện tử. Bộ dữ liệu ghi nhận khoảng 100 nghìn đơn hàng được đặt trong giai đoạn từ năm 2016 đến năm 2018.
+Đề tài sử dụng bộ dữ liệu \textit{Brazilian E-Commerce Public Dataset by Olist} được công bố trên Kaggle \cite{olist}. Olist là doanh nghiệp thương mại điện tử của Brazil, giúp các người bán vừa và nhỏ đưa sản phẩm lên các sàn lớn. Bộ dữ liệu là dữ liệu kinh doanh thật đã được ẩn danh, gồm khoảng 100 nghìn đơn hàng đặt trong giai đoạn 2016-2018. Với mỗi đơn hàng, ta biết được trạng thái và các mốc thời gian, giá bán và phí vận chuyển, cách thanh toán, vị trí của khách hàng và người bán, sản phẩm và ngành hàng, cùng đánh giá của khách sau khi nhận hàng. Đi kèm là một tập dữ liệu địa lý ánh xạ tiền tố mã bưu chính sang tọa độ. Do đã ẩn danh nên dữ liệu không có tên khách hàng, tên người bán hay tên sản phẩm.
 
-Bộ dữ liệu cung cấp nhiều thông tin khi xem xét một đơn hàng: trạng thái và các mốc thời gian của đơn hàng, giá bán và phí vận chuyển, phương thức thanh toán, vị trí của khách hàng và người bán, thông tin sản phẩm và ngành hàng, cho đến đánh giá của khách hàng sau khi nhận hàng. Bên cạnh đó, bộ dữ liệu còn có một tập dữ liệu địa lý ánh xạ mã bưu chính của Brazil với tọa độ, phục vụ phân tích theo khu vực. Đây là dữ liệu thương mại thực tế đã được ẩn danh, nên không chứa tên của khách hàng, người bán hay sản phẩm.
-
-Bộ dữ liệu gồm 9 tập tin CSV với tổng cộng hơn 1,55 triệu dòng, được mô tả trong Bảng~\ref{tab:nguon}.
+Toàn bộ dữ liệu gồm 9 tập tin CSV với tổng cộng 1.550.922 dòng (Bảng~\ref{tab:nguon}). Tập lớn nhất là \code{geolocation} với hơn một triệu dòng, nhưng như phần khám phá dữ liệu ở mục~\ref{sec:eda} cho thấy, hơn một phần tư số dòng của tập này bị trùng.
 
 \begin{table}[H]
 \centering
@@ -27,9 +26,18 @@ Bộ dữ liệu gồm 9 tập tin CSV với tổng cộng hơn 1,55 triệu dò
 \end{tabularx}
 \end{table}
 
+Đơn hàng không phân bố đều theo thời gian (Hình~\ref{fig:donhangthang}). Năm 2016 chỉ có vài trăm đơn, tháng 11/2016 không có đơn nào, và sau tháng 08/2018 dữ liệu gần như dừng lại. Khoảng ổn định là 01/2017-08/2018 với 99.092 đơn; chỉ 349 đơn nằm ngoài khoảng này. Vì vậy, khi vẽ xu hướng hoặc so sánh theo tháng, nhóm chỉ dùng giai đoạn 01/2017-08/2018, còn kho dữ liệu vẫn nạp đủ toàn bộ. Tháng 11/2017 nổi bật với 7.544 đơn do đợt Black Friday ngày 24/11/2017.
+
+\begin{figure}[H]
+\centering
+\includegraphics{Pictures/fig-don-hang-theo-thang.png}
+\caption{Số đơn hàng theo tháng đặt hàng (tháng 09/2016 đến tháng 10/2018)}
+\label{fig:donhangthang}
+\end{figure}
+
 \subsubsection{Quan hệ giữa các tập dữ liệu}\label{sec:quanhe}
 
-Các tập dữ liệu liên kết với nhau qua các khóa được trình bày trong Bảng~\ref{tab:quanhe}.
+Các tập dữ liệu liên kết với nhau qua khóa như trong Bảng~\ref{tab:quanhe} và Hình~\ref{fig:quanhenguon}. Bảng \code{orders} là trung tâm: mọi tập còn lại đều nối về đơn hàng, trực tiếp hoặc qua \code{order\_items}.
 
 \begingroup\small\setstretch{1.1}
 \begin{longtable}{|p{2.8cm}|p{4.1cm}|p{4.3cm}|l|}
@@ -49,69 +57,9 @@ Các tập dữ liệu liên kết với nhau qua các khóa được trình bà
 \end{longtable}
 \endgroup
 
-Khảo sát quan hệ cho thấy ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu:
+\input{Sections/hinh/quanhe-nguon}
 
-\begin{itemize}
-\item Dữ liệu ở các mức chi tiết khác nhau: Giá, phí vận chuyển và người bán được ghi nhận theo từng dòng sản phẩm, trong khi thanh toán, đánh giá và các mốc giao hàng được ghi nhận theo đơn hàng.
-\item Mã khách hàng theo đơn hàng: \code{customer\_id} được tạo riêng cho từng đơn hàng. Mã nhận diện khách hàng thật sự là \code{customer\_unique\_id} với 96.096 giá trị, trong đó 2.997 khách hàng có từ hai \code{customer\_id} trở lên.
-\item Dữ liệu địa lý không có khóa duy nhất: Một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên tập \code{geolocation} cần được xử lý trước khi kết nối với khách hàng và người bán.
-\end{itemize}
+Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu. Thứ nhất, dữ liệu không cùng mức chi tiết: giá, phí vận chuyển và người bán được ghi theo từng dòng sản phẩm, còn thanh toán, đánh giá và các mốc giao hàng được ghi theo đơn hàng. Thứ hai, \code{customer\_id} được sinh mới cho mỗi đơn hàng, nên không thể dùng nó để đếm khách hàng. Mã nhận diện khách hàng thật là \code{customer\_unique\_id}, với 96.096 giá trị, trong đó 2.997 khách hàng có từ hai \code{customer\_id} trở lên. Thứ ba, tập \code{geolocation} không có khóa duy nhất: một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên phải gom lại trước khi nối với khách hàng và người bán.
 
-\subsubsection{Đánh giá chất lượng dữ liệu}
+Phân bố của từng thuộc tính, các giá trị thiếu, ngoại lai và lỗi dữ liệu được khảo sát chi tiết ở mục~\ref{sec:eda}, cùng với các quy tắc tiền xử lý rút ra từ đó.
 
-Chất lượng dữ liệu là yếu tố then chốt của kho dữ liệu, vì lỗi dữ liệu có thể dẫn đến kết luận sai lệch \cite{han}. Bảng~\ref{tab:chatluong} tổng hợp các vấn đề phát hiện được khi khảo sát. Các vấn đề này là đầu vào cho bước Transform của quy trình ETL ở mục~\ref{sec:thietke}.
-
-\begingroup\small\setstretch{1.1}
-\begin{longtable}{|p{3.3cm}|p{8.2cm}|p{2.6cm}|}
-\caption{Các vấn đề về chất lượng dữ liệu nguồn}\label{tab:chatluong}\\
-\hline
-\textbf{Tập dữ liệu} & \textbf{Vấn đề phát hiện} & \textbf{Số lượng}\\ \hline \endfirsthead
-\hline
-\textbf{Tập dữ liệu} & \textbf{Vấn đề phát hiện} & \textbf{Số lượng}\\ \hline \endhead
-\code{orders} & Thiếu thời điểm duyệt đơn & 160 đơn\\ \hline
-\code{orders} & Thiếu thời điểm bàn giao vận chuyển & 1.783 đơn\\ \hline
-\code{orders} & Thiếu thời điểm khách nhận hàng & 2.965 đơn\\ \hline
-\code{orders} & Trạng thái đã giao nhưng thiếu thời điểm nhận hàng & 8 đơn\\ \hline
-\code{orders} & Thời điểm bàn giao vận chuyển sau thời điểm khách nhận hàng & 23 đơn\\ \hline
-\code{orders} & Thời điểm bàn giao vận chuyển trước thời điểm duyệt đơn & 1.359 đơn\\ \hline
-\code{orders} & Đơn hàng không có dòng sản phẩm & 775 đơn\\ \hline
-\code{orders} & Đơn hàng không có dữ liệu thanh toán & 1 đơn\\ \hline
-\code{orders} & Đơn hàng không có đánh giá & 768 đơn\\ \hline
-\code{orders} & Giai đoạn đầu và cuối có rất ít dữ liệu (2016; 09-10/2018) & 349 đơn\\ \hline
-\code{order\_items} & Phí vận chuyển bằng 0 & 383 dòng\\ \hline
-\code{order\_payments} & Phương thức thanh toán không xác định (\code{not\_defined}) & 3 dòng\\ \hline
-\code{order\_payments} & Giá trị thanh toán bằng 0 & 9 dòng\\ \hline
-\code{order\_payments} & Số kỳ trả góp bằng 0 & 2 dòng\\ \hline
-\code{order\_payments} & Tổng thanh toán lệch hơn 1 BRL (đồng Real Brazil) so với tiền hàng cộng phí vận chuyển & 249 đơn\\ \hline
-\code{order\_reviews} & Một \code{review\_id} xuất hiện trên nhiều đơn hàng & 789 mã\\ \hline
-\code{order\_reviews} & Một đơn hàng có nhiều đánh giá & 547 đơn\\ \hline
-\code{order\_reviews} & Không có nội dung bình luận & 58,7\% số dòng\\ \hline
-\code{order\_reviews} & Không có tiêu đề bình luận & 88,3\% số dòng\\ \hline
-\code{products} & Thiếu ngành hàng và thông tin mô tả & 610 sản phẩm\\ \hline
-\code{products} & Thiếu khối lượng và kích thước & 2 sản phẩm\\ \hline
-\code{products} & Khối lượng bằng 0 & 4 sản phẩm\\ \hline
-\code{products} & Sai chính tả tên cột (\code{product\_name\_lenght}, \code{product\_description\_lenght}) & 2 cột\\ \hline
-\code{translation} & Ngành hàng chưa có bản dịch (\code{pc\_gamer} và một ngành hàng về dụng cụ nhà bếp) & 2 ngành hàng\\ \hline
-\code{sellers} & Tên thành phố không chuẩn, ví dụ \code{sao paulo / sao paulo}, \code{sbc/sp}, \code{04482255} & Nhiều dòng\\ \hline
-\code{sellers} & Mã bưu chính không có trong \code{geolocation} & 7 người bán\\ \hline
-\code{customers} & Mã bưu chính không có trong \code{geolocation} & 278 khách hàng\\ \hline
-\code{geolocation} & Dòng trùng lặp hoàn toàn & 261.831 dòng\\ \hline
-\code{geolocation} & Tọa độ nằm ngoài lãnh thổ Brazil & 42 dòng\\ \hline
-\code{geolocation} & Một mã bưu chính thuộc nhiều bang & 8 mã\\ \hline
-\code{geolocation} & Một mã bưu chính ứng với nhiều cách viết tên thành phố & 8.556 mã\\ \hline
-\end{longtable}
-\endgroup
-
-Nhìn chung, dữ liệu có tính toàn vẹn tốt ở các khóa chính của \code{order\_items}. Các vấn đề chủ yếu nằm ở giá trị thiếu, dữ liệu địa lý chưa chuẩn hóa và thứ tự bất thường của các mốc thời gian.
-
-Bên cạnh đó, dữ liệu vẫn có các giới hạn sau:
-
-\begin{itemize}
-\item Không có thông tin kênh bán, giá vốn và chi phí vận hành, nên không thể phân tích đa kênh hoặc lợi nhuận.
-\item Không có thông tin đơn vị vận chuyển, nên thời gian vận chuyển chỉ phản ánh khâu vận chuyển nói chung theo khu vực và tuyến giao hàng, chưa thể đánh giá riêng từng đơn vị vận chuyển.
-\item Dữ liệu đã được ẩn danh, nên không có tên khách hàng, tên người bán và tên sản phẩm.
-\item Dữ liệu chỉ kéo dài khoảng 20 tháng ổn định, chưa đủ nhiều chu kỳ để đánh giá chắc chắn tính mùa vụ.
-\item Phân bố dữ liệu tập trung ở bang SP (42,0\% số đơn hàng), nên kết quả ở các bang nhỏ có ít mẫu và cần được diễn giải thận trọng.
-\end{itemize}
-
-% --------------------------------------------------------------------------

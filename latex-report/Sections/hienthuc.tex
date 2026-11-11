@@ -1,0 +1,9 @@
+% !TeX root = ../main.tex
+\section{Hiện thực hệ thống}\label{sec:hienthuc}
+
+Phần này trình bày cách hiện thực thiết kế ở mục~\ref{sec:thietke}: môi trường triển khai, quy trình ETL chạy trên toàn bộ dữ liệu nguồn, các truy vấn OLAP trên Data Mart và giao diện dashboard. Mọi con số và biểu đồ trong phần này được lấy từ lần chạy thực tế của hệ thống; các biểu đồ được sinh tự động bằng chương trình \code{src/report/make\_figures.py} đọc trực tiếp từ cơ sở dữ liệu, nên có thể tạo lại sau mỗi lần nạp dữ liệu.
+
+\input{Sections/hienthuc/trienkhai}
+\input{Sections/hienthuc/quytrinh}
+\input{Sections/hienthuc/olap}
+\input{Sections/hienthuc/dashboard}

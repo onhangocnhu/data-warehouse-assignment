@@ -1,0 +1,70 @@
+{
+ "final": [
+  {
+   "algo": "hgb",
+   "features": "handover",
+   "params": {
+    "learning_rate": 0.03,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 200,
+    "l2_regularization": 1.0,
+    "max_iter": 300
+   }
+  }
+ ],
+ "final_note": "hgb_v1 kept: the extended search improved validation but not test (within noise)",
+ "selected_on": "validation months 2018-01, 2018-02, 2018-03, 2018-04, 2018-05",
+ "metric": "mean recall of late orders in the riskiest 10% (handover stage)",
+ "ensemble": [
+  {
+   "algo": "hgb",
+   "features": "handover",
+   "params": {
+    "learning_rate": 0.03,
+    "max_iter": 800,
+    "max_leaf_nodes": 4,
+    "min_samples_leaf": 400,
+    "l2_regularization": 0.0,
+    "max_features": 0.5,
+    "class_weight": "balanced"
+   }
+  },
+  {
+   "algo": "hgb",
+   "features": "handover_backlog",
+   "params": {
+    "learning_rate": 0.08,
+    "max_iter": 500,
+    "max_leaf_nodes": 15,
+    "min_samples_leaf": 200,
+    "l2_regularization": 0.5,
+    "max_features": 0.5,
+    "class_weight": null
+   }
+  },
+  {
+   "algo": "lr",
+   "features": "handover_backlog",
+   "params": {
+    "C": 0.05
+   }
+  }
+ ],
+ "approval_params": {
+  "learning_rate": 0.03,
+  "max_leaf_nodes": 15,
+  "min_samples_leaf": 200,
+  "l2_regularization": 1.0,
+  "max_iter": 300
+ },
+ "search": {
+  "n_hgb": 60,
+  "seed": 7,
+  "lr_C": [
+   0.05,
+   0.2,
+   0.5,
+   2.0
+  ]
+ }
+}

@@ -1,0 +1,15 @@
+query,rows,median_ms,min_ms,max_ms
+q01_rollup_time,37,545.6,538.4,560.5
+q02_drilldown_region_state,33,208.5,203.9,240.7
+q03_drilldown_city_rj,4,100.3,97.6,105.4
+q04_slice_2018,5,219.0,211.5,229.4
+q05_dice_q4_2017,15,230.1,207.8,249.8
+q06_pivot_review_category_region,10,454.9,450.9,483.2
+q07_late_vs_review,2,74.6,73.7,77.5
+q08_route_matrix,50,311.8,306.0,336.5
+q09_stage_durations_region,6,476.9,463.1,504.5
+q10_seller_high_revenue_low_quality,12,168.6,166.4,197.2
+q11_sellers_vs_customers_by_state,27,179.8,173.1,182.4
+q12_category_growth,18,57.7,56.4,58.8
+q13_cube_region_year,24,717.3,691.0,853.5
+q14_black_friday,15,93.5,89.1,97.9

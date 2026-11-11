@@ -1,0 +1,41 @@
+% !TeX root = ../../main.tex
+% Snowflake schema của Data Mart (đồng bộ với src/sql/02_datamart_ddl.sql)
+\newcommand{\pk}{\hfill{\sffamily\tiny\color{dwOrange}PK}}
+\newcommand{\fk}{\hfill{\sffamily\tiny\color{dwMuted}FK}}
+\begin{figure}[H]
+\centering
+\begin{tikzpicture}[link/.style={line width=0.5pt, draw=dwInkTwo, -{Circle[length=1.6pt]}}]
+% fact
+\dwtable{fact}{4.2,0}{fact\_sales\\[-2pt]{\scriptsize\mdseries Bảng fact}}{dwOrange}{3.3cm}{%
+  order\_id \pk, order\_item\_id \pk, product\_key \fk, seller\_key \fk, customer\_key \fk,
+  purchase\_date\_key \fk, approved\_date\_key \fk, carrier\_date\_key \fk, delivered\_date\_key \fk,
+  estimated\_date\_key \fk, review\_date\_key \fk, order\_status, price, freight\_value, approval\_days,
+  handling\_days, shipping\_days, delivery\_days, is\_late, review\_score}
+% dimensions
+\dwtable{date}{0,0}{dim\_date}{dwBlue}{2.5cm}{date\_key \pk, full\_date, day, month, quarter, year, day\_of\_week}
+\dwtable{product}{8.35,0}{dim\_product}{dwBlue}{2.9cm}{product\_key \pk, product\_id, category\_key \fk, weight\_g,
+  length\_cm, height\_cm, width\_cm, photos\_qty}
+\dwtable{category}{12.35,0}{dim\_category}{dwBlue}{2.9cm}{category\_key \pk, category\_name\_pt, category\_name\_en}
+\dwtable{seller}{8.35,-4.75}{dim\_seller}{dwBlue}{2.9cm}{seller\_key \pk, seller\_id, zip\_code\_prefix, city\_key \fk}
+\dwtable{customer}{8.35,-7.35}{dim\_customer}{dwBlue}{2.9cm}{customer\_key \pk, customer\_unique\_id, zip\_code\_prefix,
+  city\_key \fk}
+\dwtable{city}{12.35,-4.75}{dim\_city}{dwBlue}{2.9cm}{city\_key \pk, city\_name, latitude, longitude, state\_key \fk}
+\dwtable{state}{12.35,-7.95}{dim\_state}{dwBlue}{2.9cm}{state\_key \pk, state\_code, state\_name, region}
+% links (from the foreign-key row to the primary-key row)
+\foreach \r in {6,...,11} \draw[link, rounded corners=2pt] (fact-\r.west) -- ++(-0.5,0) |- (date-1.east);
+\draw[link, rounded corners=2pt] (fact-3.east) -- ++(0.25,0) |- (product-1.west);
+\draw[link, rounded corners=2pt] (fact-4.east) -- ++(0.45,0) |- (seller-1.west);
+\draw[link, rounded corners=2pt] (fact-5.east) -- ++(0.65,0) |- (customer-1.west);
+\draw[link, rounded corners=2pt] (product-3.east) -- ++(0.35,0) |- (category-1.west);
+\draw[link, rounded corners=2pt] (seller-4.east) -- ++(0.35,0) |- (city-1.west);
+\draw[link, rounded corners=2pt] (customer-4.east) -- ++(0.55,0) |- (city-1.west);
+\draw[link] (city-5.south) -- (state.north);
+% legend
+\node[dwnote, anchor=north west, align=left, text width=2.9cm] at ([yshift=-3.2cm]date-7.south west)
+  {\textcolor{dwOrange}{\rule{6pt}{6pt}} bảng fact\\[1pt]\textcolor{dwBlue}{\rule{6pt}{6pt}} bảng chiều\\[1pt]
+   {\sffamily\tiny\color{dwOrange}PK} khóa chính\\[1pt]{\sffamily\tiny FK} khóa ngoại\\[3pt]
+   sáu cột ngày cùng trỏ về\\\texttt{dim\_date} (role-playing)};
+\end{tikzpicture}
+\caption{Sơ đồ snowflake schema của Data Mart}
+\label{fig:schema}
+\end{figure}

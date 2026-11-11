@@ -12,7 +12,8 @@ Read this whole file before editing the report.
 - **Topic:** "Xây dựng kho dữ liệu phân tích hiệu quả kinh doanh sàn thương mại điện tử" (building a data warehouse to analyze the business performance of an e-commerce marketplace).
   - The goal is to help marketplace managers track **revenue, delivery time, customer satisfaction, and seller performance by region and product category**.
 - **The old title "DW phân tích doanh số bán hàng đa kênh" (multi-channel sales DW) was dropped.** The data has no sales-channel field.
-- **Data:** `Dataset/`, the *Brazilian E-Commerce Public Dataset by Olist* (Kaggle), 9 CSV files.
+- **Data:** `data/raw/` (formerly `Dataset/`), the *Brazilian E-Commerce Public Dataset by Olist* (Kaggle), 9 CSV files. Team lookup tables are in `data/reference/`.
+- **Code:** `src/` (`sql/`, `etl/`, `dss/`, `dashboard/`). The Data Mart DDL in `src/sql/02_datamart_ddl.sql` must stay identical to `tab:fact` / `tab:dim` in `thietke/logic.tex`; change both together.
 - **Assignment rules:** `CO4031_Assignment_HK261.pdf`. Deadline 23:59 on 15/11/2026.
 - **Team:**
   - Ôn Hà Ngọc Như (2312538): part 1 (requirements analysis) and part 2 (DW + ETL design).
@@ -47,7 +48,14 @@ latex-report/
 - **The "Các câu hỏi phân tích nghiệp vụ" (business questions, BQ) subsection:** **removed** by the user (left commented out in `nghiepvu.tex`).
   - **Do not reuse the codes BQ01–BQ14** anywhere.
   - The KPI table has a "Mục đích sử dụng" (purpose) column and the decisions table has a "Thông tin cần theo dõi" (information to monitor) column. Both are written as prose.
-- **Part 2:** 2.1.1 and 2.1.2 are written. All other subsections are still guidance skeletons.
+- **Decisions of 08/11/2026:** payments are out of the Data Mart scope (removed from part 1, noted as a limitation); fact table is `fact_sales`; raw staging tables are `raw_*`, cleaned ones `stg_*`; `review_date_key` = review creation date; customer address = most recent order. Thịnh implements ETL + OLAP + DSS, Bảo the dashboard.
+- **Section order (08/11/2026):** 1 Phân tích, 2 EDA và tiền xử lý (`eda.tex`), 3 Thiết kế, 4 Hiện thực, 5 DSS, 6 Đánh giá, 7 Kết luận, Phụ lục. Phần "khám phá dữ liệu", bảng chất lượng `tab:chatluong` và bảng quy tắc `tab:quytac` nằm ở `eda.tex`; `etl.tex` chỉ dẫn chiếu tới đó.
+- **Part 2 (`eda.tex`):** raw EDA (structure, missing values, IQR outliers, distributions, quality issues), preprocessing rules, EDA after preprocessing (before/after counts, Spearman correlation, late rate by bins). Numbers come from `src/eda/results/`.
+- **Part 4 (`hienthuc.tex`, `hienthuc/`):** 4.1 environment, 4.2 ETL results and 4.3 OLAP are written from real runs (numbers come from `meta.etl_run_log`, `meta.dq_result`, `src/olap/results/`). 4.4 dashboard is a `\TODO` for Bảo.
+- **Part 5 (`dss.tex`):** ONE decision only (user decision 08/11/2026, following the sample report): late-delivery warning when the seller hands the order to the carrier (tuned HistGradientBoosting + "already late" rule), four quantitative targets (`tab:chitieu`, all met in `tab:datchitieu`), walk-forward evaluation with test months 06-08/2018, confusion matrix, capacity and expected-cost policies. The approval-time model (~25%, below target) and the seller alert module are NOT in the DSS; they are only mentioned as future work in `danhgia.tex`. The seller prototype was moved out of the repo to `docs/archive/prototype_seller_alert/`. Screenshot of the DSS dashboard page is a `\TODO` for Bảo.
+- **Part 6 (`danhgia.tex`), Part 7 (`ketluan.tex`), appendix (`phuluc.tex`):** written. The usability row of the evaluation table is a `\TODO` until the dashboard exists. The cover still has `\TODO{Link video}`.
+- **Diagrams:** all diagrams are TikZ in `Sections/hinh/` (shared styles in `preamp.tex`); data charts are PNG (300 dpi) from `src/report/make_figures.py` - no PDF images in `Pictures/` (user rule). Include charts with `\includegraphics{Pictures/fig-*.png}` WITHOUT a width option (the PNG carries its dpi, so it prints at text width and the font size matches the body). The draw.io files are kept only for reference.
+- **Part 2:** fully written (sections below kept for history).
   - **2.1.1 "Mô hình kho dữ liệu" (warehouse model):** chose an **Independent Data Mart**.
     - EDW was rejected: the data covers only one business area and comes from one source.
     - Virtual DW was rejected: the data needs cleansing and the assignment requires ETL.
@@ -58,13 +66,14 @@ latex-report/
 
 ## 3. Writing style (mandatory)
 
-Follow `sample written report/CO3103_L06_Nhom10_Report.pdf`:
+The original style sample (`sample written report/CO3103_L06_Nhom10_Report.pdf`) has been removed from the repo; the rules below remain authoritative. `sample_report/BTL_Data_Warehouse.pdf` is a CO4031 report from a previous group, used only as a reference for which chapters to cover (EDA, ETL, model, dashboard, evaluation), not for writing style:
 
 - **Write in Vietnamese**, in an academic report voice, with complete sentences and no chat-style abbreviations.
-- **Structure of a subsection:**
-  - an opening paragraph;
-  - a bullet list in the form **"Short title: content"**;
-  - a closing paragraph.
+- **Sound like the team wrote it, not a generator (decision of 08/11/2026):**
+  - prefer connected prose paragraphs; use a bullet list only for genuinely list-like content (requirements, steps). Do **not** give every subsection the same "opening paragraph + bullets `Short title: content` + closing paragraph" shape;
+  - say what the team observed and decided, with concrete numbers ("nhóm nhận thấy…", "sau lần chạy đầu…");
+  - avoid filler such as "Lựa chọn này xuất phát từ các lý do sau", "đóng vai trò quan trọng", "không chỉ… mà còn", "Nhìn chung", "Như vậy" as paragraph openers, and closing paragraphs that only repeat the bullets.
+- **Figures:** every data figure is generated by `python -m src.report.make_figures` from the database into `latex-report/Pictures/fig-*.png` (re-run after each ETL run). Diagrams are TikZ files in `Sections/hinh/`. Every figure is referenced in the text with `Hình~\ref{...}` and commented on.
 - **Non-functional requirements** are titled in the form `Performance -- Hiệu năng`, `Security -- Tính bảo mật`, etc.
 - **When the user says "just write the choice paragraph":** write prose and **do not add a comparison table**.
 - **Do not use** use-case, activity, sequence, or class diagrams. This is a DW report, not a software project.
@@ -155,7 +164,7 @@ Page numbers are PDF page numbers. Quick lookup (pages verified):
 
 ## 7. Verified data figures
 
-Profile with the **Python standard library** (`python3 -I`, `csv` module), since pandas is not installed. Read in memory and **never write to `Dataset/`**.
+Profile with the **Python standard library** (`python3 -I`, `csv` module), since pandas is not installed. Read in memory and **never write to `data/raw/`**.
 
 | Metric | Value |
 |---|---|
@@ -189,5 +198,5 @@ The table uses English number format; write them in Vietnamese format in the rep
   - `.DS_Store`;
   - LaTeX build files;
   - `*.zip`;
-- `Dataset/olist_geolocation_dataset.csv` is 58 MB. GitHub warns on push (over 50 MB) but still accepts it (under 100 MB).
+- `data/raw/olist_geolocation_dataset.csv` is 58 MB. GitHub warns on push (over 50 MB) but still accepts it (under 100 MB).
 - Commit or push only when the user asks.

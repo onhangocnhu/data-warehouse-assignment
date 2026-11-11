@@ -1,0 +1,35 @@
+% !TeX root = ../../main.tex
+% Phân cấp của các chiều phân tích
+\begin{figure}[H]
+\centering
+\resizebox{\linewidth}{!}{%
+\begin{tikzpicture}[node distance=0.42cm,
+    head/.style={dwhead=#1, text width=2.5cm, inner sep=3pt, rounded corners=2pt},
+    lv/.style={dwbox=#1, text width=2.5cm, inner sep=3.5pt, font=\footnotesize},
+    up/.style={-{Stealth[length=1.8mm]}, line width=0.6pt, draw=dwInkTwo}]
+\node[head=dwBlue] (t0) at (0,0) {Thời gian};
+\node[lv=dwBlue, below=of t0] (t1) {Ngày};
+\node[lv=dwBlue, below=of t1] (t2) {Tháng};
+\node[lv=dwBlue, below=of t2] (t3) {Quý};
+\node[lv=dwBlue, below=of t3] (t4) {Năm};
+\node[head=dwAqua] (p0) at (3.6,0) {Sản phẩm};
+\node[lv=dwAqua, below=of p0] (p1) {Sản phẩm};
+\node[lv=dwAqua, below=of p1] (p2) {Ngành hàng};
+\node[head=dwOrange] (c0) at (7.2,0) {Khách hàng};
+\node[lv=dwOrange, below=of c0] (c1) {Khách hàng};
+\node[lv=dwYellow, below=of c1] (c2) {Thành phố};
+\node[lv=dwYellow, below=of c2] (c3) {Bang};
+\node[lv=dwYellow, below=of c3] (c4) {Vùng};
+\node[head=dwViolet] (s0) at (10.8,0) {Người bán};
+\node[lv=dwViolet, below=of s0] (s1) {Người bán};
+\foreach \a/\b in {t1/t2, t2/t3, t3/t4, p1/p2, c1/c2, c2/c3, c3/c4} \draw[up] (\a) -- (\b);
+\draw[up, rounded corners=3pt] (s1.south) |- (c2.east);
+\node[font=\scriptsize, text=dwInkTwo, align=left, anchor=north west] at ([xshift=0.1cm, yshift=-0.2cm]s1.south)
+  {phần địa lý\\(Thành phố $\rightarrow$ Bang $\rightarrow$ Vùng)\\dùng chung với khách hàng};
+\begin{scope}[on background layer]
+  \node[fill=dwYellow!8, rounded corners=4pt, fit=(c2)(c4), inner sep=5pt] {};
+\end{scope}
+\end{tikzpicture}}
+\caption{Phân cấp của các chiều phân tích trong Data Mart; mũi tên chỉ hướng roll-up (từ chi tiết lên tổng hợp), drill-down đi theo chiều ngược lại}
+\label{fig:phancap}
+\end{figure}

@@ -1,0 +1,33 @@
+% !TeX root = ../main.tex
+\section{Kết luận và hướng phát triển}\label{sec:ketluan}
+
+\subsection{Kết luận}
+
+Đề tài đã xây dựng một kho dữ liệu phân tích hiệu quả kinh doanh cho sàn thương mại điện tử Olist, đi từ phân tích nghiệp vụ đến một hệ thống chạy được trên toàn bộ 1,55 triệu dòng dữ liệu nguồn.
+
+Phần khám phá dữ liệu tìm ra 31 vấn đề chất lượng cụ thể, từ dòng trùng trong dữ liệu địa lý đến mốc thời gian sai thứ tự, và cho thấy phần lớn giá trị thiếu có lý do nghiệp vụ; mỗi vấn đề có một quy tắc xử lý riêng, không làm mất bản ghi hợp lệ nào. Kho dữ liệu là một Data Mart xây theo hướng Bottom-up, snowflake schema với một bảng fact dạng accumulating snapshot ở mức dòng sản phẩm và bảy bảng chiều. Quy trình ETL chạy trọn trong 21,9 giây, đạt 20/20 tiêu chí đối soát, chạy lại không trùng dữ liệu và không để lại dữ liệu dở dang khi lỗi; 14 truy vấn OLAP bao phủ đủ năm phép toán và các nhu cầu theo dõi của người dùng, truy vấn chậm nhất mất 0,72 giây.
+
+Phân tích OLAP chỉ ra giao trễ là nguyên nhân chính làm giảm mức độ hài lòng: tỷ lệ đánh giá 1-2 sao tăng từ 9,3\% lên 62,4\% khi đơn bị trễ, và giao trễ phụ thuộc rõ vào tuyến, mùa vụ và người bán. Dựa trên kết quả đó, thành phần hỗ trợ quyết định dự báo nguy cơ trễ của mỗi đơn ngay khi người bán bàn giao cho đơn vị vận chuyển, đề xuất đơn cần can thiệp theo năng lực xử lý hoặc theo chi phí kỳ vọng, và cho phép phân tích what-if với các giả định chi phí. DSS đạt cả bốn chỉ tiêu: khi cảnh báo 10\% số đơn, nó bắt được 41,7\% số đơn sẽ trễ (44,5\% khi kết hợp luật ``đã quá hạn''), ROC-AUC 0,736, và kết quả ổn định qua từng tháng test.
+
+\subsection{Hạn chế và hướng phát triển}\label{sec:huongphattrien}
+
+Bảng~\ref{tab:huongphattrien} liệt kê các hạn chế còn lại của hệ thống, mỗi hạn chế đi kèm hướng xử lý tương ứng.
+
+\begingroup\small\setstretch{1.1}
+\begin{longtable}{|P{1.9cm}|>{\raggedright\arraybackslash}p{5.9cm}|>{\raggedright\arraybackslash}p{5.9cm}|}
+\caption{Hạn chế và hướng phát triển}\label{tab:huongphattrien}\\
+\hline
+\textbf{Phần} & \textbf{Hạn chế} & \textbf{Hướng phát triển}\\ \hline \endfirsthead
+\hline
+\textbf{Phần} & \textbf{Hạn chế} & \textbf{Hướng phát triển}\\ \hline \endhead
+Dữ liệu & Không có giá vốn, chi phí vận hành và tên đơn vị vận chuyển, nên chưa tính được lợi nhuận và hành động ``chuyển gói vận chuyển nhanh'' chỉ là mô phỏng. & Bổ sung dữ liệu giá vốn và dữ liệu hành trình từ đơn vị vận chuyển khi có nguồn thật.\\ \hline
+Dữ liệu & Giai đoạn ổn định chỉ khoảng 20 tháng; 42\% đơn đến từ bang SP nên số liệu ở các bang nhỏ dựa trên ít đơn; ở 1.278 đơn có nhiều người bán, mọi người bán dùng chung một mốc giao và một điểm đánh giá. & Thu thập thêm dữ liệu các năm sau để kiểm tra tính mùa vụ; hiển thị số đơn bên cạnh mọi tỷ lệ trên dashboard để người xem biết khi nào số liệu không đủ tin cậy.\\ \hline
+Kho dữ liệu & Chưa có phần thanh toán. & Thêm Data Mart thanh toán dùng chung chiều thời gian và khách hàng, đưa kho về dạng fact constellation.\\ \hline
+Kho dữ liệu & ETL nạp toàn bộ mỗi lần chạy, bảng chiều dùng SCD loại 1; hiệu năng mới đo ở quy mô hiện tại. & Nạp tăng dần theo ngày mua, chuyển chiều khách hàng và người bán sang SCD loại 2, lập lịch bằng Airflow; thử với dữ liệu nhân bản nhiều lần và phân vùng bảng fact theo tháng nếu cần.\\ \hline
+DSS & Mô hình yếu hơn ở các tháng trễ hàng loạt (khoảng 25\% ở 11-12/2017 và 03/2018) và khi ít dữ liệu huấn luyện (16,2\% ở 07/2017). Tìm tham số rộng hơn và ghép mô hình không vượt được mức khoảng 40-42\% trên test. & Kết quả cho thấy giới hạn nằm ở dữ liệu chứ không ở thuật toán: cần dữ liệu hành trình và tình trạng của đơn vị vận chuyển; báo cáo chỉ tiêu kèm khoảng tin cậy bootstrap; dùng một giai đoạn validation dài hơn, gồm cả tháng bình thường lẫn tháng khủng hoảng, để chọn mô hình ổn định hơn.\\ \hline
+DSS & Dự báo ngay lúc duyệt đơn mới bắt được khoảng 21-25\% đơn trễ ở mức cảnh báo 10\%, chưa đạt chỉ tiêu, vì phần lớn nguyên nhân gây trễ xảy ra sau thời điểm đó. & Khi có dữ liệu về năng lực kho của người bán, mở rộng sang cảnh báo sớm lúc duyệt đơn để nhắc người bán giao hàng sớm.\\ \hline
+DSS & Chi phí can thiệp và hiệu quả của voucher là giả định; backtest chỉ giả lập trên dữ liệu lịch sử. & Thử nghiệm A/B khi triển khai để đo hiệu quả thật và cập nhật tham số chi phí.\\ \hline
+DSS & 1.694 đơn chưa giao nhưng đã quá hạn được gán nhãn trễ theo giả định; lý do cảnh báo được sinh bằng luật từ các đặc trưng quan trọng. & Đối chiếu lại nhãn khi có trạng thái cuối của các đơn; dùng giải thích riêng cho từng đơn (như SHAP).\\ \hline
+Mở rộng & Chưa dùng nội dung bình luận và chưa đánh giá người bán định kỳ. & Phân tích cảm xúc bình luận tiếng Bồ Đào Nha; chấm điểm người bán hằng tháng theo tỷ lệ trễ, tỷ lệ đánh giá thấp và thời gian chuẩn bị hàng.\\ \hline
+\end{longtable}
+\endgroup
