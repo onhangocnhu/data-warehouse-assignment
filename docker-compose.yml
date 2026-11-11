@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16
+    container_name: olist_dw_postgres
+    environment:
+      POSTGRES_DB: ${DB_NAME:-olist_dw}
+      POSTGRES_USER: ${DB_USER:-dw_admin}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
+    ports:
+      - "${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./data/raw:/data/raw:ro          # lets server-side COPY read the CSV files
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USER:-dw_admin} -d ${DB_NAME:-olist_dw}"]
+      interval: 5s
+      retries: 10
+
+volumes:
+  pgdata:

@@ -20,3 +20,20 @@
 
 # Archives
 *.zip
+
+# Python / environment
+.env
+.venv/
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.pytest_cache/
+
+# draw.io export output (the PNGs used by the report are copied to latex-report/Pictures)
+drawio-files/export/
+
+# DSS model artifacts (keep metrics.json, ignore large binaries)
+src/dss/models/*.joblib
+
+# Report figures are committed as PNG only (make_figures.py renders through a temporary PDF)
+latex-report/Pictures/*.pdf
