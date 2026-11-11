@@ -1,0 +1,84 @@
+% !TeX root = ../../main.tex
+\subsection{Hiện thực quy trình ETL}\label{sec:hienthucetl}
+
+Quy trình ETL được hiện thực đúng bốn giai đoạn đã thiết kế ở Hình~\ref{fig:etl}. Chương trình \code{run\_etl.py} gọi lần lượt từng giai đoạn; mỗi bước để lại một dòng trong bảng nhật ký \code{meta.etl\_run\_log} gồm thời điểm bắt đầu, kết thúc, số dòng và trạng thái. Bảng~\ref{tab:etlbuoc} là kết quả của một lần chạy đầy đủ.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Kết quả một lần chạy ETL đầy đủ}
+\label{tab:etlbuoc}
+\begin{tabularx}{\linewidth}{|P{2.9cm}|P{4.6cm}|>{\raggedright\arraybackslash}X|P{1.6cm}|}
+\hline
+\textbf{Giai đoạn} & \textbf{Tập tin} & \textbf{Kết quả} & \textbf{Thời gian}\\ \hline
+Extract & \code{extract.py} & Nạp 11 tập tin (9 tập tin nguồn và 2 bảng tham chiếu) vào staging, tổng cộng 1.550.922 dòng dữ liệu nguồn; số dòng từng bảng khớp với tập tin & 1,9 giây\\ \hline
+Transformation & \code{10\_transform.sql} & Tạo 11 bảng đã làm sạch \code{stg\_*}; ghi nhận 775 đơn hàng bị loại và 1.458 bản ghi được sửa & 10,5 giây\\ \hline
+Load & \code{02\_datamart\_ddl.sql}\newline \code{20\_load\_dims.sql}\newline \code{30\_load\_fact.sql}\newline \code{05\_metadata\_seed.sql} & Tạo lại Data Mart và nạp 7 bảng chiều, 112.650 dòng bảng fact cùng từ điển dữ liệu và nguồn gốc dữ liệu & 8,8 giây\\ \hline
+Kiểm tra chất lượng & \code{40\_dq\_checks.sql} & 20/20 tiêu chí đối soát đạt & 0,2 giây\\ \hline
+\multicolumn{3}{|l|}{\textbf{Tổng thời gian một lần chạy (kể cả kết nối)}} & \textbf{21,9 giây}\\ \hline
+\end{tabularx}
+\end{table}
+
+Ở bước Extract, mỗi tập tin được nạp thẳng vào bảng thô bằng lệnh \code{COPY} của PostgreSQL. Trước khi nạp, chương trình so dòng tiêu đề của tập tin với cấu trúc bảng thô; sau khi nạp, so số dòng với số dòng kỳ vọng. Chỉ cần lệch một trong hai là quy trình dừng. Nhờ dùng \code{COPY} thay vì chèn từng dòng, tập \code{geolocation} hơn một triệu dòng được nạp trong chưa đầy một giây.
+
+Các quy tắc ở Bảng~\ref{tab:quytac} được viết thành câu lệnh SQL xử lý trên cả bảng một lần, thay vì đọc từng dòng ra Python để xử lý. Chẳng hạn, việc chuẩn hóa tên thành phố được viết thành hàm \code{staging.norm\_city}: chuyển chữ thường, bỏ dấu bằng extension \code{unaccent}, cắt phần mã bang thừa. Việc chọn một đánh giá cho mỗi đơn dùng hàm cửa sổ \code{ROW\_NUMBER()}. Đoạn mã dưới đây là cách tính thời gian chuẩn bị hàng và cờ giao trễ; khoảng thời gian âm do mốc sai thứ tự được để trống đúng như quy tắc đã đặt ra.
+
+\begin{lstlisting}[style=SQLStyle]
+CASE WHEN carrier_ts >= approved_ts
+     THEN ROUND(EXTRACT(EPOCH FROM carrier_ts - approved_ts) / 86400.0, 2) END AS handling_days,
+CASE WHEN order_status = 'delivered' AND delivered_ts IS NOT NULL
+     THEN (delivered_ts::date > estimated_ts::date)::int::smallint END       AS is_late
+\end{lstlisting}
+
+Surrogate key được sinh bằng \code{ROW\_NUMBER()} sắp theo mã gốc, nên các lần nạp toàn bộ liên tiếp luôn cho cùng một khóa với cùng một đối tượng. Toàn bộ giai đoạn Load, từ xóa và tạo lại Data Mart đến nạp xong bảng fact, chạy trong một giao dịch. PostgreSQL hỗ trợ giao dịch cho cả câu lệnh định nghĩa dữ liệu, nên chỉ một câu lệnh lỗi là cả giai đoạn bị hủy và Data Mart quay về đúng dữ liệu của lần chạy trước.
+
+\subsubsection{Kết quả xử lý chất lượng dữ liệu}
+
+Các bản ghi bị loại hoặc bị sửa được ghi vào bảng \code{meta.rejected\_record} kèm lý do. Bảng~\ref{tab:etlxuly} tổng hợp kết quả của lần chạy.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Các bản ghi bị loại hoặc bị sửa trong bước transformation}
+\label{tab:etlxuly}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{3.3cm}|P{2.2cm}|}
+\hline
+\textbf{Vấn đề} & \textbf{Xử lý} & \textbf{Số bản ghi}\\ \hline
+Thời điểm bàn giao vận chuyển trước thời điểm duyệt & Để trống \code{handling\_days} & 1.359 đơn\\ \hline
+Đơn hàng không có dòng sản phẩm & Không nạp vào bảng fact & 775 đơn\\ \hline
+Tên thành phố của người bán không chuẩn & Chuẩn hóa tên & 68 người bán\\ \hline
+Thời điểm bàn giao vận chuyển sau thời điểm nhận hàng & Để trống \code{shipping\_days} & 23 đơn\\ \hline
+Trạng thái đã giao nhưng thiếu thời điểm nhận hàng & Không tính chỉ số giao hàng & 8 đơn\\ \hline
+\end{tabularx}
+\end{table}
+
+Tên thành phố của người bán cần thêm một bước đối chiếu. Nhiều tên là dạng viết tắt hoặc viết sai: \code{sp / sp} sau khi cắt phần sau dấu ``/'' chỉ còn \code{sp}, \code{sbc/sp} còn \code{sbc} (viết tắt của São Bernardo do Campo), hay \code{sao pauo} thiếu một chữ. Vì vậy, nếu tên đã chuẩn hóa không có trong \code{geolocation} của bang tương ứng thì tên thành phố được lấy theo mã bưu chính. Quy tắc này gộp các tên viết khác nhau của cùng một thành phố, còn lại 4.341 thành phố và chỉ 34 người bán thuộc thành phố không có tọa độ; nó cũng sửa \code{balenario camboriu} thành \code{balneario camboriu} và đưa tên quận \code{vicente de carvalho} về đúng đô thị \code{guaruja}.
+
+Các kết quả còn lại của bước làm sạch và tích hợp như sau. Tập \code{geolocation} còn 738.332 dòng sau khi bỏ 261.831 dòng trùng, rồi còn 738.299 dòng thuộc 19.010 tiền tố mã bưu chính sau khi bỏ các điểm ngoài lãnh thổ. Có 79 thành phố không có tọa độ vì mã bưu chính của chúng không xuất hiện trong \code{geolocation}. 99.441 mã \code{customer\_id} được quy về 96.096 khách hàng thật, và 99.224 dòng đánh giá được rút về 98.673 đánh giá chính thức.
+
+\subsubsection{Kết quả đối soát số liệu}
+
+Sau giai đoạn Load, chương trình chạy 20 tiêu chí đối soát và ghi kết quả vào \code{meta.dq\_result}. Bảng~\ref{tab:etldoisoat} đặt giá trị kỳ vọng ở Bảng~\ref{tab:doisoat} cạnh giá trị thực tế trong Data Mart; tất cả đều khớp.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Kết quả đối soát số liệu sau khi chạy ETL}
+\label{tab:etldoisoat}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{3.2cm}|P{3.2cm}|}
+\hline
+\textbf{Tiêu chí} & \textbf{Kỳ vọng} & \textbf{Thực tế}\\ \hline
+Số dòng bảng fact & 112.650 & 112.650\\ \hline
+Số đơn hàng phân biệt trong bảng fact & 98.666 & 98.666\\ \hline
+Tổng giá bán (BRL) & 13.591.643,70 & 13.591.643,70\\ \hline
+Tổng phí vận chuyển (BRL) & 2.251.909,54 & 2.251.909,54\\ \hline
+Tỷ lệ giao trễ trên đơn hàng phân biệt & 6,77\% & 6,77\%\\ \hline
+Điểm đánh giá trung bình trên đơn hàng phân biệt & Xấp xỉ 4,1 & 4,105\\ \hline
+Số dòng của \code{dim\_customer}, \code{dim\_product}, \code{dim\_seller} (kể cả bản ghi không xác định) & 96.097; 32.952; 3.096 & 96.097; 32.952; 3.096\\ \hline
+Số dòng bảng fact tham chiếu sản phẩm, người bán, khách hàng hoặc ngày mua không xác định & 0 & 0\\ \hline
+\end{tabularx}
+\end{table}
+
+Tính tin cậy của quy trình được kiểm tra thêm ở hai tình huống. Khi chạy ETL nhiều lần liên tiếp, số dòng và tổng tiền ở mọi bảng không đổi và cả 20 tiêu chí đều đạt ở mỗi lần. Để kiểm tra trường hợp lỗi, chương trình \code{verify\_rollback.py} chạy các bước Load rồi cố ý gây lỗi trước khi xác nhận giao dịch: ngay bên trong giao dịch, bảng fact đã bị xóa còn 0 dòng, nhưng sau khi giao dịch bị hủy, Data Mart trở lại đủ 112.650 dòng với tổng giá bán 13.591.643,70 BRL.
+
+Một lần chạy ETL đầy đủ mất 21,9 giây, nên có thể nạp lại toàn bộ bất cứ lúc nào mà không cần cơ chế nạp tăng dần. Data Mart sau khi nạp chiếm khoảng 62 MB, trong đó bảng fact có 17 MB dữ liệu và 24 MB chỉ mục.
