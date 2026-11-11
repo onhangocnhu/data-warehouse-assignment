@@ -1,0 +1,7 @@
+{
+ "p0_train": 0.0795,
+ "best_time_split_model": "logistic_regression",
+ "n_train": 64053,
+ "n_val": 13547,
+ "n_test": 18603
+}
