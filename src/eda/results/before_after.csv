@@ -1,0 +1,11 @@
+object,raw,after_cleaning,data_mart
+Đơn hàng,99441.0,99441,98666.0
+Dòng sản phẩm trong đơn,112650.0,112650,112650.0
+Đánh giá,99224.0,98673,97917.0
+Khách hàng,99441.0,96096,96096.0
+Sản phẩm,32951.0,32951,32951.0
+Dòng tọa độ geolocation,1000163.0,738299,
+Mã bưu chính có tọa độ,19015.0,19010,
+"Cách viết (thành phố, bang) của người bán",636.0,580,580.0
+"Cách viết (thành phố, bang) của khách hàng",4310.0,4301,4301.0
+Thành phố (khách hàng và người bán),,4341,4341.0
