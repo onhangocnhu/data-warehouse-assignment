@@ -1,18 +1,30 @@
+# Dashboard theme. Two themes are defined, so the ⋮ menu (top right) offers Settings -> Light / Dark / System.
+# Colours follow the chart palette in src/dashboard/ui.py (_LIGHT / _DARK); charts switch with the theme.
+
 [theme]
-base = "light"
+font = "sans-serif"
+
+[theme.light]
 primaryColor = "#2a78d6"
 backgroundColor = "#fbfaf7"
 secondaryBackgroundColor = "#f1efe8"
 textColor = "#0b0b0b"
 borderColor = "#d6d4ca"
-font = "sans-serif"
 
-[theme.sidebar]
+[theme.light.sidebar]
 backgroundColor = "#f1efe8"
 secondaryBackgroundColor = "#e8e6dd"
 
-[client]
-toolbarMode = "minimal"
+[theme.dark]
+primaryColor = "#3987e5"
+backgroundColor = "#161615"
+secondaryBackgroundColor = "#232321"
+textColor = "#f0efec"
+borderColor = "#383835"
+
+[theme.dark.sidebar]
+backgroundColor = "#1d1d1b"
+secondaryBackgroundColor = "#2a2a27"
 
 [browser]
 gatherUsageStats = false

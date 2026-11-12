@@ -2,15 +2,25 @@
 
 ## Run
 
-Streamlit + Plotly (both already in `requirements.txt`). From the repository root, after the ETL and
-`python -m src.dss.score_delay` have run:
+Streamlit + Plotly (both already in `requirements.txt`). From the repository root, with Docker Desktop running:
+
+```bash
+bash src/dashboard/run.sh            # prepares what is missing, then opens http://localhost:8501 (Ctrl+C to stop)
+bash src/dashboard/run.sh --check    # prepare and check only
+```
+
+`run.sh` is safe to re-run; each step is skipped when already done: `.env` (asks you to set `DB_PASSWORD`),
+PostgreSQL via `docker compose`, `.venv` + `requirements.txt`, the ETL if `dm.fact_sales` is empty,
+`src.dss.score_delay` if `dss.delay_risk_score` is empty, the login role `dashboard_app` (appended to `.env`),
+then Streamlit. The manual equivalent of the last two steps:
 
 ```bash
 python -m src.dashboard.setup_role      # once: creates login dashboard_app, prints 2 lines -> add them to .env
-streamlit run src/dashboard/app.py      # opens http://localhost:8501
+streamlit run src/dashboard/app.py
 ```
 
 Without the two `DASHBOARD_DB_*` lines the app falls back to the ETL account and shows a warning in the sidebar.
+Theme: Light / Dark / System in the ⋮ menu (top right); colours are in `.streamlit/config.toml`.
 
 | File | Role |
 |---|---|
@@ -20,6 +30,7 @@ Without the two `DASHBOARD_DB_*` lines the app falls back to the ETL account and
 | `ui.py` | Vietnamese number format, KPI tiles, chart style and colors |
 | `views/*.py` | one file per page: overview, revenue, delivery, satisfaction, sellers, dss, etl_monitor |
 | `setup_role.py` | login role: SELECT via `analyst_ro` + INSERT on `dss.decision_log` only |
+| `run.sh` | one-command start: checks / prepares database, venv, ETL, DSS scores, login role, then runs Streamlit |
 
 ## Specification (from Thịnh)
 

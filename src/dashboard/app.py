@@ -14,6 +14,7 @@ if str(ROOT) not in sys.path:                 # so "import src..." works under `
 import streamlit as st  # noqa: E402
 
 from src.dashboard.db import using_admin  # noqa: E402
+from src.dashboard.ui import theme_watcher  # noqa: E402
 
 st.set_page_config(page_title="Olist Data Mart", page_icon=":material/insights:", layout="wide")
 
@@ -43,5 +44,6 @@ with st.sidebar:
     if using_admin():
         st.warning("Đang kết nối bằng tài khoản ETL (dw_admin). Chạy `python -m src.dashboard.setup_role` "
                    "để dùng tài khoản chỉ đọc cho dashboard.", icon=":material/lock_open:")
+    theme_watcher()
 
 nav.run()

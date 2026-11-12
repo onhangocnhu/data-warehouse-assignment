@@ -24,11 +24,47 @@ STATUS = {"RED": "#d03b3b", "YELLOW": "#fab219", "GREEN": "#0ca30c"}
 
 
 def palette() -> dict:
-    try:
-        dark = st.context.theme.type == "dark"
-    except Exception:
-        dark = False
-    return _DARK if dark else _LIGHT
+    theme = st.session_state.get("ui_theme")          # reported by theme_watcher(), most reliable
+    if theme is None:
+        try:
+            theme = st.context.theme.type
+        except Exception:
+            theme = "light"
+    return _DARK if theme == "dark" else _LIGHT
+
+
+# Charts are styled in Python, so when the viewer switches theme in the ⋮ menu (Light / Dark / System)
+# they would keep the old colours until the next rerun. This tiny inline component watches the app
+# background in the browser and triggers a rerun as soon as it no longer matches the chart palette.
+_WATCH_JS = """
+export default function (component) {
+    const { data, setTriggerValue } = component;
+    let sent = null;
+    const check = () => {
+        const app = document.querySelector('.stApp');
+        if (!app) return;
+        const rgb = getComputedStyle(app).backgroundColor.match(/\\d+/g);
+        if (!rgb) return;
+        const lum = (0.2126 * rgb[0] + 0.7152 * rgb[1] + 0.0722 * rgb[2]) / 255;
+        const now = lum < 0.5 ? 'dark' : 'light';
+        if (now !== data && now !== sent) { sent = now; setTriggerValue('theme', now); }
+    };
+    check();
+    const id = setInterval(check, 400);
+    return () => clearInterval(id);
+}
+"""
+_watcher = None
+
+
+def theme_watcher() -> None:
+    global _watcher
+    if _watcher is None:
+        _watcher = st.components.v2.component("theme_watcher", html="<span></span>", js=_WATCH_JS)
+    current = "dark" if palette() is _DARK else "light"
+    res = _watcher(key="theme_watcher", data=current, height=0, on_theme_change=lambda: None)
+    if res.theme and res.theme != current:
+        st.session_state.ui_theme = res.theme
 
 
 def series(i: int) -> str:
