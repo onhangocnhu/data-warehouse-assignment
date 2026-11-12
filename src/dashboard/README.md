@@ -1,5 +1,28 @@
 # src/dashboard/  (owner: Đặng Nguyên Bảo)
 
+## Run
+
+Streamlit + Plotly (both already in `requirements.txt`). From the repository root, after the ETL and
+`python -m src.dss.score_delay` have run:
+
+```bash
+python -m src.dashboard.setup_role      # once: creates login dashboard_app, prints 2 lines -> add them to .env
+streamlit run src/dashboard/app.py      # opens http://localhost:8501
+```
+
+Without the two `DASHBOARD_DB_*` lines the app falls back to the ETL account and shows a warning in the sidebar.
+
+| File | Role |
+|---|---|
+| `app.py` | entry point, page navigation grouped by user group |
+| `db.py` | connection (role `dashboard_app`), cached read queries, the single write (`dss.decision_log`) |
+| `filters.py` | sidebar filters (month range, region, category) + the two base CTEs: `items` (fact grain, additive measures) and `orders` (`dm.v_order`, order-level measures) |
+| `ui.py` | Vietnamese number format, KPI tiles, chart style and colors |
+| `views/*.py` | one file per page: overview, revenue, delivery, satisfaction, sellers, dss, etl_monitor |
+| `setup_role.py` | login role: SELECT via `analyst_ro` + INSERT on `dss.decision_log` only |
+
+## Specification (from Thịnh)
+
 Web dashboard on top of the Data Mart. Free choice of technology; record it in the report
 (`latex-report/Sections/hienthuc/trienkhai.tex`, table `tab:congnghe`, and section 4.4 `hienthuc/dashboard.tex`).
 Connect with the read-only role or a dedicated user; only `dss.decision_log` needs write access.
