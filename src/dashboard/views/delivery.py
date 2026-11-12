@@ -96,7 +96,8 @@ GROUP BY region ORDER BY total""", p)
 
 # ---- route matrix: seller state -> customer state, one lot = (order, seller) ----
 with c2:
-    min_lots = st.slider("Tuyến có ít nhất … lô hàng", 50, 1000, 200, 50, key="dl_lots")
+    min_lots = st.select_slider("Tuyến có ít nhất … lô hàng", list(range(50, 1001, 50)), value=200,
+                                format_func=num, key="dl_lots")
     routes = query(f"""WITH {items_cte('all')},
 lot AS (SELECT DISTINCT order_id, seller_key, state_code AS customer_state, is_late FROM items WHERE is_late IS NOT NULL)
 SELECT ss.state_code AS seller_state, l.customer_state, COUNT(*) AS lots, ROUND(100.0 * AVG(l.is_late), 1) AS late_pct

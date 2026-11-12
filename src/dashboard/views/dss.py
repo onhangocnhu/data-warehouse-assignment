@@ -8,7 +8,7 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.dashboard.db import log_decision, query, query_live
-from src.dashboard.ui import STATUS, chart, kpis, money, num, pct, series
+from src.dashboard.ui import STATUS, chart, kpis, money, num, pct, pct_col, series, show_table
 
 CERTAIN = "Đã quá ngày giao dự kiến khi bàn giao vận chuyển"   # rule-based RED, p_late = 1
 LEVEL_VN = {"RED": "ĐỎ", "YELLOW": "VÀNG", "GREEN": "XANH"}
@@ -30,9 +30,13 @@ scores["certain"] = scores.reason_1 == CERTAIN
 # ---------------- what-if: expected-cost policy ----------------
 st.subheader("Phân tích what-if: khi nào nên tặng voucher?")
 c1, c2, c3 = st.columns(3)
-c_late = c1.slider("Thiệt hại khi một đơn bị trễ, C trễ (BRL)", 5.0, 100.0, 30.0, 1.0, key="dss_late")
-c_int = c2.slider("Chi phí can thiệp một đơn, C can thiệp (BRL)", 1.0, 30.0, 8.0, 0.5, key="dss_int")
-effect = c3.slider("Tỷ lệ thiệt hại tránh được nhờ can thiệp, e", 0.05, 1.0, 0.4, 0.05, key="dss_eff")
+# select_slider instead of slider: a slider can only print numbers as 30.00, not 30,00
+c_late = c1.select_slider("Thiệt hại khi một đơn bị trễ, C trễ (BRL)", [float(x) for x in range(5, 101)],
+                          value=30.0, format_func=lambda x: num(x, 0), key="dss_late")
+c_int = c2.select_slider("Chi phí can thiệp một đơn, C can thiệp (BRL)", [x / 2 for x in range(2, 61)],
+                         value=8.0, format_func=lambda x: num(x, 1), key="dss_int")
+effect = c3.select_slider("Tỷ lệ thiệt hại tránh được nhờ can thiệp, e", [x / 100 for x in range(5, 101, 5)],
+                          value=0.4, format_func=lambda x: num(x, 2), key="dss_eff")
 threshold = c_int / (c_late * effect)
 st.latex(r"p^* = \frac{C_{\text{can thiệp}}}{C_{\text{trễ}} \cdot e} = "
          + f"\\frac{{{c_int:g}}}{{{c_late:g} \\times {effect:g}}} = {threshold:.3f}".replace(".", "{,}"))
@@ -59,9 +63,7 @@ kpis([("Ngưỡng p*", num(threshold, 3) if threshold <= 1 else f"{num(threshold
       ("Đơn được đề xuất voucher", num(best["Số đơn can thiệp"])),
       ("Precision", pct(best["Precision"], 1)),
       ("Lợi ích ròng ước tính", money(best["Lợi ích ròng (BRL)"], 0))])
-st.dataframe(pol, hide_index=True, width="stretch", column_config={
-    "Precision": st.column_config.NumberColumn(format="%.1f%%"),
-    "Lợi ích ròng (BRL)": st.column_config.NumberColumn(format="localized")})
+show_table(pol, column_config={"Precision": pct_col("Precision", 1)})
 st.caption("Lợi ích ròng = số đơn trễ bắt được × C trễ × e − số đơn can thiệp × C can thiệp, trên 18.753 đơn của "
            "ba tháng kiểm thử. Mặc định (30; 8; 0,4) cho p* = 0,667, khớp Bảng chính sách trong báo cáo. "
            "Các tham số là giả định, người quản lý chỉnh theo số liệu thật của sàn.")
@@ -80,7 +82,7 @@ with c1:
     fig.update_layout(title="Tỷ lệ đơn thực sự trễ trong từng mức rủi ro", yaxis_ticksuffix="%")
     chart(fig, lv.assign(risk_level=lv.risk_level.map(LEVEL_VN)).rename(columns={
         "risk_level": "Mức", "orders": "Số đơn", "late": "Tỷ lệ thực sự trễ"}),
-        column_config={"Tỷ lệ thực sự trễ": st.column_config.NumberColumn(format="%.1f%%")})
+        column_config={"Tỷ lệ thực sự trễ": pct_col("Tỷ lệ thực sự trễ", 1)})
 with c2:
     total_late = scores.actual_is_late.sum()
     rows = []
@@ -151,9 +153,10 @@ if len(queue) > 40:
 with st.expander("Nhật ký quyết định (dss.decision_log)"):
     log = query_live("""SELECT decided_at, object_id AS order_id, decision, decided_by, recommendation, note
 FROM dss.decision_log WHERE module = 'delay_risk' ORDER BY decided_at DESC LIMIT 200""")
-    st.dataframe(log, hide_index=True, width="stretch",
-                 column_config={"decided_at": st.column_config.DatetimeColumn("Thời điểm", format="DD/MM/YYYY HH:mm")})
+    show_table(log.rename(columns={"order_id": "Mã đơn", "decision": "Quyết định", "decided_by": "Người duyệt",
+                                   "recommendation": "Đề xuất", "note": "Ghi chú"}),
+               column_config={"decided_at": st.column_config.DatetimeColumn("Thời điểm", format="DD/MM/YYYY HH:mm")})
 
 with st.expander("Phiên bản mô hình (dss.model_registry)"):
-    st.dataframe(query("""SELECT model_version, test_month, train_rows, train_until, roc_auc, pr_auc, recall_top10
-FROM dss.model_registry ORDER BY test_month"""), hide_index=True, width="stretch")
+    show_table(query("""SELECT model_version, test_month, train_rows, train_until, roc_auc, pr_auc, recall_top10
+FROM dss.model_registry ORDER BY test_month"""))

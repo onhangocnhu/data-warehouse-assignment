@@ -6,6 +6,7 @@ ramp; the three DSS risk levels use the status colors, always with their text la
 Every chart has a "Bảng số liệu" expander with the numbers behind it.
 """
 import math
+from decimal import Decimal
 
 import pandas as pd
 import plotly.graph_objects as go
@@ -98,12 +99,65 @@ def chart(fig: go.Figure, table: pd.DataFrame | None = None, height: int = 360, 
     st.plotly_chart(style(fig, height), width="stretch", theme=None, config={"displaylogo": False})
     if table is not None:
         with st.expander("Bảng số liệu"):
-            st.dataframe(table, hide_index=True, width="stretch", **table_kwargs)
+            show_table(table, **table_kwargs)
 
 
+# ---------- tables in Vietnamese number format ----------
+# Streamlit's own number formats follow the browser locale (usually 1,234.5), so every table goes
+# through show_table(): numbers are rendered by a pandas Styler with num(); the underlying values stay
+# numeric, so sorting a column still sorts by value.
 def money_col(label: str):
-    return st.column_config.NumberColumn(label, format="localized")
+    """Marks a money column: 2 decimals (13.494.400,74)."""
+    return {"label": label, "_vn": ("money", 2)}
 
 
 def pct_col(label: str, d: int = 2):
-    return st.column_config.NumberColumn(label, format=f"%.{d}f%%")
+    """Marks a percentage column (values already in %): 6,77%."""
+    return {"label": label, "_vn": ("pct", d)}
+
+
+def _decimals(s: pd.Series, most: int) -> int:
+    """Fewest decimals (0..most) that show every value of the column exactly."""
+    v = s.dropna().astype(float)
+    for d in range(most):
+        if ((v - v.round(d)).abs() < 1e-9).all():
+            return d
+    return most
+
+
+def _is_decimal(s: pd.Series) -> bool:
+    v = s.dropna()
+    return len(v) > 0 and all(isinstance(x, (Decimal, int, float)) and not isinstance(x, bool) for x in v)
+
+
+def show_table(df: pd.DataFrame, column_config: dict | None = None, **kwargs) -> None:
+    cfg, fmt = {}, {}
+    for col, c in (column_config or {}).items():
+        if isinstance(c, dict) and "_vn" in c:
+            kind, d = c["_vn"]
+            fmt[col] = (lambda x, d=d: pct(x, d)) if kind == "pct" else (lambda x, d=d: num(x, d))
+            if c["label"] != col:
+                cfg[col] = st.column_config.Column(c["label"])
+        else:
+            cfg[col] = c
+    for col in df.columns:
+        if col in fmt or col in cfg or df[col].dtype == bool:
+            continue
+        if df[col].dtype == object and _is_decimal(df[col]):    # PostgreSQL numeric (ROUND(...)) arrives as Decimal
+            fmt[col] = lambda x, d=_decimals(df[col], 4): num(x, d)
+        elif pd.api.types.is_integer_dtype(df[col]):
+            fmt[col] = num
+        elif pd.api.types.is_float_dtype(df[col]):    # computed in Python: at most 2 decimals
+            fmt[col] = lambda x, d=_decimals(df[col], 2): num(x, d)
+        elif df[col].isna().any():
+            fmt[col] = str
+    # Streamlit shows a missing cell as "None" whatever the Styler says, so a column with gaps is turned
+    # into text here (it then sorts as text; only a few log columns have gaps).
+    df = df.copy()
+    for col in [c for c in df.columns if df[c].isna().any()]:
+        f = fmt.pop(col, str)
+        df[col] = df[col].map(lambda x, f=f: "–" if pd.isna(x) else f(x))
+    kwargs.setdefault("hide_index", True)
+    kwargs.setdefault("width", "stretch")
+    data = df.style.format(fmt) if fmt else df
+    st.dataframe(data, column_config=cfg or None, **kwargs)

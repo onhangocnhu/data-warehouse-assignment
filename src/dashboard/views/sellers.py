@@ -5,7 +5,7 @@ import streamlit as st
 
 from src.dashboard.db import query
 from src.dashboard.filters import items_cte, orders_cte, sidebar_filters
-from src.dashboard.ui import chart, kpis, money_col, num, pct_col, series
+from src.dashboard.ui import chart, kpis, money_col, num, pct_col, series, show_table
 
 st.title("Hiệu quả người bán")
 f = sidebar_filters()
@@ -66,9 +66,9 @@ cfg = {"Doanh thu (BRL)": money_col("Doanh thu (BRL)"), "Tỷ lệ trễ": pct_c
        "Tỷ lệ 1-2 sao": pct_col("Tỷ lệ 1-2 sao", 1)}
 st.markdown(f"**Người bán cần làm việc trước** ({len(flagged)}): thuộc nhóm {top_share}% doanh thu cao nhất "
             f"nhưng có hơn {low_limit}% đánh giá 1-2 sao.")
-st.dataframe(flagged[list(cols)].rename(columns=cols), hide_index=True, width="stretch", column_config=cfg)
+show_table(flagged[list(cols)].rename(columns=cols), column_config=cfg)
 with st.expander("Bảng xếp hạng toàn bộ người bán"):
-    st.dataframe(sellers[list(cols)].rename(columns=cols), hide_index=True, width="stretch", column_config=cfg)
+    show_table(sellers[list(cols)].rename(columns=cols), column_config=cfg)
 
 # ---- seller share vs order share by state ----
 st.subheader("Phân bố người bán so với nơi tập trung đơn hàng")

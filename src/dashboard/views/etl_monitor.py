@@ -1,9 +1,19 @@
 """Giám sát ETL (Kỹ thuật): last runs, data-quality reconciliation, rejected / modified records
 (meta.etl_run_log, meta.dq_result, meta.rejected_record) -- the Monitoring function of the architecture."""
+import re
+
 import streamlit as st
 
 from src.dashboard.db import query
-from src.dashboard.ui import kpis, num
+from src.dashboard.ui import kpis, num, show_table
+
+
+def vn_text(v: str) -> str:
+    """dq_result stores expected / actual as text ("13591643.70", "4.05..4.15"): print the numbers Vietnamese-style."""
+    def one(m):
+        x = m.group(0)
+        return num(float(x), len(x.split(".")[1]) if "." in x else 0)
+    return re.sub(r"\d+(?:\.\d+)?", one, v.replace("..", "-")) if isinstance(v, str) else v
 
 st.title("Giám sát quy trình ETL")
 
@@ -31,16 +41,16 @@ kpis([("Tiêu chí đối soát đạt", f"{int(dq.passed.sum())}/{len(dq)}"),
 c1, c2 = st.columns(2)
 with c1:
     st.subheader("Các bước của lần chạy")
-    st.dataframe(query("""SELECT step, status, rows_out, rows_rejected,
+    show_table(query("""SELECT step, status, rows_out, rows_rejected,
        ROUND(EXTRACT(EPOCH FROM finished_at - started_at)::numeric, 2) AS seconds, message
-FROM meta.etl_run_log WHERE run_id = :r ORDER BY started_at""", {"r": int(run_id)}),
-                 hide_index=True, width="stretch")
+FROM meta.etl_run_log WHERE run_id = :r ORDER BY started_at""", {"r": int(run_id)}).rename(columns={
+        "step": "Bước", "status": "Trạng thái", "rows_out": "Số dòng ra", "rows_rejected": "Số dòng bị loại",
+        "seconds": "Giây", "message": "Ghi chú"}))
 with c2:
     st.subheader("Đối soát số liệu")
-    st.dataframe(dq.assign(passed=dq.passed.map({True: "✓ Đạt", False: "✗ Không đạt"})).rename(columns={
-        "check_name": "Tiêu chí", "expected": "Kỳ vọng", "actual": "Thực tế", "passed": "Kết quả"}),
-        hide_index=True, width="stretch")
+    show_table(dq.assign(passed=dq.passed.map({True: "✓ Đạt", False: "✗ Không đạt"}),
+                         expected=dq.expected.map(vn_text), actual=dq.actual.map(vn_text)).rename(columns={
+        "check_name": "Tiêu chí", "expected": "Kỳ vọng", "actual": "Thực tế", "passed": "Kết quả"}))
 
 st.subheader("Bản ghi bị loại hoặc bị sửa ở bước transformation")
-st.dataframe(rej.rename(columns={"source": "Nguồn", "action": "Hành động", "reason": "Lý do", "records": "Số bản ghi"}),
-             hide_index=True, width="stretch")
+show_table(rej.rename(columns={"source": "Nguồn", "action": "Hành động", "reason": "Lý do", "records": "Số bản ghi"}))
