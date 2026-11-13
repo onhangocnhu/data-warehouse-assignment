@@ -21,7 +21,7 @@ python -m venv .venv
 .venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
 
-# 3. Tạo schema, bảng và chạy ETL đầy đủ (khoảng 20 giây)
+# 3. Tạo schema, bảng và chạy ETL đầy đủ (khoảng 10 giây)
 python -m src.etl.run_etl --init
 python -m src.etl.verify_rollback # (tùy chọn) kiểm tra tính toàn vẹn khi lỗi
 
@@ -37,9 +37,15 @@ python -m src.dss.score_delay     # chạy sau bước trên
 
 # 7. Sinh lại biểu đồ cho báo cáo (PNG 300 dpi)
 python -m src.report.make_figures
+
+# 8. Dashboard: tạo tài khoản dashboard_app (một lần) rồi mở http://localhost:8501
+python -m src.dashboard.setup_role   # in 2 dòng DASHBOARD_DB_*, thêm vào .env
+streamlit run src/dashboard/app.py
 \end{lstlisting}
 
 Bước 6 chạy lâu nhất (khoảng một giờ trên máy 20 luồng; \code{score\_delay} thêm khoảng 3 phút) vì phải thử 124 cấu hình trên năm tháng validation rồi huấn luyện lại mô hình cho từng tháng trong 14 tháng đánh giá; tham số được chọn được lưu ở \code{src/dss/results/best\_config.json}, nên lần chạy sau có thể bỏ qua bước tìm kiếm bằng tùy chọn \code{--reuse}. Toàn bộ chạy trên CPU, dùng dưới 2 GB bộ nhớ, không cần GPU. Có thể kiểm tra kết quả từng bước như sau: sau bước 3, \code{dm.fact\_sales} có 112.650 dòng và cả 20 tiêu chí trong \code{meta.dq\_result} đều đạt; sau bước 6, \code{dss.delay\_risk\_score} có 18.753 dòng.
+
+Trên Linux hoặc macOS, có thể chạy dashboard bằng một lệnh \code{bash src/dashboard/run.sh}. Kịch bản này tự làm các bước 1, 2, 3, bước \code{score\_delay} (dùng \code{best\_config.json} có sẵn, không chạy lại bước tìm kiếm) và bước 8 nếu chúng chưa được làm, rồi mở dashboard; tùy chọn \code{--check} chỉ chuẩn bị và kiểm tra mà không mở dashboard.
 
 Trên Windows bật Smart App Control, thư viện \code{psycopg} có thể bị chặn (lỗi \textit{DLL load failed\ldots Application Control policy}). Khi đó đặt biến môi trường \code{PSYCOPG\_IMPL=python} và thêm thư mục \code{bin} của một bản PostgreSQL cài trên máy vào \code{PATH} để dùng \code{libpq.dll} của bản đó.
 
@@ -56,6 +62,8 @@ src/eda/                  run_eda.py; results/ chứa kết quả khám phá d�
 src/olap/                 run_olap.py; results/ chứa kết quả và thời gian từng truy vấn
 src/dss/                  features.py (đặc trưng point-in-time), evaluate_models.py,
                           score_delay.py; results/ chứa kết quả đánh giá
+src/dashboard/            app.py (điều hướng), db.py, filters.py, ui.py, views/ (7 trang),
+                          setup_role.py, run.sh (chạy dashboard bằng một lệnh)
 src/report/               make_figures.py: sinh biểu đồ của báo cáo từ cơ sở dữ liệu
 latex-report/             mã nguồn LaTeX của báo cáo; Sections/hinh/ chứa các sơ đồ TikZ
 docker-compose.yml        PostgreSQL 16

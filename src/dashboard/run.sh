@@ -46,7 +46,7 @@ else
 fi
 .venv/bin/python --version
 
-# 4. ETL: CSV files -> staging -> Data Mart (about 20 s)
+# 4. ETL: CSV files -> staging -> Data Mart (about 10 s)
 step "Data Mart"
 facts=$(psql_q "SELECT to_regclass('dm.fact_sales') IS NOT NULL AND EXISTS (SELECT 1 FROM dm.fact_sales)" 2>/dev/null || echo f)
 if [[ "$facts" != "t" ]]; then

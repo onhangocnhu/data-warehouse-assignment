@@ -11,11 +11,11 @@ Quy trình ETL được hiện thực đúng bốn giai đoạn đã thiết k�
 \begin{tabularx}{\linewidth}{|P{2.9cm}|P{4.6cm}|>{\raggedright\arraybackslash}X|P{1.6cm}|}
 \hline
 \textbf{Giai đoạn} & \textbf{Tập tin} & \textbf{Kết quả} & \textbf{Thời gian}\\ \hline
-Extract & \code{extract.py} & Nạp 11 tập tin (9 tập tin nguồn và 2 bảng tham chiếu) vào staging, tổng cộng 1.550.922 dòng dữ liệu nguồn; số dòng từng bảng khớp với tập tin & 1,9 giây\\ \hline
-Transformation & \code{10\_transform.sql} & Tạo 11 bảng đã làm sạch \code{stg\_*}; ghi nhận 775 đơn hàng bị loại và 1.458 bản ghi được sửa & 10,5 giây\\ \hline
-Load & \code{02\_datamart\_ddl.sql}\newline \code{20\_load\_dims.sql}\newline \code{30\_load\_fact.sql}\newline \code{05\_metadata\_seed.sql} & Tạo lại Data Mart và nạp 7 bảng chiều, 112.650 dòng bảng fact cùng từ điển dữ liệu và nguồn gốc dữ liệu & 8,8 giây\\ \hline
-Kiểm tra chất lượng & \code{40\_dq\_checks.sql} & 20/20 tiêu chí đối soát đạt & 0,2 giây\\ \hline
-\multicolumn{3}{|l|}{\textbf{Tổng thời gian một lần chạy (kể cả kết nối)}} & \textbf{21,9 giây}\\ \hline
+Extract & \code{extract.py} & Nạp 11 tập tin (9 tập tin nguồn và 2 bảng tham chiếu) vào staging, tổng cộng 1.550.922 dòng dữ liệu nguồn; số dòng từng bảng khớp với tập tin & 1,0 giây\\ \hline
+Transformation & \code{10\_transform.sql} & Tạo 11 bảng đã làm sạch \code{stg\_*}; ghi nhận 775 đơn hàng bị loại và 1.458 bản ghi được sửa & 4,5 giây\\ \hline
+Load & \code{02\_datamart\_ddl.sql}\newline \code{20\_load\_dims.sql}\newline \code{30\_load\_fact.sql}\newline \code{05\_metadata\_seed.sql} & Tạo lại Data Mart và nạp 7 bảng chiều, 112.650 dòng bảng fact cùng từ điển dữ liệu và nguồn gốc dữ liệu & 3,1 giây\\ \hline
+Kiểm tra chất lượng & \code{40\_dq\_checks.sql} & 20/20 tiêu chí đối soát đạt & 0,1 giây\\ \hline
+\multicolumn{3}{|l|}{\textbf{Tổng thời gian một lần chạy}} & \textbf{8,7 giây}\\ \hline
 \end{tabularx}
 \end{table}
 
@@ -81,4 +81,4 @@ Số dòng bảng fact tham chiếu sản phẩm, người bán, khách hàng ho
 
 Tính tin cậy của quy trình được kiểm tra thêm ở hai tình huống. Khi chạy ETL nhiều lần liên tiếp, số dòng và tổng tiền ở mọi bảng không đổi và cả 20 tiêu chí đều đạt ở mỗi lần. Để kiểm tra trường hợp lỗi, chương trình \code{verify\_rollback.py} chạy các bước Load rồi cố ý gây lỗi trước khi xác nhận giao dịch: ngay bên trong giao dịch, bảng fact đã bị xóa còn 0 dòng, nhưng sau khi giao dịch bị hủy, Data Mart trở lại đủ 112.650 dòng với tổng giá bán 13.591.643,70 BRL.
 
-Một lần chạy ETL đầy đủ mất 21,9 giây, nên có thể nạp lại toàn bộ bất cứ lúc nào mà không cần cơ chế nạp tăng dần. Data Mart sau khi nạp chiếm khoảng 62 MB, trong đó bảng fact có 17 MB dữ liệu và 24 MB chỉ mục.
+Một lần chạy ETL đầy đủ mất 8,7 giây, nên có thể nạp lại toàn bộ bất cứ lúc nào mà không cần cơ chế nạp tăng dần. Data Mart sau khi nạp chiếm khoảng 62 MB, trong đó bảng fact có 17 MB dữ liệu và 24 MB chỉ mục.

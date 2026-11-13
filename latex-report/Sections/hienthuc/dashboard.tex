@@ -1,4 +1,115 @@
 % !TeX root = ../../main.tex
 \subsection{Dashboard và giao diện truy vấn}\label{sec:dashboard}
 
-\TODO{Phần của Đặng Nguyên Bảo: công nghệ sử dụng, danh sách trang theo từng nhóm người dùng (Bảng~\ref{tab:quyetdinh}), ảnh chụp từng trang kèm chú thích, và đối chiếu ít nhất 5 con số trên dashboard với kết quả truy vấn OLAP ở mục~\ref{sec:olap}.}
+Dashboard được viết bằng Streamlit 1.67, biểu đồ vẽ bằng Plotly 7.1. Nhóm chọn Streamlit vì toàn bộ ETL và DSS đã viết bằng Python, nên dashboard dùng lại được cấu hình kết nối, cùng môi trường \code{.venv} và không cần thêm một tầng frontend riêng. Dashboard không giữ bản sao dữ liệu nào: mỗi biểu đồ là một truy vấn SQL chạy thẳng trên Data Mart qua SQLAlchemy và psycopg, đúng mô hình ROLAP đã chọn ở mục~\ref{sec:kientruc}. Kết quả truy vấn được lưu đệm 10 phút, vì Data Mart chỉ thay đổi sau mỗi lần chạy ETL. Mã nguồn nằm trong thư mục \code{src/dashboard}, gồm tập tin điều hướng \code{app.py}, phần kết nối \code{db.py}, bộ lọc \code{filters.py}, định dạng và màu biểu đồ \code{ui.py}, và mỗi trang một tập tin trong \code{views}.
+
+Dashboard kết nối bằng một tài khoản riêng là \code{dashboard\_app}, do chương trình \code{setup\_role.py} tạo. Tài khoản này thừa hưởng quyền \code{SELECT} trên ba schema \code{dm}, \code{meta}, \code{dss} từ role chỉ đọc \code{analyst\_ro}, và chỉ được ghi thêm (\code{INSERT}) vào bảng \code{dss.decision\_log}, nơi lưu quyết định duyệt hoặc từ chối đề xuất của DSS. Nhóm đã thử với tài khoản này: lệnh \code{UPDATE} và \code{DELETE} trên \code{decision\_log} đều bị từ chối. Để chạy dashboard, chỉ cần lệnh \code{bash src/dashboard/run.sh} từ thư mục gốc. Kịch bản này lần lượt kiểm tra tập tin \code{.env}, khởi động PostgreSQL, tạo môi trường Python, chạy ETL nếu Data Mart còn trống, chấm điểm DSS nếu chưa có, tạo tài khoản \code{dashboard\_app}, rồi mở dashboard tại \url{http://localhost:8501}. Bước nào đã xong thì được bỏ qua.
+
+\subsubsection{Tổ chức trang theo nhóm người dùng}
+
+Các trang được nhóm theo người ra quyết định ở Bảng~\ref{tab:quyetdinh}, thêm một trang giám sát ETL cho người phụ trách kỹ thuật. Bảng~\ref{tab:dashboardtrang} liệt kê bảy trang cùng các truy vấn OLAP ở mục~\ref{sec:olap} mà mỗi trang dùng lại.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Các trang của dashboard theo nhóm người dùng}
+\label{tab:dashboardtrang}
+\begin{tabularx}{\linewidth}{|P{3.0cm}|P{2.6cm}|>{\raggedright\arraybackslash}X|}
+\hline
+\textbf{Nhóm người dùng} & \textbf{Trang} & \textbf{Nội dung và phép OLAP}\\ \hline
+Ban điều hành sàn & Tổng quan & Sáu chỉ số chính; doanh thu và số đơn theo tháng, quý hoặc năm (roll-up, drill-down); doanh thu theo vùng và năm (\code{CUBE})\\ \hline
+Ban điều hành sàn & Doanh thu & Doanh thu theo vùng và 10 bang dẫn đầu; doanh thu ngành hàng $\times$ bang (dice); tăng trưởng ngành hàng 01-08/2018 so với cùng kỳ\\ \hline
+Quản lý vận hành & Giao hàng & Tỷ lệ trễ drill-down vùng $\rightarrow$ bang $\rightarrow$ thành phố; thời gian từng công đoạn; ma trận tuyến giao hàng; mùa cao điểm Black Friday\\ \hline
+Quản lý vận hành & Cảnh báo giao trễ (DSS) & Phân tích what-if ngưỡng $p^{*}$, so sánh các chính sách; danh sách đơn ĐỎ, VÀNG theo ngày bàn giao kèm lý do; nút duyệt, từ chối\\ \hline
+Chăm sóc khách hàng & Mức độ hài lòng & Phân bố điểm của đơn đúng hạn và đơn trễ; ngành hàng nhiều đánh giá 1-2 sao; pivot điểm theo ngành hàng và vùng, có nút hoán đổi trục\\ \hline
+Quản lý ngành hàng và người bán & Người bán & Doanh thu và tỷ lệ đánh giá thấp của từng người bán; danh sách người bán cần làm việc trước với ngưỡng chỉnh được; phân bố người bán so với đơn hàng theo bang\\ \hline
+Người phụ trách kỹ thuật & Giám sát ETL & Nhật ký từng bước, 20 tiêu chí đối soát, bản ghi bị loại hoặc bị sửa (schema \code{meta})\\ \hline
+\end{tabularx}
+\end{table}
+
+Thanh bên trái có ba bộ lọc dùng chung cho các trang phân tích: khoảng tháng đặt hàng, vùng của khách hàng và ngành hàng. Về mặt OLAP, mỗi lần chọn bộ lọc là một phép slice hoặc dice trên khối dữ liệu. Giá trị đã chọn được giữ khi chuyển trang, và nút ``Xóa bộ lọc'' đưa về toàn bộ dữ liệu. Mọi truy vấn của dashboard xuất phát từ hai biểu thức \code{WITH} dùng chung: \code{items} đọc \code{fact\_sales} cho các thước đo cộng được như doanh thu, phí vận chuyển; \code{orders} đọc view \code{dm.v\_order} cho các thước đo theo đơn như thời gian giao, cờ trễ, điểm đánh giá. Nhờ vậy dashboard giữ đúng quy ước ở mục~\ref{sec:dodo}: một đơn có nhiều sản phẩm vẫn chỉ được tính một lần. Dưới mỗi biểu đồ có mục ``Bảng số liệu'' để xem con số cụ thể, và mọi con số đều theo định dạng Việt Nam (13.494.400,74; 6,77\%). Người xem có thể chọn giao diện sáng hoặc tối; màu biểu đồ đổi theo.
+
+\subsubsection{Các trang phân tích}
+
+Trang Tổng quan (Hình~\ref{fig:dashtongquan}) là trang mặc định. Sáu ô chỉ số ở đầu trang trả lời ngay câu hỏi ``sàn đang bán được bao nhiêu và giao hàng thế nào''. Nút ``Tháng / Quý / Năm'' đổi mức tổng hợp của biểu đồ doanh thu, tức là roll-up hoặc drill-down trên phân cấp thời gian mà không phải viết lại truy vấn.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/dash-tong-quan.png}
+\caption{Trang Tổng quan: thanh điều hướng và bộ lọc bên trái, sáu chỉ số chính và doanh thu theo tháng}
+\label{fig:dashtongquan}
+\end{figure}
+
+Trang Doanh thu (Hình~\ref{fig:dashdoanhthu}) cho ban điều hành so sánh các thị trường. Biểu đồ nhiệt ngành hàng $\times$ bang là phép dice ở mục~\ref{sec:olap}, nhưng ở đây người xem tự chọn số ngành hàng; khi đổi bộ lọc thời gian sang năm 2018, biểu đồ theo vùng cho đúng kết quả slice ở Bảng~\ref{tab:slice}.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth,height=0.55\textheight,keepaspectratio]{Pictures/dash-doanh-thu.png}
+\caption{Trang Doanh thu: doanh thu theo vùng, theo bang và biểu đồ nhiệt ngành hàng $\times$ bang}
+\label{fig:dashdoanhthu}
+\end{figure}
+
+Trang Giao hàng (Hình~\ref{fig:dashgiaohang}) dành cho quản lý vận hành. Hai ô chọn ``Vùng'' và ``Bang'' thực hiện drill-down từ toàn quốc xuống bang rồi xuống thành phố. Đường gạch ngang trên biểu đồ là tỷ lệ trễ toàn quốc, giúp nhận ra ngay các bang vượt trung bình. Phía dưới trang (không có trên hình) là thời gian từng công đoạn, ma trận tuyến giao hàng và biểu đồ mùa cao điểm; với ma trận tuyến, người xem chỉnh được số lô tối thiểu của một tuyến, vì tuyến quá ít lô cho tỷ lệ trễ không đáng tin.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/dash-giao-hang.png}
+\caption{Trang Giao hàng: chỉ số giao hàng và drill-down tỷ lệ trễ ở mức bang, tô màu theo vùng}
+\label{fig:dashgiaohang}
+\end{figure}
+
+Trang Mức độ hài lòng (Hình~\ref{fig:dashhailong}) đặt cạnh nhau điểm đánh giá của đơn đúng hạn và đơn trễ, cùng danh sách ngành hàng có tỷ lệ 1-2 sao cao nhất. Phía dưới trang là phép pivot ngành hàng $\times$ vùng như Hình~\ref{fig:pivot}, kèm nút hoán đổi trục.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/dash-hai-long.png}
+\caption{Trang Mức độ hài lòng: chỉ số đánh giá, phân bố điểm của đơn đúng hạn và đơn trễ, ngành hàng nhiều đánh giá thấp}
+\label{fig:dashhailong}
+\end{figure}
+
+Trang Người bán (Hình~\ref{fig:dashnguoiban}) vẽ mỗi người bán thành một điểm theo doanh thu và tỷ lệ đánh giá 1-2 sao. Truy vấn ở mục~\ref{sec:olapnghiepvu} cố định hai ngưỡng ``20\% doanh thu cao nhất'' và ``hơn 20\% đánh giá thấp''; trên dashboard, quản lý ngành hàng chỉnh được cả hai ngưỡng và số đơn tối thiểu. Với giá trị mặc định, ô ``Cần làm việc trước'' cho đúng 12 người bán như truy vấn OLAP; bảng chi tiết ngay dưới biểu đồ xếp người bán có 973 đơn và 186.570,05 BRL doanh thu lên đầu. Các điểm màu cam trên biểu đồ là nhóm người bán này.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/dash-nguoi-ban.png}
+\caption{Trang Người bán: ngưỡng chỉnh được, số người bán cần làm việc trước và biểu đồ phân tán doanh thu, tỷ lệ đánh giá 1-2 sao}
+\label{fig:dashnguoiban}
+\end{figure}
+
+Trang Giám sát ETL (Hình~\ref{fig:dashetl}) đọc schema \code{meta}: trạng thái và số dòng của từng bước, kết quả 20 tiêu chí đối soát và các bản ghi bị loại hoặc bị sửa kèm lý do. Đây là chức năng giám sát (Monitoring) trong kiến trúc ở Hình~\ref{fig:kientruc}. Hình này hiện đúng lần chạy ETL ở Bảng~\ref{tab:etlbuoc}: 8,7 giây, 775 đơn bị loại, 1.458 bản ghi được sửa và 20/20 tiêu chí đạt.
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/dash-etl.png}
+\caption{Trang Giám sát ETL: thông tin lần chạy, các bước và kết quả đối soát số liệu}
+\label{fig:dashetl}
+\end{figure}
+
+Trang Cảnh báo giao trễ là giao diện của hệ hỗ trợ quyết định, được trình bày cùng phần DSS ở mục~\ref{sec:dsstrienkhai} (Hình~\ref{fig:dashdsswhatif} và Hình~\ref{fig:dashdssdanhsach}).
+
+\subsubsection{Đối chiếu số liệu và thời gian phản hồi}
+
+Để kiểm tra dashboard tính đúng, nhóm đặt các con số trên dashboard cạnh kết quả truy vấn OLAP và DSS đã trình bày trong báo cáo (Bảng~\ref{tab:doichieu}). Doanh thu và tỷ lệ trễ còn được tính lại bằng pandas trực tiếp từ các tập tin CSV gốc, không qua cơ sở dữ liệu, và cho cùng kết quả.
+
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Đối chiếu số liệu trên dashboard với kết quả OLAP và DSS}
+\label{tab:doichieu}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{2.6cm}|P{3.0cm}|P{3.0cm}|}
+\hline
+\textbf{Chỉ số} & \textbf{Trang} & \textbf{Trong báo cáo} & \textbf{Trên dashboard}\\ \hline
+Doanh thu 2016-2018, không tính đơn hủy hoặc không có hàng & Tổng quan & 13.494.400,74 BRL; 98.199 đơn (Bảng~\ref{tab:rollup}) & 13.494.400,74 BRL; 98.199 đơn\\ \hline
+Tỷ lệ giao trễ toàn quốc & Tổng quan, Giao hàng & 6,77\% (Bảng~\ref{tab:drilldown}) & 6,77\%\\ \hline
+Tỷ lệ giao trễ bang RJ / SP & Giao hàng & 12,11\% / 4,49\% (Bảng~\ref{tab:drilldown}) & 12,11\% / 4,49\%\\ \hline
+Điểm đánh giá TB đơn đúng hạn / đơn trễ & Mức độ hài lòng & 4,29 / 2,27 (mục~\ref{sec:olapnghiepvu}) & 4,29 / 2,27\\ \hline
+Doanh thu Sudeste năm 2018 (slice) & Doanh thu & 4.866.163,13 BRL; 66,3\% (Bảng~\ref{tab:slice}) & 4.866.163,13 BRL; 66,3\%\\ \hline
+Người bán doanh thu cao, chất lượng thấp & Người bán & 12 người bán (mục~\ref{sec:olapnghiepvu}) & 12 người bán\\ \hline
+Tỷ lệ trễ thực tế của đơn mức ĐỎ & Cảnh báo giao trễ & 28,8\% (Bảng~\ref{tab:dsschinhsach}) & 28,8\%\\ \hline
+Chính sách chi phí kỳ vọng, tham số mặc định & Cảnh báo giao trễ & $p^{*} = 0{,}667$; 190 đơn; precision 96,8\%; lợi ích ròng 688 BRL & $p^{*} = 0{,}667$; 190 đơn; precision 96,8\%; lợi ích ròng 688 BRL\\ \hline
+\end{tabularx}
+\end{table}
+
+Cả tám chỉ số đều khớp đến chữ số cuối. Điều này cũng xác nhận quy ước về grain được giữ đúng: nếu tính tỷ lệ trễ trên các dòng của \code{fact\_sales} thay vì trên \code{v\_order}, các đơn nhiều sản phẩm bị đếm lặp và kết quả sẽ lệch khỏi 6,77\%.
+
+Về thời gian phản hồi, nhóm đo mỗi trang bằng công cụ kiểm thử AppTest của Streamlit, trong một tiến trình mới chưa có bộ nhớ đệm. Lần mở đầu tiên mất 0,4-1,4 giây ở sáu trang; trang Giao hàng chậm nhất với 4,7 giây vì chạy sáu truy vấn, trong đó có ma trận tuyến và thời gian từng công đoạn. Mở lại trang hoặc quay về bộ lọc đã xem chỉ mất dưới 0,1 giây nhờ bộ nhớ đệm. Như vậy mọi trang đều đạt yêu cầu phản hồi trong tối đa 5 giây, dù trang Giao hàng đã khá sát ngưỡng; nếu dữ liệu tăng, đây là trang đầu tiên cần đến bảng tổng hợp lưu sẵn như đã nêu ở mục~\ref{sec:luocdo}.
