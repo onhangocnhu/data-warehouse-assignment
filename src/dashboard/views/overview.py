@@ -20,21 +20,19 @@ SELECT ROUND(100.0 * AVG(is_late), 2) AS late_pct,
 FROM orders""", p).iloc[0]
 
 kpis([
-    ("Doanh thu hàng hóa", money(sales.revenue), "Tổng giá bán, không gồm phí vận chuyển, loại đơn bị hủy / không khả dụng"),
+    ("Doanh thu hàng hóa", money(sales.revenue), "Tổng giá bán, không gồm phí vận chuyển"),
     ("Số đơn hàng", num(sales.orders)),
     ("Giá trị đơn trung bình", money(ratio(sales.revenue, sales.orders))),
 ])
 kpis([
-    ("Tỷ lệ giao trễ", pct(ops.late_pct), "Trên các đơn đã giao (tính theo đơn, không theo dòng sản phẩm)"),
+    ("Tỷ lệ giao trễ", pct(ops.late_pct), "Trên các đơn đã giao"),
     ("Điểm đánh giá TB", num(ops.avg_review, 2)),
     ("Người bán hoạt động", num(sales.sellers)),
 ])
-if f.is_default:
-    st.caption("Đối soát với báo cáo: doanh thu 13.494.400,74 BRL trên 98.199 đơn; tỷ lệ giao trễ 6,77%.")
 
 # ---- roll-up: month -> quarter -> year ----
 st.subheader("Doanh thu theo thời gian")
-level = st.segmented_control("Mức tổng hợp (roll-up / drill-down)", ["Tháng", "Quý", "Năm"],
+level = st.segmented_control("Mức tổng hợp", ["Tháng", "Quý", "Năm"],
                              default="Tháng", required=True, key="ov_level")
 period = {"Tháng": "to_char(full_date, 'MM/YYYY')", "Quý": "'Q' || quarter || '/' || year",
           "Năm": "year::text"}[level]
@@ -58,8 +56,6 @@ with c2:
                                hovertemplate="%{x}<br>%{y:,} đơn<extra></extra>"))
     fig.update_layout(title="Số đơn hàng", hovermode="x unified")
     chart(fig)
-if level == "Tháng":
-    st.caption("Các tháng 09-12/2016 và 09-10/2018 chỉ có vài đơn (dữ liệu chưa đủ / đã dừng), không phải sụt giảm thật.")
 
 # ---- CUBE: region x year ----
 st.subheader("Doanh thu theo vùng và năm")
@@ -78,4 +74,3 @@ fig.update_layout(title="Doanh thu theo vùng của khách hàng (BRL)", barmode
 pivot = cube.pivot(index="region", columns="year", values="revenue").reset_index()
 chart(fig, pivot.rename(columns={"region": "Vùng"}),
       column_config={c: money_col(c) for c in pivot.columns if c != "region"})
-st.caption("Bảng số liệu dùng GROUP BY CUBE: dòng / cột \"Tất cả\" là tổng theo một hoặc cả hai chiều.")

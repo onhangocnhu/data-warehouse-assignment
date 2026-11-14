@@ -24,7 +24,7 @@ kpis([("Đơn đã giao", num(k.delivered)), ("Tỷ lệ giao trễ", pct(k.late
       ("Vận chuyển TB", num(k.shipping_days, 1) + " ngày")])
 
 # ---- drill-down region -> state -> city ----
-st.subheader("Tỷ lệ giao trễ: drill-down vùng → bang → thành phố")
+st.subheader("Tỷ lệ giao trễ theo vùng, bang và thành phố")
 c1, c2 = st.columns([1, 2])
 with c1:
     region = st.selectbox("Vùng", ["Toàn quốc"] + REGIONS, key="dl_region")
@@ -73,7 +73,6 @@ if overall is not None:
                   annotation_text=f"Toàn bộ {pct(overall)}", annotation_position="top right")
 fig.update_layout(title=title)
 chart(fig, table, column_config={"Tỷ lệ trễ": pct_col("Tỷ lệ trễ")})
-st.caption("Bang có ít đơn (ví dụ RR, AP) có tỷ lệ trễ kém tin cậy; xem cột số đơn trong bảng số liệu.")
 
 # ---- stage durations by region ----
 c1, c2 = st.columns(2)
@@ -141,4 +140,3 @@ with c2:
     fig.update_layout(title="Tỷ lệ trễ của đơn đặt trong ngày (%)", xaxis_tickformat="%d/%m", hovermode="x")
     chart(fig, bf.rename(columns={"full_date": "Ngày", "orders": "Số đơn", "late_pct": "Tỷ lệ trễ"}),
           column_config={"Tỷ lệ trễ": pct_col("Tỷ lệ trễ", 1)})
-st.caption("Hai biểu đồ Black Friday dùng cửa sổ thời gian cố định nên không áp dụng bộ lọc bên trái.")

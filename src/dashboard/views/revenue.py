@@ -9,7 +9,6 @@ from src.dashboard.ui import SEQ_BLUE, chart, money_col, pct_col, region_colors,
 st.title("Doanh thu theo khu vực và ngành hàng")
 f = sidebar_filters()
 p = f.params
-st.caption("Bộ lọc bên trái là phép slice / dice trên khối dữ liệu: cố định khoảng thời gian, vùng, ngành hàng.")
 
 # ---- by region (slice when one year is chosen) ----
 c1, c2 = st.columns(2)
@@ -35,13 +34,13 @@ FROM items GROUP BY state_code, region ORDER BY revenue DESC LIMIT 10""", p)
     fig = go.Figure(go.Bar(x=stt.revenue, y=stt.state_code, orientation="h", marker_color=series(0),
                            customdata=stt.region,
                            hovertemplate="%{y} (%{customdata})<br>%{x:,.2f} BRL<extra></extra>"))
-    fig.update_layout(title="10 bang có doanh thu cao nhất (drill-down từ vùng)", yaxis_autorange="reversed")
+    fig.update_layout(title="10 bang có doanh thu cao nhất ", yaxis_autorange="reversed")
     chart(fig, stt.rename(columns={"state_code": "Bang", "region": "Vùng", "revenue": "Doanh thu (BRL)",
                                    "orders": "Số đơn"}),
           column_config={"Doanh thu (BRL)": money_col("Doanh thu (BRL)")})
 
 # ---- dice: top categories x states ----
-st.subheader("Ngành hàng dẫn đầu tại các bang lớn (dice)")
+st.subheader("Ngành hàng dẫn đầu tại các bang lớn")
 top_n = st.slider("Số ngành hàng", 3, 15, 8, key="rev_topn")
 dice = query(f"""WITH {items_cte('sales')},
 top_cat AS (SELECT category FROM items GROUP BY category ORDER BY SUM(price) DESC LIMIT :n),
@@ -87,4 +86,3 @@ chart(fig, growth.sort_values("growth_pct", ascending=False).rename(columns={
     height=max(320, 26 * len(growth) + 90),
     column_config={"01-08/2017 (BRL)": money_col("01-08/2017 (BRL)"), "01-08/2018 (BRL)": money_col("01-08/2018 (BRL)"),
                    "Tăng trưởng": pct_col("Tăng trưởng", 1)})
-st.caption("Biểu đồ này so sánh hai kỳ cố định nên không áp dụng bộ lọc bên trái (giống truy vấn q12 trong báo cáo).")

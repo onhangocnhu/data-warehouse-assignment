@@ -14,9 +14,6 @@ CERTAIN = "Đã quá ngày giao dự kiến khi bàn giao vận chuyển"   # ru
 LEVEL_VN = {"RED": "ĐỎ", "YELLOW": "VÀNG", "GREEN": "XANH"}
 
 st.title("Cảnh báo giao trễ lúc bàn giao vận chuyển")
-st.caption("Mỗi đơn được chấm điểm khi người bán bàn giao cho đơn vị vận chuyển. ĐỎ = 5% đơn rủi ro nhất trong ngày "
-           "(và mọi đơn đã quá hạn khi bàn giao), VÀNG = 10% tiếp theo. Dữ liệu là ba tháng kiểm thử 06-08/2018 "
-           "(backtest), nên cột \"Thực tế\" đã biết kết quả.")
 
 scores = query("""SELECT order_id, decision_date, p_late::float AS p_late, risk_rank_pct::float AS risk_rank_pct,
        risk_level, reason_1, reason_2, reason_3, recommended_action, actual_is_late, model_version
@@ -28,7 +25,7 @@ scores["decision_date"] = scores.decision_date.astype("datetime64[ns]").dt.date
 scores["certain"] = scores.reason_1 == CERTAIN
 
 # ---------------- what-if: expected-cost policy ----------------
-st.subheader("Phân tích what-if: khi nào nên tặng voucher?")
+st.subheader("Khi nào nên tặng voucher?")
 c1, c2, c3 = st.columns(3)
 # select_slider instead of slider: a slider can only print numbers as 30.00, not 30,00
 c_late = c1.select_slider("Thiệt hại khi một đơn bị trễ, C trễ (BRL)", [float(x) for x in range(5, 101)],
@@ -59,14 +56,11 @@ pol = pd.DataFrame([{"Chính sách": "Mức ĐỎ (5%)", **policy(red)},
                     {"Chính sách": f"Chi phí kỳ vọng (p ≥ {num(threshold, 3)})", **policy(ev)}])
 best = pol.iloc[2]
 kpis([("Ngưỡng p*", num(threshold, 3) if threshold <= 1 else f"{num(threshold, 3)} (> 1)",
-       "Can thiệp khi p·C trễ·e > C can thiệp. Nếu p* > 1 chỉ còn các đơn chắc chắn trễ (đã quá hạn khi bàn giao)."),
+       "Đơn có xác suất trễ từ ngưỡng này được đề xuất voucher"),
       ("Đơn được đề xuất voucher", num(best["Số đơn can thiệp"])),
       ("Precision", pct(best["Precision"], 1)),
       ("Lợi ích ròng ước tính", money(best["Lợi ích ròng (BRL)"], 0))])
 show_table(pol, column_config={"Precision": pct_col("Precision", 1)})
-st.caption("Lợi ích ròng = số đơn trễ bắt được × C trễ × e − số đơn can thiệp × C can thiệp, trên 18.753 đơn của "
-           "ba tháng kiểm thử. Mặc định (30; 8; 0,4) cho p* = 0,667, khớp Bảng chính sách trong báo cáo. "
-           "Các tham số là giả định, người quản lý chỉnh theo số liệu thật của sàn.")
 
 # ---------------- risk levels ----------------
 c1, c2 = st.columns(2)
@@ -112,8 +106,7 @@ decided = query_live("""SELECT DISTINCT ON (object_id) object_id, decision, deci
 FROM dss.decision_log WHERE module = 'delay_risk' ORDER BY object_id, decided_at DESC""")
 done = decided.set_index("object_id").to_dict("index")
 
-st.caption(f"{num(len(queue))} đơn · {LEVEL_VN.get('RED')} = đỏ, {LEVEL_VN.get('YELLOW')} = vàng. "
-           f"Đơn có p ≥ p* = {num(threshold, 3)} được đề xuất thêm voucher.")
+st.caption(f"{num(len(queue))} đơn cần xử lý")
 if queue.empty:
     st.info("Không có đơn ĐỎ / VÀNG nào trong ngày này.")
 for r in queue.head(40).itertuples():
@@ -150,13 +143,13 @@ for r in queue.head(40).itertuples():
 if len(queue) > 40:
     st.caption(f"Đang hiện 40 / {num(len(queue))} đơn rủi ro nhất.")
 
-with st.expander("Nhật ký quyết định (dss.decision_log)"):
+with st.expander("Nhật ký quyết định"):
     log = query_live("""SELECT decided_at, object_id AS order_id, decision, decided_by, recommendation, note
 FROM dss.decision_log WHERE module = 'delay_risk' ORDER BY decided_at DESC LIMIT 200""")
     show_table(log.rename(columns={"order_id": "Mã đơn", "decision": "Quyết định", "decided_by": "Người duyệt",
                                    "recommendation": "Đề xuất", "note": "Ghi chú"}),
                column_config={"decided_at": st.column_config.DatetimeColumn("Thời điểm", format="DD/MM/YYYY HH:mm")})
 
-with st.expander("Phiên bản mô hình (dss.model_registry)"):
+with st.expander("Phiên bản mô hình"):
     show_table(query("""SELECT model_version, test_month, train_rows, train_until, roc_auc, pr_auc, recall_top10
 FROM dss.model_registry ORDER BY test_month"""))

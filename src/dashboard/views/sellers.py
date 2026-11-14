@@ -64,8 +64,7 @@ cols = {"seller_id": "Mã người bán", "state_code": "Bang", "orders": "Số 
         "late_pct": "Tỷ lệ trễ", "avg_review": "Điểm TB", "low_review_pct": "Tỷ lệ 1-2 sao"}
 cfg = {"Doanh thu (BRL)": money_col("Doanh thu (BRL)"), "Tỷ lệ trễ": pct_col("Tỷ lệ trễ", 1),
        "Tỷ lệ 1-2 sao": pct_col("Tỷ lệ 1-2 sao", 1)}
-st.markdown(f"**Người bán cần làm việc trước** ({len(flagged)}): thuộc nhóm {top_share}% doanh thu cao nhất "
-            f"nhưng có hơn {low_limit}% đánh giá 1-2 sao.")
+st.markdown(f"**Người bán cần làm việc trước** ({len(flagged)})")
 show_table(flagged[list(cols)].rename(columns=cols), column_config=cfg)
 with st.expander("Bảng xếp hạng toàn bộ người bán"):
     show_table(sellers[list(cols)].rename(columns=cols), column_config=cfg)
@@ -93,4 +92,3 @@ chart(fig, dist.rename(columns={"state_code": "Bang", "sellers": "Người bán"
                                 "orders": "Đơn hàng", "order_share": "Tỷ trọng đơn hàng"}),
       column_config={"Tỷ trọng người bán": pct_col("Tỷ trọng người bán", 1),
                      "Tỷ trọng đơn hàng": pct_col("Tỷ trọng đơn hàng", 1)})
-st.caption("Số người bán theo bang là toàn bộ người bán trong kho (không phụ thuộc bộ lọc), giống truy vấn q11.")

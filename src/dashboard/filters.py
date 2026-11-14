@@ -152,5 +152,4 @@ def sidebar_filters() -> Filters:
         st.multiselect("Ngành hàng", cats.category_name_en.tolist(), key="w_f_cats",
                        placeholder="Tất cả ngành hàng", on_change=_keep, args=("f_cats",))
         st.button("Xóa bộ lọc", on_click=_reset, width="stretch")
-        st.caption("Giai đoạn dữ liệu ổn định là 01/2017-08/2018; năm 2016 chỉ có vài trăm đơn.")
     return Filters(_month_range(ss.f_months), tuple(ss.f_regions), tuple(ss.f_cats))

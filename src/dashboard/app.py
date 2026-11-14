@@ -16,7 +16,7 @@ import streamlit as st  # noqa: E402
 from src.dashboard.db import using_admin  # noqa: E402
 from src.dashboard.ui import theme_watcher  # noqa: E402
 
-st.set_page_config(page_title="Olist Data Mart", page_icon=":material/insights:", layout="wide")
+st.set_page_config(page_title="Olist Analytics", page_icon=":material/insights:", layout="wide")
 
 # Folder name is "views", not "pages": Streamlit would treat a "pages/" folder as old-style automatic pages.
 PAGES = Path(__file__).resolve().parent / "views"
@@ -27,7 +27,7 @@ nav = st.navigation({
     ],
     "Vận hành": [
         st.Page(PAGES / "delivery.py", title="Giao hàng", icon=":material/local_shipping:", url_path="delivery"),
-        st.Page(PAGES / "dss.py", title="Cảnh báo giao trễ (DSS)", icon=":material/notifications_active:",
+        st.Page(PAGES / "dss.py", title="Cảnh báo giao trễ", icon=":material/notifications_active:",
                 url_path="dss"),
     ],
     "Khách hàng & người bán": [
@@ -40,7 +40,7 @@ nav = st.navigation({
 })
 
 with st.sidebar:
-    st.markdown("**Kho dữ liệu sàn TMĐT Olist**  \nCO4031 · Nhóm 10")
+    st.markdown("**Olist Analytics**")
     if using_admin():
         st.warning("Đang kết nối bằng tài khoản ETL (dw_admin). Chạy `python -m src.dashboard.setup_role` "
                    "để dùng tài khoản chỉ đọc cho dashboard.", icon=":material/lock_open:")

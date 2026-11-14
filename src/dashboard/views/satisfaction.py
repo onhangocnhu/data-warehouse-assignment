@@ -28,9 +28,9 @@ kpis([("Số đánh giá", num(k.reviews)), ("Điểm TB", num(k.avg_review, 2))
       ("Tỷ lệ 1-2 sao", pct(k.low_pct, 1))])
 kpis([("Tỷ lệ 5 sao", pct(k.five_pct, 1)),
       ("Điểm TB đơn giao đúng hạn", num(on_time.iloc[0], 2) if len(on_time) else "–",
-       "Đơn có cả trạng thái giao hàng và đánh giá (báo cáo: 4,29)"),
+       "Đơn giao đúng hạn có đánh giá"),
       ("Điểm TB đơn giao trễ", num(late.iloc[0], 2) if len(late) else "–",
-       "Đơn có cả trạng thái giao hàng và đánh giá (báo cáo: 2,27)")])
+       "Đơn giao trễ có đánh giá")])
 
 # ---- distribution of stars, on time vs late ----
 dist = query(f"""WITH {orders_cte()}
@@ -69,7 +69,7 @@ FROM ord GROUP BY category HAVING COUNT(*) >= 300 ORDER BY low_pct DESC LIMIT 12
           column_config={"Tỷ lệ 1-2 sao": pct_col("Tỷ lệ 1-2 sao", 1)})
 
 # ---- pivot: category (rows) x region (columns), with a "swap axes" toggle ----
-st.subheader("Pivot: điểm đánh giá trung bình theo ngành hàng và vùng")
+st.subheader("Điểm đánh giá trung bình theo ngành hàng và vùng")
 top_n = st.slider("Số ngành hàng nhiều đơn nhất", 5, 20, 10, key="sat_topn")
 piv = query(f"""WITH {items_cte('all')},
 ord AS (SELECT order_id, MIN(category) AS category, MIN(region) AS region, MIN(review_score) AS score
@@ -81,7 +81,7 @@ GROUP BY category, region""", {**p, "n": top_n})
 if piv.empty:
     st.info("Không có dữ liệu với bộ lọc hiện tại.")
 else:
-    swap = st.toggle("Hoán đổi trục (pivot)", key="sat_swap")
+    swap = st.toggle("Hoán đổi trục", key="sat_swap")
     m = piv.pivot(index="category", columns="region", values="avg_review")
     n = piv.pivot(index="category", columns="region", values="orders")
     overall = piv.assign(w=piv.avg_review * piv.orders).groupby("category").w.sum() / n.sum(axis=1)
@@ -96,4 +96,3 @@ else:
     fig.update_layout(title="Điểm TB (màu đậm hơn = điểm cao hơn)")
     chart(fig, m.reset_index().rename(columns={"index": "", "category": "Ngành hàng", "region": "Vùng"}),
           height=max(340, 34 * len(m) + 100))
-    st.caption("Ô ít đơn (xem số đơn khi rê chuột) không đủ để kết luận, ví dụ housewares ở Norte (~60 đơn).")
