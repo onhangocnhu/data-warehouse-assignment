@@ -22,7 +22,7 @@ Tốc độ truy vấn OLAP & \code{EXPLAIN ANALYZE}, trung vị 5 lần chạy 
 Phân quyền & Role \code{analyst\_ro}; thông tin kết nối trong \code{.env} & Người dùng phân tích chỉ có quyền \code{SELECT}\\ \hline
 Metadata & Schema \code{meta} & Có từ điển dữ liệu và nguồn gốc của từng cột\\ \hline
 Đúng số liệu trên dashboard & Đối chiếu tám chỉ số trên dashboard với kết quả OLAP và DSS & Cả tám chỉ số khớp (Bảng~\ref{tab:doichieu})\\ \hline
-Thời gian phản hồi dashboard & Mở từng trang trong tiến trình mới bằng AppTest của Streamlit & Lần đầu 0,4-4,7 giây, lần sau dưới 0,1 giây; đạt yêu cầu tối đa 5 giây\\ \hline
+Thời gian phản hồi dashboard & Mở từng trang trong tiến trình mới bằng AppTest của Streamlit & Lần đầu 0,4-4,7 giây, lần sau dưới 0,1 giây\\ \hline
 Tính khả dụng & Các thao tác lọc, drill-down, pivot, what-if trên dashboard & Người dùng chọn bằng thanh trượt, ô chọn và nút bấm, không cần viết SQL; tên chỉ số và chiều bằng tiếng Việt, số theo định dạng Việt Nam\\ \hline
 Phân quyền dashboard & Thử \code{UPDATE}, \code{DELETE} bằng tài khoản \code{dashboard\_app} & Bị từ chối; dashboard chỉ được đọc và ghi thêm vào \code{dss.decision\_log}\\ \hline
 \end{longtable}

@@ -74,7 +74,7 @@ copy .env.example .env               # Linux/macOS: cp .env.example .env; set DB
 docker compose up -d                 # PostgreSQL 16
 python -m venv .venv && .venv\Scripts\activate   # Linux/macOS: source .venv/bin/activate
 pip install -r requirements.txt
-python -m src.etl.run_etl --init     # schemas, tables and a full ETL run (~20 s)
+python -m src.etl.run_etl --init     # schemas, tables and a full ETL run (~10-20 s)
 python -m src.eda.run_eda            # EDA before/after preprocessing -> src/eda/results/
 python -m src.olap.run_olap          # 14 OLAP queries -> src/olap/results/
 python -m src.dss.evaluate_models    # model selection on 01-05/2018 + walk-forward (~1-2 h); add --reuse to skip the search

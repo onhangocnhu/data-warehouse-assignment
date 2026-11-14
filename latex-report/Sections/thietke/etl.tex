@@ -32,7 +32,7 @@ Phần tích hợp xử lý ba chỗ mà các bảng nguồn không khớp nhau.
 
 \paragraph{Quy tắc nghiệp vụ và trường dẫn xuất}
 
-Bốn khoảng thời gian \code{approval\_days}, \code{handling\_days}, \code{shipping\_days} và \code{delivery\_days} được tính bằng hiệu giữa các mốc, đơn vị là ngày. Cờ \code{is\_late} bằng 1 khi ngày nhận hàng sau ngày giao dự kiến (so theo ngày) và bằng 0 trong trường hợp ngược lại; cờ chỉ được tính cho đơn đã có ngày nhận hàng. Mỗi bang được gán vào một trong năm vùng Norte, Nordeste, Centro-Oeste, Sudeste và Sul. Doanh thu hàng hóa chỉ tính từ giá bán của dòng sản phẩm, không gồm phí vận chuyển; trạng thái đơn hàng được giữ trong bảng fact để người dùng tự lọc đơn đã giao hay loại đơn bị hủy khi cần.
+Bốn khoảng thời gian \code{approval\_days}, \code{handling\_days}, \code{shipping\_days} và \code{delivery\_days} được tính bằng hiệu giữa hai mốc thời gian (gồm cả giờ, phút, giây) rồi quy đổi ra ngày, làm tròn hai chữ số thập phân; ví dụ 5 ngày 8 giờ được ghi là 5,34 ngày. Cờ \code{is\_late} bằng 1 khi ngày nhận hàng sau ngày giao dự kiến (so theo ngày) và bằng 0 trong trường hợp ngược lại; cờ chỉ được tính cho đơn đã có ngày nhận hàng. Mỗi bang được gán vào một trong năm vùng Norte, Nordeste, Centro-Oeste, Sudeste và Sul. Doanh thu hàng hóa chỉ tính từ giá bán của dòng sản phẩm, không gồm phí vận chuyển; trạng thái đơn hàng được giữ trong bảng fact để người dùng tự lọc đơn đã giao hay loại đơn bị hủy khi cần.
 
 \subsubsection{Load -- Nạp dữ liệu}
 

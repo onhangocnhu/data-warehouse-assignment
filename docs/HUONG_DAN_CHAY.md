@@ -46,8 +46,8 @@ ETL phải chạy trước vì mọi bước sau đều đọc từ cơ sở d�
 
 | Lệnh | Thời gian | Làm gì |
 |---|---|---|
-| `python -m src.etl.run_etl --init` | ~20 giây | Tạo 4 schema (`staging`, `dm`, `meta`, `dss`), các bảng, rồi nạp toàn bộ dữ liệu |
-| `python -m src.etl.run_etl` | ~20 giây | Những lần nạp lại sau |
+| `python -m src.etl.run_etl --init` | ~10-20 giây | Tạo 4 schema (`staging`, `dm`, `meta`, `dss`), các bảng, rồi nạp toàn bộ dữ liệu |
+| `python -m src.etl.run_etl` | ~10-20 giây | Những lần nạp lại sau |
 | `python -m src.etl.verify_rollback` | vài giây | Cố ý gây lỗi trong bước Load để chứng minh Data Mart không bị nạp dở dang |
 
 Mã liên quan: `src/etl/` (điều phối), `src/sql/00-05` (tạo bảng), `10_transform.sql`, `20_load_dims.sql`, `30_load_fact.sql`, `40_dq_checks.sql`.
@@ -200,9 +200,18 @@ latexmk -pdf main.tex
 
 Không chạy lệnh này khi trình soạn thảo đang tự biên dịch, hai tiến trình ghi cùng file sẽ làm hỏng PDF.
 
-## 7. Dashboard - mục 4.4
+## 7. Dashboard - mục 4.4 và mục 5.6
 
-Phần của Đặng Nguyên Bảo, xem `src/dashboard/README.md` (trang cần có, nguồn dữ liệu, các con số phải khớp với báo cáo).
+Streamlit, 7 trang (Tổng quan, Doanh thu, Giao hàng, Cảnh báo giao trễ, Mức độ hài lòng, Người bán, Giám sát ETL). Cần chạy ETL và `score_delay` trước.
+
+```powershell
+python -m src.dashboard.setup_role    # một lần: tạo tài khoản dashboard_app, in 2 dòng DASHBOARD_DB_* để thêm vào .env
+streamlit run src/dashboard/app.py    # mở http://localhost:8501
+```
+
+Trên Linux/macOS có thể chạy cả chuỗi bằng `bash src/dashboard/run.sh` (tự bỏ qua bước đã làm; `--check` chỉ kiểm tra, không mở dashboard).
+
+**Kiểm tra (Bảng tab:doichieu):** trang Tổng quan hiện doanh thu 13.494.400,74 BRL / 98.199 đơn và tỷ lệ trễ 6,77%; trang Cảnh báo giao trễ với tham số mặc định cho p* = 0,667, 190 đơn, lợi ích ròng 688 BRL. Chi tiết xem `src/dashboard/README.md`.
 
 ## Có cần Google Colab không?
 

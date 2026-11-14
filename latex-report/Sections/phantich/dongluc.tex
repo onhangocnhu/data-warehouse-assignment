@@ -7,7 +7,7 @@ Trên một sàn thương mại điện tử, một đơn hàng không dừng l�
 
 Với bộ dữ liệu của sàn Olist, trả lời một câu hỏi quản lý thông thường đã khá vất vả. Chẳng hạn, để biết ngành hàng nào vừa hay giao trễ vừa bị đánh giá thấp, người phân tích phải tự nối ít nhất năm bảng: đơn hàng, dòng sản phẩm, sản phẩm, bảng dịch ngành hàng và đánh giá, đồng thời phải tự xử lý trường hợp một đơn có nhiều sản phẩm hoặc nhiều đánh giá. Nếu mỗi người tự viết truy vấn theo cách của mình, cùng một chỉ số có thể ra hai con số khác nhau.
 
-Một khó khăn khác là các chỉ số thường được xem tách rời. Doanh thu nằm ở báo cáo kinh doanh, thời gian giao hàng nằm ở báo cáo vận hành, còn điểm đánh giá nằm ở bộ phận chăm sóc khách hàng. Trong khi đó, như phần phân tích ở mục~\ref{sec:olap} cho thấy, đơn giao trễ có điểm đánh giá trung bình chỉ 2,27 so với 4,29 của đơn đúng hạn. Một vấn đề vận hành ở một tuyến giao hàng có thể kéo theo đánh giá xấu và mất khách ở cả một khu vực, nhưng nếu không đặt các chỉ số cạnh nhau thì rất khó nhìn ra.
+Một khó khăn khác là các chỉ số thường được xem tách rời. Doanh thu nằm ở báo cáo kinh doanh, thời gian giao hàng nằm ở báo cáo vận hành, còn điểm đánh giá nằm ở bộ phận chăm sóc khách hàng. Một vấn đề vận hành ở một tuyến giao hàng có thể kéo theo đánh giá xấu và mất khách ở cả một khu vực, nhưng nếu không đặt các chỉ số cạnh nhau thì rất khó nhìn ra.
 
 Hệ thống giao dịch của sàn lại được thiết kế để ghi nhận trạng thái hiện tại của đơn hàng, không phải để so sánh xu hướng theo tháng, quý hay năm. Dữ liệu nguồn cũng chưa sạch: có giá trị thiếu, dòng trùng, tên thành phố viết nhiều kiểu và mốc thời gian sai thứ tự (Bảng~\ref{tab:chatluong}). Vì vậy cần một kho dữ liệu để gom dữ liệu về một nơi, làm sạch một lần và dùng chung một cách tính chỉ số cho mọi bộ phận.
 
@@ -28,7 +28,7 @@ Mục tiêu chung của đề tài là giúp nhà quản lý sàn theo dõi doan
 
 Đề tài tập trung vào giai đoạn sau khi đơn hàng được đặt, từ lúc duyệt đơn đến lúc khách đánh giá, và chỉ dùng bộ dữ liệu công khai của Olist làm nguồn. Trong phạm vi này, kho dữ liệu phục vụ bốn mảng phân tích: doanh thu (doanh thu, phí vận chuyển, số đơn và giá trị đơn theo thời gian, khu vực, ngành hàng), giao hàng (thời gian từng công đoạn và tình trạng giao đúng hạn), mức độ hài lòng (điểm đánh giá theo ngành hàng, người bán, khu vực và tình trạng giao hàng) và hiệu quả người bán.
 
-Thanh toán nằm ngoài phạm vi. Một đơn hàng có thể được trả bằng nhiều phương thức, nên dữ liệu thanh toán có mức chi tiết khác hẳn phần còn lại (mục~\ref{sec:quanhe}). Đưa thêm phần này vào sẽ cần một bảng fact riêng, trong khi các quyết định mà đề tài hướng tới đều xoay quanh giao hàng và đánh giá. Dữ liệu thanh toán vẫn được nạp vào khu vực staging, nên có thể mở rộng thành một Data Mart riêng sau này.
+Thanh toán nằm ngoài phạm vi. Đưa thêm phần này vào sẽ cần một bảng fact riêng, trong khi các quyết định mà đề tài hướng tới đều xoay quanh giao hàng và đánh giá. Dữ liệu thanh toán vẫn được nạp vào khu vực staging, nên có thể mở rộng thành một Data Mart riêng sau này.
 
 \subsubsection{Các bên liên quan}
 

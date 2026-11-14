@@ -59,7 +59,11 @@ Các tập dữ liệu liên kết với nhau qua khóa như trong Bảng~\ref{t
 
 \input{Sections/hinh/quanhe-nguon}
 
-Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu. Thứ nhất, dữ liệu không cùng mức chi tiết: giá, phí vận chuyển và người bán được ghi theo từng dòng sản phẩm, còn thanh toán, đánh giá và các mốc giao hàng được ghi theo đơn hàng. Thứ hai, \code{customer\_id} được sinh mới cho mỗi đơn hàng, nên không thể dùng nó để đếm khách hàng. Mã nhận diện khách hàng thật là \code{customer\_unique\_id}, với 96.096 giá trị, trong đó 2.997 khách hàng có từ hai \code{customer\_id} trở lên. Thứ ba, tập \code{geolocation} không có khóa duy nhất: một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên phải gom lại trước khi nối với khách hàng và người bán.
-
+Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu: 
+\begin{enumerate}
+    \item Dữ liệu không cùng mức chi tiết: giá, phí vận chuyển và người bán được ghi theo từng dòng sản phẩm, còn thanh toán, đánh giá và các mốc giao hàng được ghi theo đơn hàng.
+    \item \code{customer\_id} được sinh mới cho mỗi đơn hàng, nên không thể dùng nó để đếm khách hàng. Mã nhận diện khách hàng thật là \code{customer\_unique\_id}, với 96.096 giá trị, trong đó 2.997 khách hàng có từ hai \code{customer\_id} trở lên. 
+    \item Tập \code{geolocation} không có khóa duy nhất: một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên phải gom lại trước khi nối với khách hàng và người bán.
+\end{enumerate}
 Phân bố của từng thuộc tính, các giá trị thiếu, ngoại lai và lỗi dữ liệu được khảo sát chi tiết ở mục~\ref{sec:eda}, cùng với các quy tắc tiền xử lý rút ra từ đó.
 
