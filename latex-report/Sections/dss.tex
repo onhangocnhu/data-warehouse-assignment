@@ -247,7 +247,7 @@ SP$\rightarrow$BA & 0,19 & Tuyến SP$\rightarrow$BA trễ 19\% trong 90 ngày q
 
 Kèm theo mỗi mức là một hành động đề xuất: đơn ĐỎ được đề xuất báo trước cho khách, tặng voucher nếu vượt ngưỡng $p^{*}$, hoặc chuyển gói vận chuyển nhanh (mô phỏng, vì dữ liệu không có thông tin đơn vị vận chuyển); đơn VÀNG được theo dõi hành trình hằng ngày. Người vận hành phê duyệt hoặc từ chối từng đề xuất trên dashboard, và quyết định được ghi vào \code{dss.decision\_log} để đánh giá lại về sau. Mô hình được huấn luyện lại mỗi tháng, đúng như cách đã đánh giá ở mục~\ref{sec:dssketqua}.
 
-Trang ``Cảnh báo giao trễ'' của dashboard (mục~\ref{sec:dashboard}) là giao diện của DSS và có hai phần. Phần trên (Hình~\ref{fig:dashdsswhatif}) là phân tích what-if: ba thanh trượt cho $C_{\text{trễ}}$, $C_{\text{can thiệp}}$ và $e$, công thức $p^{*}$ tính lại theo giá trị đang chọn, và bảng so sánh ba chính sách như Bảng~\ref{tab:dsschinhsach}. Với tham số mặc định, trang cho đúng $p^{*} = 0{,}667$, 190 đơn được đề xuất voucher, precision 96,8\% và lợi ích ròng 688 BRL. Khi kéo $C_{\text{trễ}}$ lên 50 BRL và $C_{\text{can thiệp}}$ lên 10 BRL, ngưỡng giảm còn $p^{*} = 0{,}500$ và danh sách đơn được đề xuất voucher cập nhật ngay. Hai biểu đồ phía dưới phần này (không có trên hình) nhắc lại tỷ lệ trễ thực tế theo mức rủi ro (Hình~\ref{fig:dssmucruiro}) và tỷ lệ đơn trễ bắt được theo năng lực xử lý mỗi ngày (Hình~\ref{fig:dssnangluc}).
+Trang ``Cảnh báo giao trễ'' của dashboard (mục~\ref{sec:dashboard}) là giao diện của DSS và có hai phần. Phần trên (Hình~\ref{fig:dashdsswhatif}) là phân tích what-if: ba thanh trượt cho $C_{\text{trễ}}$, $C_{\text{can thiệp}}$ và $e$, ô ngưỡng $p^{*}$ tính lại theo giá trị đang chọn (công thức nằm trong chú giải của ô), và bảng so sánh ba chính sách như Bảng~\ref{tab:dsschinhsach}. Với tham số mặc định, trang cho đúng $p^{*} = 0{,}667$, 190 đơn được đề xuất voucher, precision 96,8\% và lợi ích ròng 688 BRL. Khi kéo $C_{\text{trễ}}$ lên 50 BRL và $C_{\text{can thiệp}}$ lên 10 BRL, ngưỡng giảm còn $p^{*} = 0{,}500$ và danh sách đơn được đề xuất voucher cập nhật ngay. Hai biểu đồ phía dưới phần này (không có trên hình) nhắc lại tỷ lệ trễ thực tế theo mức rủi ro (Hình~\ref{fig:dssmucruiro}) và tỷ lệ đơn trễ bắt được theo năng lực xử lý mỗi ngày (Hình~\ref{fig:dssnangluc}).
 
 \begin{figure}[H]
 \centering
@@ -256,11 +256,11 @@ Trang ``Cảnh báo giao trễ'' của dashboard (mục~\ref{sec:dashboard}) là
 \label{fig:dashdsswhatif}
 \end{figure}
 
-Phần dưới (Hình~\ref{fig:dashdssdanhsach}) là danh sách đơn cần xử lý của một ngày bàn giao, lọc theo mức ĐỎ hoặc VÀNG. Mỗi đơn hiện xác suất trễ, tối đa ba lý do và hành động đề xuất. Người vận hành nhập tên, có thể ghi chú, rồi bấm ``Duyệt'' hoặc ``Từ chối''; quyết định được ghi vào \code{dss.decision\_log} và đơn đó chuyển sang trạng thái đã duyệt kèm thời điểm, như đơn đầu tiên trên hình. Vì dữ liệu là ba tháng backtest, cột ``Thực tế'' cho biết đơn đó sau cùng có trễ hay không; khi triển khai thật, cột này sẽ trống.
+Phần dưới (Hình~\ref{fig:dashdssdanhsach}) là hàng đợi xử lý của một ngày bàn giao, lọc theo mức ĐỎ hoặc VÀNG. Mỗi đơn là một dòng gồm mức rủi ro, mã đơn, xác suất trễ, tối đa ba lý do kèm hành động đề xuất, trạng thái (chờ xử lý, đã duyệt hoặc đã từ chối) và nút thao tác; dòng đếm phía trên cho biết số đơn đã xử lý và còn chờ. Người vận hành nhập tên, có thể ghi chú, rồi bấm ``Duyệt'' hoặc ``Từ chối''; quyết định được ghi vào \code{dss.decision\_log} và đơn đó chuyển sang trạng thái đã duyệt kèm thời điểm, như đơn đầu tiên trên hình. Vì dữ liệu là ba tháng backtest, dòng ``Thực tế'' dưới mỗi đơn cho biết đơn đó sau cùng có trễ hay không; khi triển khai thật, thông tin này chưa có.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{Pictures/dash-dss-danh-sach.png}
-\caption{Trang Cảnh báo giao trễ, danh sách đơn cần xử lý ngày 16/7/2018: lý do cảnh báo, hành động đề xuất và nút duyệt, từ chối}
+\caption{Trang Cảnh báo giao trễ, hàng đợi xử lý ngày 16/7/2018: lý do cảnh báo, hành động đề xuất, trạng thái và nút duyệt, từ chối}
 \label{fig:dashdssdanhsach}
 \end{figure}

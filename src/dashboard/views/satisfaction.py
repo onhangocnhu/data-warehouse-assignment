@@ -4,11 +4,12 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.dashboard.db import query
-from src.dashboard.filters import REGIONS, items_cte, orders_cte, sidebar_filters
+from src.dashboard.filters import REGIONS, filter_caption, items_cte, orders_cte, sidebar_filters
 from src.dashboard.ui import SEQ_BLUE, chart, kpis, num, pct, pct_col, series
 
-st.title("Mức độ hài lòng của khách hàng")
+st.header("Mức độ hài lòng")
 f = sidebar_filters()
+filter_caption(f)
 p = f.params
 
 k = query(f"""WITH {orders_cte()}
@@ -24,13 +25,14 @@ FROM orders WHERE is_late IS NOT NULL AND review_score IS NOT NULL
 GROUP BY is_late ORDER BY is_late""", p)
 on_time = lv[lv.is_late == 0].avg_review
 late = lv[lv.is_late == 1].avg_review
+late_delta = (f"-{num(abs(float(late.iloc[0]) - float(on_time.iloc[0])), 2)}"
+              if len(on_time) and len(late) else None)
 kpis([("Số đánh giá", num(k.reviews)), ("Điểm TB", num(k.avg_review, 2)),
-      ("Tỷ lệ 1-2 sao", pct(k.low_pct, 1))])
-kpis([("Tỷ lệ 5 sao", pct(k.five_pct, 1)),
-      ("Điểm TB đơn giao đúng hạn", num(on_time.iloc[0], 2) if len(on_time) else "–",
-       "Đơn có cả trạng thái giao hàng và đánh giá (báo cáo: 4,29)"),
-      ("Điểm TB đơn giao trễ", num(late.iloc[0], 2) if len(late) else "–",
-       "Đơn có cả trạng thái giao hàng và đánh giá (báo cáo: 2,27)")])
+      ("Tỷ lệ 1-2 sao", pct(k.low_pct, 1)), ("Tỷ lệ 5 sao", pct(k.five_pct, 1)),
+      ("TB đúng hạn", num(on_time.iloc[0], 2) if len(on_time) else "–",
+       "Điểm đánh giá TB của đơn giao đúng hạn"),
+      ("TB giao trễ", num(late.iloc[0], 2) if len(late) else "–",
+       "Điểm đánh giá TB của đơn giao trễ; số nhỏ bên dưới là chênh lệch so với đơn đúng hạn", late_delta)])
 
 # ---- distribution of stars, on time vs late ----
 dist = query(f"""WITH {orders_cte()}
@@ -45,7 +47,7 @@ with c1:
         share = 100 * d.n / d.n.sum() if len(d) else d.n
         fig.add_bar(x=d.review_score.astype(str) + " sao", y=share, name=name, marker_color=series(i),
                     hovertemplate=name + " · %{x}<br>%{y:.1f}% số đơn<extra></extra>")
-    fig.update_layout(title="Phân bố điểm đánh giá (% số đơn trong nhóm)", barmode="group", yaxis_ticksuffix="%")
+    fig.update_layout(title="Phân bố điểm đánh giá (%)", barmode="group", yaxis_ticksuffix="%")
     chart(fig, lv.assign(is_late=lv.is_late.map({0: "Đúng hạn", 1: "Giao trễ"})).rename(columns={
         "is_late": "Giao hàng", "orders": "Số đơn", "avg_review": "Điểm TB", "low_review_pct": "Tỷ lệ 1-2 sao",
         "five_star_pct": "Tỷ lệ 5 sao"}),
@@ -62,15 +64,15 @@ FROM ord GROUP BY category HAVING COUNT(*) >= 300 ORDER BY low_pct DESC LIMIT 12
     fig = go.Figure(go.Bar(x=cat.low_pct, y=cat.category, orientation="h", marker_color=series(1),
                            customdata=cat[["orders", "avg_review"]],
                            hovertemplate="%{y}<br>1-2 sao: %{x:.1f}%<br>Điểm TB %{customdata[1]:.2f} · %{customdata[0]:,} đơn<extra></extra>"))
-    fig.update_layout(title="Ngành hàng có tỷ lệ đánh giá 1-2 sao cao nhất (≥ 300 đơn)",
+    fig.update_layout(title="Tỷ lệ đánh giá 1-2 sao theo ngành hàng (%), top 12",
                       yaxis_autorange="reversed", xaxis_ticksuffix="%")
     chart(fig, cat.rename(columns={"category": "Ngành hàng", "orders": "Số đơn", "avg_review": "Điểm TB",
                                    "low_pct": "Tỷ lệ 1-2 sao"}),
           column_config={"Tỷ lệ 1-2 sao": pct_col("Tỷ lệ 1-2 sao", 1)})
 
 # ---- pivot: category (rows) x region (columns), with a "swap axes" toggle ----
-st.subheader("Pivot: điểm đánh giá trung bình theo ngành hàng và vùng")
-top_n = st.slider("Số ngành hàng nhiều đơn nhất", 5, 20, 10, key="sat_topn")
+st.subheader("Điểm đánh giá trung bình theo ngành hàng và vùng")
+top_n = st.slider("Số ngành hàng (theo số đơn)", 5, 20, 10, key="sat_topn")
 piv = query(f"""WITH {items_cte('all')},
 ord AS (SELECT order_id, MIN(category) AS category, MIN(region) AS region, MIN(review_score) AS score
         FROM items WHERE review_score IS NOT NULL GROUP BY order_id),
@@ -81,7 +83,7 @@ GROUP BY category, region""", {**p, "n": top_n})
 if piv.empty:
     st.info("Không có dữ liệu với bộ lọc hiện tại.")
 else:
-    swap = st.toggle("Hoán đổi trục (pivot)", key="sat_swap")
+    swap = st.toggle("Hoán đổi trục", key="sat_swap")
     m = piv.pivot(index="category", columns="region", values="avg_review")
     n = piv.pivot(index="category", columns="region", values="orders")
     overall = piv.assign(w=piv.avg_review * piv.orders).groupby("category").w.sum() / n.sum(axis=1)
@@ -93,7 +95,6 @@ else:
                                xgap=2, ygap=2, colorbar=dict(title="điểm"),
                                text=[[num(v, 2) for v in row] for row in m.values], texttemplate="%{text}",
                                hovertemplate="%{y} · %{x}<br>Điểm TB %{z:.2f}<br>%{customdata:,} đơn<extra></extra>"))
-    fig.update_layout(title="Điểm TB (màu đậm hơn = điểm cao hơn)")
+    fig.update_layout(title="Điểm đánh giá TB: ngành hàng × vùng")
     chart(fig, m.reset_index().rename(columns={"index": "", "category": "Ngành hàng", "region": "Vùng"}),
           height=max(340, 34 * len(m) + 100))
-    st.caption("Ô ít đơn (xem số đơn khi rê chuột) không đủ để kết luận, ví dụ housewares ở Norte (~60 đơn).")

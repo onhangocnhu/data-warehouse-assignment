@@ -100,10 +100,12 @@ def ratio(a, b):
 
 
 def kpis(items: list[tuple]) -> None:
-    """items: (label, value[, help]) per tile, shown in one row."""
+    """items: (label, value[, help[, delta]]) per tile, shown in one row. A delta starting with "-" is red."""
     for col, item in zip(st.columns(len(items)), items):
         label, value, *rest = item
-        col.metric(label, value, help=rest[0] if rest else None, border=True)
+        help_ = rest[0] if rest else None
+        delta = rest[1] if len(rest) > 1 else None
+        col.metric(label, value, delta=delta, help=help_, border=True)
 
 
 # ---------- charts ----------
@@ -166,7 +168,9 @@ def _is_decimal(s: pd.Series) -> bool:
     return len(v) > 0 and all(isinstance(x, (Decimal, int, float)) and not isinstance(x, bool) for x in v)
 
 
-def show_table(df: pd.DataFrame, column_config: dict | None = None, **kwargs) -> None:
+def show_table(df: pd.DataFrame, column_config: dict | None = None, highlight: dict | None = None,
+               **kwargs) -> None:
+    """highlight: {column: {cell text: STATUS-style hex colour}}; the text stays, so colour is not the only cue."""
     cfg, fmt = {}, {}
     for col, c in (column_config or {}).items():
         if isinstance(c, dict) and "_vn" in c:
@@ -195,5 +199,9 @@ def show_table(df: pd.DataFrame, column_config: dict | None = None, **kwargs) ->
         df[col] = df[col].map(lambda x, f=f: "–" if pd.isna(x) else f(x))
     kwargs.setdefault("hide_index", True)
     kwargs.setdefault("width", "stretch")
-    data = df.style.format(fmt) if fmt else df
+    data = df.style.format(fmt) if (fmt or highlight) else df
+    for col, colors in (highlight or {}).items():
+        if col in df.columns:
+            data = data.map(lambda v, colors=colors: f"color: {colors[v]}; font-weight: 600" if v in colors else "",
+                            subset=[col])
     st.dataframe(data, column_config=cfg or None, **kwargs)

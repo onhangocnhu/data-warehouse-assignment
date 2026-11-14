@@ -20,14 +20,14 @@ Các trang được nhóm theo người ra quyết định ở Bảng~\ref{tab:q
 Ban điều hành sàn & Tổng quan & Sáu chỉ số chính; doanh thu và số đơn theo tháng, quý hoặc năm (roll-up, drill-down); doanh thu theo vùng và năm (\code{CUBE})\\ \hline
 Ban điều hành sàn & Doanh thu & Doanh thu theo vùng và 10 bang dẫn đầu; doanh thu ngành hàng $\times$ bang (dice); tăng trưởng ngành hàng 01-08/2018 so với cùng kỳ\\ \hline
 Quản lý vận hành & Giao hàng & Tỷ lệ trễ drill-down vùng $\rightarrow$ bang $\rightarrow$ thành phố; thời gian từng công đoạn; ma trận tuyến giao hàng; mùa cao điểm Black Friday\\ \hline
-Quản lý vận hành & Cảnh báo giao trễ (DSS) & Phân tích what-if ngưỡng $p^{*}$, so sánh các chính sách; danh sách đơn ĐỎ, VÀNG theo ngày bàn giao kèm lý do; nút duyệt, từ chối\\ \hline
+Quản lý vận hành & Cảnh báo giao trễ & Phân tích what-if ngưỡng $p^{*}$, so sánh các chính sách; danh sách đơn ĐỎ, VÀNG theo ngày bàn giao kèm lý do; nút duyệt, từ chối\\ \hline
 Chăm sóc khách hàng & Mức độ hài lòng & Phân bố điểm của đơn đúng hạn và đơn trễ; ngành hàng nhiều đánh giá 1-2 sao; pivot điểm theo ngành hàng và vùng, có nút hoán đổi trục\\ \hline
 Quản lý ngành hàng và người bán & Người bán & Doanh thu và tỷ lệ đánh giá thấp của từng người bán; danh sách người bán cần làm việc trước với ngưỡng chỉnh được; phân bố người bán so với đơn hàng theo bang\\ \hline
 Người phụ trách kỹ thuật & Giám sát ETL & Nhật ký từng bước, 20 tiêu chí đối soát, bản ghi bị loại hoặc bị sửa (schema \code{meta})\\ \hline
 \end{tabularx}
 \end{table}
 
-Thanh bên trái có ba bộ lọc dùng chung cho các trang phân tích: khoảng tháng đặt hàng, vùng của khách hàng và ngành hàng. Về mặt OLAP, mỗi lần chọn bộ lọc là một phép slice hoặc dice trên khối dữ liệu. Giá trị đã chọn được giữ khi chuyển trang, và nút ``Xóa bộ lọc'' đưa về toàn bộ dữ liệu. Mọi truy vấn của dashboard xuất phát từ hai biểu thức \code{WITH} dùng chung: \code{items} đọc \code{fact\_sales} cho các thước đo cộng được như doanh thu, phí vận chuyển; \code{orders} đọc view \code{dm.v\_order} cho các thước đo theo đơn như thời gian giao, cờ trễ, điểm đánh giá. Nhờ vậy dashboard giữ đúng quy ước ở mục~\ref{sec:dodo}: một đơn có nhiều sản phẩm vẫn chỉ được tính một lần. Dưới mỗi biểu đồ có mục ``Bảng số liệu'' để xem con số cụ thể, và mọi con số đều theo định dạng Việt Nam (13.494.400,74; 6,77\%). Người xem có thể chọn giao diện sáng hoặc tối; màu biểu đồ đổi theo.
+Thanh bên trái có ba bộ lọc dùng chung cho các trang phân tích: khoảng tháng đặt hàng, vùng của khách hàng và ngành hàng. Về mặt OLAP, mỗi lần chọn bộ lọc là một phép slice hoặc dice trên khối dữ liệu. Giá trị đã chọn được giữ khi chuyển trang và được nhắc lại trên một dòng ngay dưới tên trang; nút ``Xóa bộ lọc'' đưa về toàn bộ dữ liệu. Mọi truy vấn của dashboard xuất phát từ hai biểu thức \code{WITH} dùng chung: \code{items} đọc \code{fact\_sales} cho các thước đo cộng được như doanh thu, phí vận chuyển; \code{orders} đọc view \code{dm.v\_order} cho các thước đo theo đơn như thời gian giao, cờ trễ, điểm đánh giá. Nhờ vậy dashboard giữ đúng quy ước ở mục~\ref{sec:dodo}: một đơn có nhiều sản phẩm vẫn chỉ được tính một lần. Dưới mỗi biểu đồ có mục ``Bảng số liệu'' để xem con số cụ thể, và mọi con số đều theo định dạng Việt Nam (13.494.400,74; 6,77\%). Người xem có thể chọn giao diện sáng hoặc tối; màu biểu đồ đổi theo.
 
 \subsubsection{Các trang phân tích}
 
@@ -67,21 +67,21 @@ Trang Mức độ hài lòng (Hình~\ref{fig:dashhailong}) đặt cạnh nhau đ
 \label{fig:dashhailong}
 \end{figure}
 
-Trang Người bán (Hình~\ref{fig:dashnguoiban}) vẽ mỗi người bán thành một điểm theo doanh thu và tỷ lệ đánh giá 1-2 sao. Truy vấn ở mục~\ref{sec:olapnghiepvu} cố định hai ngưỡng ``20\% doanh thu cao nhất'' và ``hơn 20\% đánh giá thấp''; trên dashboard, quản lý ngành hàng chỉnh được cả hai ngưỡng và số đơn tối thiểu. Với giá trị mặc định, ô ``Cần làm việc trước'' cho đúng 12 người bán như truy vấn OLAP; bảng chi tiết ngay dưới biểu đồ xếp người bán có 973 đơn và 186.570,05 BRL doanh thu lên đầu. Các điểm màu cam trên biểu đồ là nhóm người bán này.
+Trang Người bán (Hình~\ref{fig:dashnguoiban}) vẽ mỗi người bán thành một điểm theo doanh thu và tỷ lệ đánh giá 1-2 sao. Truy vấn ở mục~\ref{sec:olapnghiepvu} cố định hai ngưỡng ``20\% doanh thu cao nhất'' và ``hơn 20\% đánh giá thấp''; trên dashboard, quản lý ngành hàng chỉnh được cả hai ngưỡng và số đơn tối thiểu. Với giá trị mặc định, ô ``Cần xem xét'' cho đúng 12 người bán như truy vấn OLAP; bảng chi tiết ngay dưới biểu đồ xếp người bán có 973 đơn và 186.570,05 BRL doanh thu lên đầu. Các điểm màu cam trên biểu đồ là nhóm người bán này.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{Pictures/dash-nguoi-ban.png}
-\caption{Trang Người bán: ngưỡng chỉnh được, số người bán cần làm việc trước và biểu đồ phân tán doanh thu, tỷ lệ đánh giá 1-2 sao}
+\caption{Trang Người bán: ngưỡng chỉnh được, số người bán cần xem xét và biểu đồ phân tán doanh thu, tỷ lệ đánh giá 1-2 sao}
 \label{fig:dashnguoiban}
 \end{figure}
 
-Trang Giám sát ETL (Hình~\ref{fig:dashetl}) đọc schema \code{meta}: trạng thái và số dòng của từng bước, kết quả 20 tiêu chí đối soát và các bản ghi bị loại hoặc bị sửa kèm lý do. Đây là chức năng giám sát (Monitoring) trong kiến trúc ở Hình~\ref{fig:kientruc}. Hình này hiện đúng lần chạy ETL ở Bảng~\ref{tab:etlbuoc}: 8,7 giây, 775 đơn bị loại, 1.458 bản ghi được sửa và 20/20 tiêu chí đạt.
+Trang Giám sát ETL (Hình~\ref{fig:dashetl}) đọc schema \code{meta}. Dòng trạng thái ở đầu trang cho biết ngay lần chạy có thành công hay không; bên dưới là trạng thái và số dòng của từng bước, kết quả 20 tiêu chí đối soát và các bản ghi bị loại hoặc bị sửa kèm lý do. Đây là chức năng giám sát (Monitoring) trong kiến trúc ở Hình~\ref{fig:kientruc}. Hình này hiện đúng lần chạy ETL ở Bảng~\ref{tab:etlbuoc}: 8,7 giây, 775 đơn bị loại, 1.458 bản ghi được sửa và 20/20 tiêu chí đạt.
 
 \begin{figure}[H]
 \centering
 \includegraphics[width=\linewidth]{Pictures/dash-etl.png}
-\caption{Trang Giám sát ETL: thông tin lần chạy, các bước và kết quả đối soát số liệu}
+\caption{Trang Giám sát ETL: trạng thái lần chạy, các chỉ số chính, kết quả kiểm tra chất lượng dữ liệu và các bước}
 \label{fig:dashetl}
 \end{figure}
 
