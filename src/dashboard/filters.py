@@ -153,3 +153,10 @@ def sidebar_filters() -> Filters:
                        placeholder="Tất cả ngành hàng", on_change=_keep, args=("f_cats",))
         st.button("Xóa bộ lọc", on_click=_reset, width="stretch")
     return Filters(_month_range(ss.f_months), tuple(ss.f_regions), tuple(ss.f_cats))
+
+
+def filter_caption(f: Filters) -> None:
+    """One-line state of the sidebar filters, shown under the page header."""
+    cats = f"{len(f.cats)} ngành hàng" if len(f.cats) > 3 else ", ".join(f.cats) or "Tất cả ngành hàng"
+    regions = ", ".join(f.regions) or "Tất cả vùng"
+    st.caption(f"{vn_month(f.months[0])}-{vn_month(f.months[1])} · {regions} · {cats}")

@@ -4,17 +4,19 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.dashboard.db import query
-from src.dashboard.filters import items_cte, orders_cte, sidebar_filters
+from src.dashboard.filters import filter_caption, items_cte, orders_cte, sidebar_filters
 from src.dashboard.ui import chart, kpis, money_col, num, pct_col, series, show_table
 
-st.title("Hiệu quả người bán")
+st.header("Người bán")
 f = sidebar_filters()
+filter_caption(f)
 p = f.params
 
-c1, c2, c3 = st.columns(3)
-min_orders = c1.number_input("Số đơn tối thiểu của người bán", 1, 500, 30, 5, key="sel_min")
-top_share = c2.slider("Nhóm doanh thu cao nhất (%)", 5, 50, 20, 5, key="sel_top")
-low_limit = c3.slider("Ngưỡng tỷ lệ 1-2 sao (%)", 5, 50, 20, 5, key="sel_low")
+with st.container(border=True):
+    c1, c2, c3 = st.columns(3)
+    min_orders = c1.number_input("Số đơn tối thiểu", 1, 500, 30, 5, key="sel_min")
+    top_share = c2.slider("Top doanh thu (%)", 5, 50, 20, 5, key="sel_top")
+    low_limit = c3.slider("Ngưỡng tỷ lệ 1-2 sao (%)", 5, 50, 20, 5, key="sel_low")
 
 # one row per (seller, order) on delivered orders, then aggregate per seller (same logic as q10)
 sellers = query(f"""WITH {items_cte('delivered')},
@@ -40,10 +42,10 @@ sellers["top"] = sellers.revenue_rank < top_share / 100
 sellers["flag"] = sellers.top & (sellers.low_review_pct > low_limit)
 flagged = sellers[sellers.flag]
 kpis([("Người bán được xét", num(len(sellers)), f"Có từ {min_orders} đơn đã giao trong kỳ"),
-      (f"Thuộc nhóm {top_share}% doanh thu cao nhất", num(sellers.top.sum())),
-      ("Cần làm việc trước", num(len(flagged)), f"Nhóm doanh thu cao nhưng hơn {low_limit}% đánh giá 1-2 sao")])
+      (f"Top {top_share}% doanh thu", num(sellers.top.sum())),
+      ("Cần xem xét", num(len(flagged)), f"Nhóm doanh thu cao nhưng hơn {low_limit}% đánh giá 1-2 sao")])
 
-st.subheader("Doanh thu và chất lượng của từng người bán")
+st.subheader("Doanh thu và chất lượng người bán")
 fig = go.Figure()
 for is_flag, name, i in [(False, "Người bán khác", 0), (True, "Doanh thu cao, đánh giá thấp", 1)]:
     d = sellers[sellers.flag == is_flag]
@@ -56,21 +58,21 @@ for is_flag, name, i in [(False, "Người bán khác", 0), (True, "Doanh thu ca
                                   "<br>%{customdata[2]:,} đơn · trễ %{customdata[3]:.1f}%<extra></extra>")
 fig.add_hline(y=low_limit, line_dash="dash", line_width=1, line_color="#898781",
               annotation_text=f"{low_limit}% đánh giá 1-2 sao", annotation_position="top left")
-fig.update_layout(title="Mỗi điểm là một người bán (trục ngang theo thang log)", xaxis_type="log",
-                  xaxis_title="doanh thu (BRL)", yaxis_title="tỷ lệ đánh giá 1-2 sao (%)")
+fig.update_layout(title="Doanh thu và tỷ lệ 1-2 sao theo người bán", xaxis_type="log",
+                  xaxis_title="Doanh thu (BRL, thang log)", yaxis_title="Tỷ lệ 1-2 sao (%)")
 chart(fig, height=420)
 
 cols = {"seller_id": "Mã người bán", "state_code": "Bang", "orders": "Số đơn", "revenue": "Doanh thu (BRL)",
         "late_pct": "Tỷ lệ trễ", "avg_review": "Điểm TB", "low_review_pct": "Tỷ lệ 1-2 sao"}
 cfg = {"Doanh thu (BRL)": money_col("Doanh thu (BRL)"), "Tỷ lệ trễ": pct_col("Tỷ lệ trễ", 1),
        "Tỷ lệ 1-2 sao": pct_col("Tỷ lệ 1-2 sao", 1)}
-st.markdown(f"**Người bán cần làm việc trước** ({len(flagged)})")
+st.subheader(f"Người bán cần xem xét ({len(flagged)})")
 show_table(flagged[list(cols)].rename(columns=cols), column_config=cfg)
-with st.expander("Bảng xếp hạng toàn bộ người bán"):
+with st.expander("Toàn bộ người bán"):
     show_table(sellers[list(cols)].rename(columns=cols), column_config=cfg)
 
 # ---- seller share vs order share by state ----
-st.subheader("Phân bố người bán so với nơi tập trung đơn hàng")
+st.subheader("Người bán và đơn hàng theo bang")
 dist = query(f"""WITH {orders_cte()},
 ord AS (SELECT state_code, COUNT(*) AS orders FROM orders GROUP BY state_code),
 sel AS (SELECT st.state_code, COUNT(*) AS sellers
@@ -87,7 +89,7 @@ fig.add_bar(x=top10.state_code, y=top10.seller_share, name="Tỷ trọng ngườ
             hovertemplate="%{x}<br>%{y:.1f}% người bán<extra></extra>")
 fig.add_bar(x=top10.state_code, y=top10.order_share, name="Tỷ trọng đơn hàng", marker_color=series(1),
             hovertemplate="%{x}<br>%{y:.1f}% đơn hàng<extra></extra>")
-fig.update_layout(title="10 bang có nhiều đơn nhất (%)", barmode="group", yaxis_ticksuffix="%")
+fig.update_layout(title="Tỷ trọng người bán và đơn hàng, 10 bang đứng đầu (%)", barmode="group", yaxis_ticksuffix="%")
 chart(fig, dist.rename(columns={"state_code": "Bang", "sellers": "Người bán", "seller_share": "Tỷ trọng người bán",
                                 "orders": "Đơn hàng", "order_share": "Tỷ trọng đơn hàng"}),
       column_config={"Tỷ trọng người bán": pct_col("Tỷ trọng người bán", 1),

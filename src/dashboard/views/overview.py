@@ -3,11 +3,12 @@ import plotly.graph_objects as go
 import streamlit as st
 
 from src.dashboard.db import query
-from src.dashboard.filters import items_cte, orders_cte, sidebar_filters
+from src.dashboard.filters import filter_caption, items_cte, orders_cte, sidebar_filters
 from src.dashboard.ui import chart, kpis, money, money_col, num, pct, ratio, region_colors, series
 
-st.title("Tổng quan kinh doanh")
+st.header("Tổng quan")
 f = sidebar_filters()
+filter_caption(f)
 p = f.params
 
 sales = query(f"""WITH {items_cte('sales')}
@@ -22,7 +23,7 @@ FROM orders""", p).iloc[0]
 kpis([
     ("Doanh thu hàng hóa", money(sales.revenue), "Tổng giá bán, không gồm phí vận chuyển"),
     ("Số đơn hàng", num(sales.orders)),
-    ("Giá trị đơn trung bình", money(ratio(sales.revenue, sales.orders))),
+    ("Giá trị đơn TB", money(ratio(sales.revenue, sales.orders))),
 ])
 kpis([
     ("Tỷ lệ giao trễ", pct(ops.late_pct), "Trên các đơn đã giao"),
@@ -32,7 +33,7 @@ kpis([
 
 # ---- roll-up: month -> quarter -> year ----
 st.subheader("Doanh thu theo thời gian")
-level = st.segmented_control("Mức tổng hợp", ["Tháng", "Quý", "Năm"],
+level = st.segmented_control("Chu kỳ", ["Tháng", "Quý", "Năm"],
                              default="Tháng", required=True, key="ov_level")
 period = {"Tháng": "to_char(full_date, 'MM/YYYY')", "Quý": "'Q' || quarter || '/' || year",
           "Năm": "year::text"}[level]
@@ -54,7 +55,7 @@ with c2:
     fig = go.Figure(go.Scatter(x=trend.period, y=trend.orders, mode="lines+markers", name="Số đơn",
                                line_color=series(0), marker_size=8,
                                hovertemplate="%{x}<br>%{y:,} đơn<extra></extra>"))
-    fig.update_layout(title="Số đơn hàng", hovermode="x unified")
+    fig.update_layout(title="Số đơn hàng (đơn)", hovermode="x unified")
     chart(fig)
 
 # ---- CUBE: region x year ----
@@ -70,7 +71,7 @@ for region, color in region_colors().items():
     if len(d):
         fig.add_bar(x=d.year, y=d.revenue, name=region, marker_color=color,
                     hovertemplate=region + " %{x}<br>%{y:,.2f} BRL<extra></extra>")
-fig.update_layout(title="Doanh thu theo vùng của khách hàng (BRL)", barmode="group")
+fig.update_layout(title="Doanh thu theo vùng và năm (BRL)", barmode="group")
 pivot = cube.pivot(index="region", columns="year", values="revenue").reset_index()
 chart(fig, pivot.rename(columns={"region": "Vùng"}),
       column_config={c: money_col(c) for c in pivot.columns if c != "region"})
