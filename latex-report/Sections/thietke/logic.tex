@@ -80,6 +80,11 @@ View \code{dm.v\_order} được tạo thêm, mỗi dòng là một đơn hàng 
 
 \subsubsection{Sơ đồ schema hoàn chỉnh}
 
-Hình~\ref{fig:schema} là sơ đồ snowflake schema hoàn chỉnh. Bảng fact \code{fact\_sales} nằm ở giữa và trỏ trực tiếp đến bốn bảng chiều \texttt{product}, \texttt{seller}, \texttt{customer} và \texttt{date}. Bảng sản phẩm trỏ tiếp đến bảng \texttt{category}; bảng khách hàng và bảng người bán cùng trỏ đến bảng \texttt{city}, rồi đến bảng \texttt{state}.
+Hình~\ref{fig:schema} trình bày sơ đồ snowflake schema hoàn chỉnh của Data Mart. Bảng fact \code{fact\_sales} nằm ở trung tâm và tham chiếu đến bốn bảng chiều trực tiếp là \code{dim\_product} (sản phẩm), \code{dim\_seller} (người bán), \code{dim\_customer} (khách hàng) và \code{dim\_date} (thời gian); riêng \code{dim\_date} được tham chiếu sáu lần, mỗi lần ứng với một mốc ngày của đơn hàng. Bảng chiều sản phẩm tiếp tục tham chiếu đến bảng \code{dim\_category} (ngành hàng), còn \code{dim\_customer} và \code{dim\_seller} cùng tham chiếu đến bảng \code{dim\_city} (thành phố), rồi đến bảng \code{dim\_state} (bang). Trong hình, PK đánh dấu khóa chính và FK đánh dấu khóa ngoại của từng bảng.
 
-\input{Sections/hinh/schema}
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/schema-snowflake.png}
+\caption{Sơ đồ snowflake schema của Data Mart}
+\label{fig:schema}
+\end{figure}

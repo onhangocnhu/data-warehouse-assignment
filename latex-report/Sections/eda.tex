@@ -1,9 +1,7 @@
 % !TeX root = ../main.tex
 \section{Khám phá và tiền xử lý dữ liệu}\label{sec:eda}
 
-Khám phá dữ liệu (Exploratory Data Analysis, EDA) được làm trước khi thiết kế kho dữ liệu, để biết dữ liệu thiếu ở đâu, sai ở đâu, phân bố ra sao; mỗi quy tắc làm sạch về sau đều dựa trên kết quả này \cite{han}. Phần này gồm ba bước: khám phá dữ liệu thô, đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý.
-
-Phần khám phá dữ liệu thô được chạy trực tiếp trên chín tập tin CSV bằng chương trình \code{src/eda/run\_eda.py}, độc lập với quy trình ETL, nên các con số ở đây cũng là căn cứ để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}. Phần khám phá sau tiền xử lý đọc từ các bảng đã làm sạch trong staging và từ Data Mart.
+Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis, EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}.
 
 \subsection{Khám phá dữ liệu thô}\label{sec:edatho}
 
@@ -19,34 +17,47 @@ Bảng~\ref{tab:cautruc} tóm tắt cấu trúc của chín tập tin: tổng c�
 \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{1.8cm}|P{1.2cm}|P{1.6cm}|P{1.8cm}|P{1.5cm}|}
 \hline
 \textbf{Tập tin} & \textbf{Số dòng} & \textbf{Số cột} & \textbf{Ô bị thiếu} & \textbf{Dòng có ô thiếu} & \textbf{Dòng trùng}\\ \hline
-\code{orders} & 99.441 & 8 & 4.908 & 2.980 & 0\\ \hline
+\textcolor{red}{\code{orders}} & \textcolor{red}{99.441} & \textcolor{red}{8} & \textcolor{red}{4.908} & \textcolor{red}{2.980} & \textcolor{red}{0}\\ \hline
 \code{order\_items} & 112.650 & 7 & 0 & 0 & 0\\ \hline
 \code{order\_payments} & 103.886 & 5 & 0 & 0 & 0\\ \hline
-\code{order\_reviews} & 99.224 & 7 & 145.903 & 89.385 & 0\\ \hline
+\textcolor{red}{\code{order\_reviews}} & \textcolor{red}{99.224} & \textcolor{red}{7} & \textcolor{red}{145.903} & \textcolor{red}{89.385} & \textcolor{red}{0}\\ \hline
 \code{customers} & 99.441 & 5 & 0 & 0 & 0\\ \hline
 \code{sellers} & 3.095 & 4 & 0 & 0 & 0\\ \hline
-\code{products} & 32.951 & 9 & 2.448 & 611 & 0\\ \hline
-\code{geolocation} & 1.000.163 & 5 & 0 & 0 & 261.831\\ \hline
+\textcolor{red}{\code{products}} & \textcolor{red}{32.951} & \textcolor{red}{9} & \textcolor{red}{2.448} & \textcolor{red}{611} & \textcolor{red}{0}\\ \hline
+\textcolor{red}{\code{geolocation}} & \textcolor{red}{1.000.163} & \textcolor{red}{5} & \textcolor{red}{0} & \textcolor{red}{0} & \textcolor{red}{261.831}\\ \hline
 \code{category\_translation} & 71 & 2 & 0 & 0 & 0\\ \hline
 \end{tabularx}
 \end{table}
 
 \subsubsection{Phân tích giá trị thiếu}
 
-Hình~\ref{fig:giatrithieu} cho thấy tỷ lệ thiếu của 13 cột có giá trị thiếu (các cột thiếu ở cùng những dòng được gộp lại). Hai cột thiếu nhiều nhất là tiêu đề và nội dung bình luận đánh giá, lần lượt 88,3\% và 58,7\%. Đây không phải lỗi: khách chỉ chấm sao mà không viết gì là chuyện bình thường. Tuy vậy, 26,6\% bình luận có nội dung đi kèm điểm 1-2 sao, trong khi con số này ở các đánh giá không có nội dung chỉ là 6,3\%; nghĩa là khách thường viết khi không hài lòng.
+Hình~\ref{fig:giatrithieu} cho thấy số dòng và tỷ lệ thiếu của từng cột trong 13 cột có giá trị thiếu, thuộc ba tập \code{order\_reviews}, \code{orders} và \code{products}. Hai cột thiếu nhiều nhất là tiêu đề và nội dung bình luận đánh giá, lần lượt 88,3\% và 58,7\%. Đây không phải lỗi: khách chỉ chấm sao mà không viết gì là chuyện bình thường. Tuy vậy, trong các đánh giá có viết bình luận, 26,6\% là đánh giá 1-2 sao, còn trong các đánh giá không có bình luận, tỷ lệ này chỉ là 6,3\%. Nói cách khác, khách thường viết bình luận khi không hài lòng.
 
 \begin{figure}[H]
 \centering
 \includegraphics{Pictures/fig-eda-gia-tri-thieu.png}
-\caption{Số dòng và tỷ lệ giá trị thiếu theo cột trong dữ liệu thô (trục ngang theo thang log)}
+\caption{Số dòng và tỷ lệ giá trị thiếu của từng cột trong dữ liệu thô (trục ngang theo thang log)}
 \label{fig:giatrithieu}
 \end{figure}
 
-Ba cột mốc thời gian của \code{orders} thiếu ít hơn nhiều, và phần lớn có lý do nghiệp vụ. Trong 2.965 đơn thiếu ngày nhận hàng, 2.957 đơn chưa từng được giao (đang vận chuyển, bị hủy hoặc hết hàng); chỉ 8 đơn ở trạng thái \code{delivered} mà không có ngày nhận. Tương tự, 1.781 trên 1.783 đơn thiếu ngày bàn giao vận chuyển là đơn chưa được bàn giao, và 141 trên 160 đơn thiếu thời điểm duyệt là đơn bị hủy. Vì vậy, điền giá trị thay thế (như trung bình) cho các cột này là sai: một đơn bị hủy không có ngày giao hàng nào cả. Ở tập \code{products}, 610 sản phẩm thiếu cùng lúc ngành hàng và ba cột mô tả, còn 2 sản phẩm thiếu cùng lúc khối lượng và ba cột kích thước; đây là những sản phẩm được đăng thiếu thông tin chứ không phải lỗi rải rác.
+Ba cột mốc thời gian của \code{orders} thiếu ít hơn nhiều, và phần lớn trường hợp thiếu đều có lý do nghiệp vụ:
+\begin{itemize}
+    \item Ngày khách nhận hàng thiếu ở 2.965 đơn. Trong đó 2.957 đơn chưa từng được giao (đang vận chuyển, bị hủy hoặc hết hàng), chỉ có 8 đơn ở trạng thái \code{delivered} nhưng không ghi ngày nhận.
+    \item Ngày bàn giao cho đơn vị vận chuyển thiếu ở 1.783 đơn, trong đó 1.781 đơn thực sự chưa được bàn giao.
+    \item Thời điểm duyệt đơn thiếu ở 160 đơn, trong đó 141 đơn đã bị hủy.
+\end{itemize}
+Ba cột này thường thiếu cùng lúc trên một đơn: 1.782 trong 1.783 đơn thiếu ngày bàn giao cũng thiếu ngày nhận, và 146 đơn thiếu cả ba mốc. Vì thế 4.908 ô thiếu chỉ rơi vào 2.980 đơn. Với các cột này, nhóm không điền giá trị thay thế như trung bình, vì một đơn đã hủy thì không có ngày giao hàng.
+
+Tập \code{products} cũng có hiện tượng tương tự, giá trị thiếu chia thành hai nhóm cột:
+\begin{itemize}
+    \item nhóm thông tin mô tả (\code{product\_category\_name}, \code{product\_name\_lenght}, \code{product\_description\_lenght}, \code{product\_photos\_qty}) cùng thiếu ở đúng 610 sản phẩm;
+    \item nhóm kích thước và khối lượng (\code{product\_weight\_g}, \code{product\_length\_cm}, \code{product\_height\_cm}, \code{product\_width\_cm}) cùng thiếu ở đúng 2 sản phẩm.
+\end{itemize}
+Có 1 sản phẩm thiếu cả hai nhóm, nên 2.448 ô thiếu chỉ nằm trên 611 dòng. Đây là những sản phẩm được người bán đăng thiếu thông tin ngay từ đầu, không phải lỗi rải rác trong dữ liệu.
 
 \subsubsection{Phát hiện giá trị ngoại lai}
 
-Ngoại lai của bốn thước đo số chính được xác định bằng quy tắc khoảng tứ phân vị (IQR): một giá trị là ngoại lai nếu lớn hơn $Q_3 + 1{,}5 \times (Q_3 - Q_1)$ \cite{han}. Hình~\ref{fig:ngoailai} cho thấy cả bốn thước đo đều lệch phải mạnh. Ví dụ, giá bán có trung vị 74,99 BRL nhưng 8.427 dòng (7,5\%) vượt ngưỡng 277,40 BRL, cao nhất là 6.735 BRL; thời gian giao hàng có trung vị 10,2 ngày, 4.899 đơn (5,1\%) vượt ngưỡng 29,2 ngày, lâu nhất là 209,6 ngày.
+Ngoại lai của bốn thước đo số chính được xác định bằng quy tắc khoảng tứ phân vị (IQR): một giá trị là ngoại lai nếu lớn hơn $Q_3 + 1{,}5 \times (Q_3 - Q_1)$ \cite{han}. Hình~\ref{fig:ngoailai} cho thấy cả bốn thước đo đều lệch phải mạnh. Giá bán có trung vị 74,99 BRL nhưng 8.427 dòng (7,5\%) vượt ngưỡng 277,40 BRL, cao nhất là 6.735 BRL; thời gian giao hàng có trung vị 10,2 ngày, 4.899 đơn (5,1\%) vượt ngưỡng 29,2 ngày, lâu nhất là 209,6 ngày.
 
 \begin{figure}[H]
 \centering
@@ -55,7 +66,7 @@ Ngoại lai của bốn thước đo số chính được xác định bằng qu
 \label{fig:ngoailai}
 \end{figure}
 
-Các giá trị ngoại lai này được \textit{giữ lại}. Một sản phẩm giá vài nghìn BRL hay nặng vài chục ki-lô-gam là giao dịch thật, không phải lỗi nhập liệu; cắt bớt sẽ làm sai tổng doanh thu, mà tổng doanh thu phải khớp với nguồn ở bước đối soát. Các giá trị thật sự vô lý chỉ có hai nhóm nhỏ: 4 sản phẩm có khối lượng bằng 0 và các mốc thời gian sai thứ tự, được xử lý riêng ở Bảng~\ref{tab:quytac}. Do phân bố lệch, khi so sánh giữa các nhóm, báo cáo luôn xem trung vị hoặc tỷ lệ chứ không chỉ trung bình. Phí vận chuyển bằng 0 (383 dòng) cũng được giữ, vì đó là các đơn được miễn phí vận chuyển.
+Các giá trị ngoại lai này được \textit{giữ lại} vì cắt bớt sẽ làm sai tổng doanh thu, mà tổng doanh thu phải khớp với nguồn ở bước đối soát. Các giá trị thật sự vô lý chỉ có hai nhóm nhỏ: 4 sản phẩm có khối lượng bằng 0 và các mốc thời gian sai thứ tự, được xử lý riêng ở Bảng~\ref{tab:quytac}. Phí vận chuyển bằng 0 (383 dòng) cũng được giữ, vì đó là các đơn được miễn phí vận chuyển.
 
 \subsubsection{Phân bố thời gian giao hàng và điểm đánh giá}
 
@@ -68,7 +79,7 @@ Với 96.470 đơn đã giao có đủ ngày nhận hàng, thời gian giao trun
 \label{fig:thoigiangiao}
 \end{figure}
 
-Về đánh giá, sau khi giữ một đánh giá cho mỗi đơn hàng (cách chọn ở Bảng~\ref{tab:quytac}), có 98.673 đánh giá. Điểm phân cực rõ (Hình~\ref{fig:danhgia}): 57,8\% đánh giá là 5 sao, nhưng 1 sao lại chiếm 11,5\%, nhiều hơn cả 2 sao và 3 sao cộng lại. Điều này gợi ý rằng khách hàng thường chỉ chấm điểm thấp khi gặp một sự cố cụ thể, và giao trễ là ứng viên đầu tiên cần kiểm tra.
+Về đánh giá, sau khi giữ một đánh giá cho mỗi đơn hàng (cách chọn ở Bảng~\ref{tab:quytac}), có 98.673 đánh giá. Điểm phân cực rõ (Hình~\ref{fig:danhgia}): 57,8\% đánh giá là 5 sao, nhưng 1 sao lại chiếm 11,5\%, nhiều hơn cả 2 sao và 3 sao cộng lại. Điều này gợi ý rằng khách hàng thường chỉ chấm điểm thấp khi gặp một sự cố cụ thể, và giao trễ là thứ cần phải kiểm tra đầu tiên.
 
 \begin{figure}[H]
 \centering
@@ -139,34 +150,34 @@ Mỗi vấn đề ở Bảng~\ref{tab:chatluong} có một quy tắc xử lý ri
 Nguyên tắc chung là giữ lại càng nhiều dữ liệu hợp lệ càng tốt. Khi một mốc thời gian có vấn đề, chỉ thước đo liên quan bị để trống, còn đơn hàng vẫn được giữ; không có giá trị nào được điền bằng trung bình, vì như đã phân tích ở trên, phần lớn giá trị thiếu là thiếu có lý do. Bảng~\ref{tab:quytac} là quy tắc cho từng vấn đề ở Bảng~\ref{tab:chatluong}.
 
 \begingroup\small\setstretch{1.1}
-\begin{longtable}{|P{5.3cm}|P{8.6cm}|}
-\caption{Quy tắc xử lý các vấn đề chất lượng dữ liệu}\label{tab:quytac}\\
+% Bảng rộng hơn khổ chữ: caption đặt ngoài longtable vì gói caption báo Overfull khi \LTleft âm
+\captionof{table}{Quy tắc xử lý các vấn đề chất lượng dữ liệu}\label{tab:quytac}\nopagebreak
+\setlength{\LTleft}{-1.2cm}\setlength{\LTright}{-0.6cm}\setlength{\LTpre}{4pt}
+\begin{longtable}{|P{4.1cm}|P{5.6cm}|P{6.1cm}|}
 \hline
-\textbf{Vấn đề} & \textbf{Quy tắc xử lý}\\ \hline \endfirsthead
+\textbf{Vấn đề} & \textbf{Quy tắc xử lý} & \textbf{Ví dụ}\\ \hline \endfirsthead
 \hline
-\textbf{Vấn đề} & \textbf{Quy tắc xử lý}\\ \hline \endhead
-Đơn hàng thiếu thời điểm duyệt, bàn giao vận chuyển hoặc nhận hàng & Giữ lại đơn hàng. Cột ngày tương ứng được gán về bản ghi không xác định, các khoảng thời gian liên quan và cờ giao trễ để trống.\\ \hline
-Đơn hàng đã giao nhưng thiếu thời điểm nhận hàng (8 đơn) & Giữ lại, xử lý như đơn chưa có ngày nhận hàng và không tính vào các chỉ số giao hàng.\\ \hline
-Thời điểm bàn giao vận chuyển sau thời điểm nhận hàng (23 đơn) & Giữ tổng thời gian giao hàng, để trống thời gian vận chuyển vì không xác định được thứ tự đúng.\\ \hline
-Thời điểm bàn giao vận chuyển trước thời điểm duyệt (1.359 đơn) & Giữ các mốc thời gian, để trống thời gian chuẩn bị hàng vì giá trị bị âm.\\ \hline
-Đơn hàng không có dòng sản phẩm (775 đơn) & Không nạp vào bảng fact, ghi nhận vào nhật ký ETL.\\ \hline
-Đơn hàng không có đánh giá (768 đơn) & Điểm đánh giá để trống, ngày đánh giá gán về bản ghi không xác định.\\ \hline
-Đơn hàng có nhiều đánh giá (547 đơn) & Chọn đánh giá có thời điểm phản hồi muộn nhất làm đánh giá chính thức của đơn hàng, vì có 202 đơn trong số này có các điểm đánh giá khác nhau.\\ \hline
-Một \code{review\_id} xuất hiện trên nhiều đơn hàng (789 mã) & Không xử lý riêng, vì đánh giá được gắn vào bảng fact theo \code{order\_id}.\\ \hline
-Giá trị ngoại lai của giá, phí vận chuyển, khối lượng, thời gian giao & Giữ nguyên vì là giao dịch thật; phí vận chuyển bằng 0 (383 dòng) xem là miễn phí vận chuyển.\\ \hline
-Sản phẩm thiếu ngành hàng (610 sản phẩm) & Gán vào ngành hàng ``không xác định''.\\ \hline
-Sản phẩm thiếu hoặc có khối lượng, kích thước bằng 0 (6 sản phẩm) & Để trống các thuộc tính này.\\ \hline
-Ngành hàng chưa có bản dịch (2 ngành hàng) & Bổ sung tên tiếng Anh thủ công vào bảng ngành hàng.\\ \hline
-Tên thành phố của người bán không chuẩn & Chuyển về chữ thường, bỏ dấu, bỏ phần mã bang thừa như ``/ sp'' hoặc ``- sp''. Nếu tên sau chuẩn hóa không có trong \code{geolocation} của bang tương ứng (ví dụ tên là chuỗi số, tên viết tắt hoặc viết sai chính tả) thì lấy tên thành phố theo mã bưu chính.\\ \hline
-Dòng trùng lặp trong \code{geolocation} (261.831 dòng) & Loại bỏ, chỉ giữ lại 738.332 dòng phân biệt.\\ \hline
-Tọa độ nằm ngoài lãnh thổ Brazil (42 dòng) & Loại bỏ trước khi tính tọa độ trung bình của thành phố.\\ \hline
-Mã bưu chính thuộc nhiều bang (8 mã) & Chọn bang xuất hiện nhiều nhất của mã bưu chính đó.\\ \hline
-Mã bưu chính không có trong \code{geolocation} (278 khách hàng, 7 người bán) & Vẫn lấy tên thành phố và bang từ bảng khách hàng hoặc người bán; tọa độ để trống.\\ \hline
-Các mã thanh toán bất thường (giá trị 0, phương thức không xác định) & Không ảnh hưởng đến Data Mart vì dữ liệu thanh toán không được nạp vào bảng fact; chỉ lưu lại trong khu vực staging.\\ \hline
+\textbf{Vấn đề} & \textbf{Quy tắc xử lý} & \textbf{Ví dụ}\\ \hline \endhead
+Đơn hàng thiếu thời điểm duyệt, bàn giao vận chuyển hoặc nhận hàng & Giữ lại đơn hàng. Cột ngày tương ứng được gán về bản ghi không xác định, các khoảng thời gian liên quan và cờ giao trễ để trống. & Đơn \code{1b9ecfe8\ldots} bị hủy, không có ngày bàn giao và ngày nhận $\rightarrow$ \code{carrier\_date\_key} và \code{delivered\_date\_key} bằng $-1$; \code{delivery\_days}, \code{is\_late} để trống.\\ \hline
+Đơn hàng đã giao nhưng thiếu thời điểm nhận hàng (8 đơn) & Giữ lại, xử lý như đơn chưa có ngày nhận hàng và không tính vào các chỉ số giao hàng. & Đơn \code{2d1e2d5b\ldots} có trạng thái \code{delivered} nhưng ngày nhận trống $\rightarrow$ \code{delivered\_date\_key} bằng $-1$, \code{delivery\_days} để trống.\\ \hline
+Thời điểm bàn giao vận chuyển sau thời điểm nhận hàng (23 đơn) & Giữ tổng thời gian giao hàng, để trống thời gian vận chuyển vì không xác định được thứ tự đúng. & Đơn \code{a1abeb65\ldots}: mua 20/7/2017, bàn giao 28/7/2017 nhưng nhận 25/7/2017 $\rightarrow$ \code{delivery\_days} = 5,34; \code{shipping\_days} để trống.\\ \hline
+Thời điểm bàn giao vận chuyển trước thời điểm duyệt (1.359 đơn) & Giữ các mốc thời gian, để trống thời gian chuẩn bị hàng vì giá trị bị âm. & Đơn \code{dcb36b51\ldots}: duyệt lúc 23:31 ngày 12/6/2018 nhưng bàn giao lúc 14:54 ngày 11/6/2018 $\rightarrow$ \code{handling\_days} để trống.\\ \hline
+Đơn hàng không có dòng sản phẩm (775 đơn) & Không nạp vào bảng fact, ghi nhận vào nhật ký ETL. & Đơn \code{e40d0c72\ldots} (trạng thái \code{unavailable}) không có dòng nào trong \code{order\_items} $\rightarrow$ không có trong \code{fact\_sales}.\\ \hline
+Đơn hàng không có đánh giá (768 đơn) & Điểm đánh giá để trống, ngày đánh giá gán về bản ghi không xác định. & Đơn \code{01675428\ldots} $\rightarrow$ \code{review\_score} để trống, \code{review\_date\_key} bằng $-1$.\\ \hline
+Đơn hàng có nhiều đánh giá (547 đơn) & Chọn đánh giá có thời điểm phản hồi muộn nhất làm đánh giá chính thức, vì đó là ý kiến cuối cùng của khách. Không lấy trung bình vì 202 đơn có các điểm khác nhau, trung bình sẽ tạo ra những điểm như 3,5 vốn không tồn tại. & Đơn \code{02355020\ldots} có đánh giá 3 sao (phản hồi 22/3/2018) và 1 sao (phản hồi 30/3/2018) $\rightarrow$ giữ đánh giá 1 sao.\\ \hline
+Một \code{review\_id} xuất hiện trên nhiều đơn hàng (789 mã) & Không xử lý riêng, vì đánh giá được gắn vào bảng fact theo \code{order\_id}. & Mã \code{00130cbe\ldots} gắn với hai đơn \code{04a28263\ldots} và \code{dfcdfc43\ldots} $\rightarrow$ cả hai đơn đều nhận điểm 1 sao của đánh giá này.\\ \hline
+Giá trị ngoại lai của giá, phí vận chuyển, khối lượng, thời gian giao & Giữ nguyên vì là giao dịch thật; phí vận chuyển bằng 0 (383 dòng) xem là miễn phí vận chuyển. & Dòng có giá 6.735 BRL của đơn \code{0812eb90\ldots} được giữ nguyên; đơn \code{079f1668\ldots} có phí vận chuyển 0 BRL cũng được giữ.\\ \hline
+Sản phẩm thiếu ngành hàng (610 sản phẩm) & Gán vào ngành hàng ``không xác định''. & Sản phẩm \code{a41e356c\ldots} có ngành hàng trống $\rightarrow$ \code{unknown}.\\ \hline
+Sản phẩm thiếu hoặc có khối lượng, kích thước bằng 0 (6 sản phẩm) & Để trống các thuộc tính này. & Sản phẩm \code{81781c0f\ldots} có khối lượng 0 g $\rightarrow$ \code{weight\_g} để trống, chiều dài 30 cm giữ nguyên.\\ \hline
+Ngành hàng chưa có bản dịch (2 ngành hàng) & Bổ sung tên tiếng Anh thủ công vào bảng ngành hàng. & \code{portateis\_\allowbreak cozinha\_\allowbreak e\_\allowbreak preparadores\_\allowbreak de\_\allowbreak alimentos} $\rightarrow$ \code{portable\_\allowbreak kitchen\_\allowbreak food\_\allowbreak processors}.\\ \hline
+Tên thành phố của người bán không chuẩn & Chuyển về chữ thường, bỏ dấu, bỏ phần mã bang thừa như ``/ sp'' hoặc ``- sp''. Nếu tên sau chuẩn hóa không có trong \code{geolocation} của bang tương ứng (ví dụ tên là chuỗi số, tên viết tắt hoặc viết sai chính tả) thì lấy tên thành phố theo mã bưu chính. & \code{auriflama/sp} $\rightarrow$ \code{auriflama}; \code{são paulo} $\rightarrow$ \code{sao paulo}. Tên \code{04482255} (mã bưu chính 22790) $\rightarrow$ \code{rio de janeiro}; \code{sbc} $\rightarrow$ \code{sao bernardo do campo}.\\ \hline
+Dòng trùng lặp trong \code{geolocation} (261.831 dòng) & Loại bỏ, chỉ giữ lại 738.332 dòng phân biệt. & Mã bưu chính 24230 có 1.102 dòng nhưng chỉ 378 dòng khác nhau $\rightarrow$ giữ 378 dòng.\\ \hline
+Tọa độ nằm ngoài lãnh thổ Brazil (42 dòng) & Loại bỏ trước khi tính tọa độ trung bình của thành phố. & Mã bưu chính 18243 (bang SP) có một dòng tọa độ (28,01; $-$15,54), nằm ngoài Brazil $\rightarrow$ loại dòng này.\\ \hline
+Mã bưu chính thuộc nhiều bang (8 mã) & Chọn bang xuất hiện nhiều nhất để mỗi mã bưu chính tra ra đúng một bang trong bảng tra cứu; bang của khách hàng và người bán vẫn lấy từ dữ liệu gốc, không bị thay đổi. & Mã 02116 có 12 dòng ở bang SP và 1 dòng ở bang RN $\rightarrow$ bảng tra cứu ghi bang SP cho mã này.\\ \hline
+Mã bưu chính không có trong \code{geolocation} (278 khách hàng, 7 người bán) & Vẫn lấy tên thành phố và bang từ bảng khách hàng hoặc người bán; tọa độ lấy theo thành phố nếu thành phố có trong \code{geolocation}, ngược lại để trống. & Khách hàng ở mã 72904 vẫn có tọa độ của thành phố \code{santo antonio do descoberto}; khách hàng ở mã 36956 giữ thành phố \code{sao francisco do humaita}, bang MG, nhưng vĩ độ, kinh độ để trống.\\ \hline
+Các mã thanh toán bất thường (giá trị 0, phương thức không xác định) & Không ảnh hưởng đến Data Mart vì dữ liệu thanh toán không được nạp vào bảng fact; chỉ lưu lại trong khu vực staging. & --\\ \hline
 \end{longtable}
 \endgroup
-
-Với quy tắc chọn đánh giá: trong 547 đơn có nhiều đánh giá, 202 đơn có các điểm khác nhau, nên lấy trung bình sẽ tạo ra những điểm như 3,5 vốn không tồn tại trong thực tế. Đánh giá được phản hồi muộn nhất được giữ lại vì đó là ý kiến cuối cùng của khách về đơn hàng.
 
 \subsubsection{Chuẩn hóa, tích hợp và tạo thuộc tính mới}
 
@@ -175,8 +186,6 @@ Bên cạnh làm sạch, dữ liệu cần được đưa về cùng một dạn
 Một số thuộc tính mới được tạo thêm để phục vụ phân tích. Bốn khoảng thời gian (duyệt đơn, chuẩn bị hàng, vận chuyển, tổng thời gian giao) được tính từ các mốc của đơn hàng; cờ giao trễ được tính bằng cách so ngày nhận hàng với ngày giao dự kiến. 27 bang được gom thành năm vùng địa lý, và mỗi ngày được tách thành tháng, quý, năm, thứ trong tuần, giống như cách rời rạc hóa (binning) một thuộc tính liên tục thành các nhóm để phân tích theo nhiều mức. Cách tính chi tiết của từng thuộc tính nằm ở phần thiết kế ETL.
 
 \subsubsection{Kết quả tiền xử lý}
-
-Bảng~\ref{tab:truocsau} so sánh số lượng bản ghi trước và sau tiền xử lý. Số đơn hàng, dòng sản phẩm, khách hàng và sản phẩm không mất đi bản ghi hợp lệ nào; chênh lệch chỉ đến từ những chỗ có chủ đích: 775 đơn không có sản phẩm không vào bảng fact, mỗi đơn chỉ giữ một đánh giá, và mỗi khách hàng thật chỉ còn một dòng. Bảng \code{geolocation} giảm từ hơn một triệu dòng xuống 738.299 dòng sau khi bỏ dòng trùng và tọa độ sai. Ở người bán, 636 cách viết (thành phố, bang) khác nhau được quy về 580 thành phố thật.
 
 \begin{table}[H]
 \centering
@@ -198,7 +207,14 @@ Thành phố (khách hàng và người bán) & -- & 4.341 & 4.341\\ \hline
 \end{tabularx}
 \end{table}
 
-Số đánh giá trong Data Mart (97.917) ít hơn sau làm sạch (98.673) vì một số đánh giá thuộc về các đơn không có dòng sản phẩm, những đơn này không vào bảng fact.
+Bảng~\ref{tab:truocsau} cho thấy tiền xử lý không làm mất bản ghi hợp lệ nào; mọi chênh lệch đều đến từ những chỗ có chủ đích:
+\begin{itemize}
+    \item Số đơn hàng trong Data Mart còn 98.666 vì 775 đơn không có dòng sản phẩm không được nạp vào bảng fact.
+    \item Số đánh giá giảm từ 99.224 xuống 98.673 vì mỗi đơn chỉ giữ một đánh giá. Trong Data Mart còn 97.917 vì đánh giá của các đơn không có dòng sản phẩm cũng không vào bảng fact.
+    \item 99.441 mã khách hàng theo đơn được gộp về 96.096 khách hàng thật theo \code{customer\_unique\_id}.
+    \item Tập \code{geolocation} bỏ 261.831 dòng trùng (còn 738.332 dòng), rồi bỏ thêm 33 dòng có tọa độ nằm ngoài lãnh thổ Brazil, còn 738.299 dòng.
+    \item Sau khi chuẩn hóa tên, 636 cách viết (thành phố, bang) của người bán được quy về 580 thành phố, 4.310 cách viết của khách hàng còn 4.301. Hợp hai danh sách này, thành phố xuất hiện ở cả hai chỉ tính một lần, được 4.341 thành phố.
+\end{itemize}
 
 \subsection{Khám phá dữ liệu sau tiền xử lý}\label{sec:edasach}
 
@@ -215,7 +231,7 @@ Vì các thước đo lệch phải và có nhiều ngoại lai, hệ số tươ
 \label{fig:tuongquan}
 \end{figure}
 
-Ma trận cho thấy bốn điểm. Thứ nhất, điểm đánh giá tương quan mạnh nhất với cờ giao trễ ($-0{,}31$), mạnh hơn mọi thuộc tính về giá hay khối lượng; đây là dấu hiệu đầu tiên cho thấy giao trễ là vấn đề chính, và phần OLAP sẽ kiểm chứng điều này. Thứ hai, thời gian giao hàng gần như do thời gian vận chuyển quyết định (0,89), còn thời gian duyệt đơn hầu như không ảnh hưởng (0,10). Thứ ba, số ngày hứa giao tương quan khá chặt với khoảng cách (0,62) nhưng gần như không tương quan với giao trễ ($-0{,}02$): sàn đã cộng thêm ngày cho đơn đi xa, nên điều quyết định trễ hay không là ngày hứa có \textit{đủ dư} so với thời gian giao thường lệ hay không. Thứ tư, giá trị đơn, phí vận chuyển và khối lượng tương quan với nhau (0,47-0,54) nhưng không liên quan đến giao trễ.
+Ma trận cho thấy bốn điểm. Thứ nhất, điểm đánh giá tương quan mạnh nhất với cờ giao trễ ($-0{,}31$), mạnh hơn mọi thuộc tính về giá hay khối lượng; đây là dấu hiệu đầu tiên cho thấy giao trễ là vấn đề chính, và phần OLAP sẽ kiểm chứng điều này. Thứ hai, thời gian giao hàng gần như do thời gian vận chuyển quyết định (0,89), còn thời gian duyệt đơn hầu như không ảnh hưởng (0,10). Thứ ba, số ngày hứa giao (từ lúc mua đến ngày giao dự kiến) tương quan khá chặt với khoảng cách (0,62): đơn đi càng xa, sàn càng hứa giao lâu. Tuy vậy, số ngày hứa giao gần như không tương quan với giao trễ ($-0{,}02$), tức là hứa lâu không làm đơn ít bị trễ hơn, vì phần ngày cộng thêm chủ yếu chỉ bù cho quãng đường dài hơn. Điều quyết định một đơn có trễ hay không là \textit{khoảng dư}: số ngày hứa giao còn dư bao nhiêu so với thời gian giao thường lệ trên tuyến đó. Thứ tư, giá trị đơn, phí vận chuyển và khối lượng tăng giảm cùng nhau (tương quan 0,47-0,54), vì hàng nặng thường đắt hơn và tốn phí vận chuyển hơn. Nhưng cả ba gần như không liên quan đến giao trễ: đơn đắt hay rẻ, nặng hay nhẹ đều có khả năng trễ tương đương nhau, nên không thể dựa vào nhóm thuộc tính này để dự đoán giao trễ.
 
 \subsubsection{Tỷ lệ giao trễ theo nhóm giá trị}
 

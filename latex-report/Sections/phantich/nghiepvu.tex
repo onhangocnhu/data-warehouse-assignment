@@ -21,7 +21,7 @@ Olist đóng vai trò trung gian: sàn kết nối khách hàng với rất nhi�
 \end{tabularx}
 \end{table}
 
-Điểm cần lưu ý là mỗi giai đoạn để lại một mốc thời gian riêng trong dữ liệu (Hình~\ref{fig:vongdoi}). Hiệu giữa các mốc cho biết đơn hàng mất bao lâu ở từng khâu: sàn duyệt đơn, người bán chuẩn bị hàng, đơn vị vận chuyển giao hàng. Ngày giao dự kiến được sàn hứa với khách ngay khi đặt hàng, nên so sánh ngày nhận thực tế với ngày này sẽ biết đơn có bị trễ hay không. Một đơn hàng có thể gồm nhiều sản phẩm của nhiều người bán: trong bộ dữ liệu có 9.803 đơn nhiều sản phẩm và 1.278 đơn có từ hai người bán trở lên.
+Điểm cần lưu ý là mỗi giai đoạn để lại một mốc thời gian riêng trong dữ liệu (Hình~\ref{fig:vongdoi}). Hiệu giữa các mốc cho biết đơn hàng mất bao lâu ở từng khâu: sàn duyệt đơn, người bán chuẩn bị hàng, đơn vị vận chuyển giao hàng. Ngày giao dự kiến được sàn hứa với khách ngay khi đặt hàng, nên so sánh ngày nhận thực tế với ngày này sẽ biết đơn có bị trễ hay không. Một đơn hàng có thể gồm nhiều sản phẩm của nhiều người bán.
 
 \input{Sections/hinh/vongdoi}
 
@@ -76,7 +76,7 @@ Không biến động (Non-volatile) & Dữ liệu sau khi nạp chỉ được 
 
 \subsubsection{Các chỉ số đánh giá (KPI)}
 
-Cùng một chỉ số có thể được tính theo nhiều cách. Ví dụ, nếu tính thời gian giao hàng trung bình trực tiếp trên các dòng sản phẩm thì đơn có ba sản phẩm sẽ bị đếm ba lần; còn tỷ lệ giao trễ sẽ khác nhau tùy so sánh theo ngày hay theo giờ (6,77\% so với 8,11\%). Vì vậy cách tính của từng chỉ số được chốt trong Bảng~\ref{tab:kpi} và dùng thống nhất trong toàn bộ hệ thống. Tỷ lệ giao trễ được so sánh theo ngày, vì ngày giao dự kiến trong dữ liệu không có giờ cụ thể.
+Cùng một chỉ số có thể được tính theo nhiều cách. Ví dụ tỷ lệ giao trễ sẽ khác nhau tùy so sánh theo ngày hay theo giờ (6,77\% so với 8,11\%). Vì vậy cách tính của từng chỉ số được chốt trong Bảng~\ref{tab:kpi} và dùng thống nhất trong toàn bộ hệ thống. Tỷ lệ giao trễ được so sánh theo ngày, vì ngày giao dự kiến trong dữ liệu không có giờ cụ thể.
 
 \begingroup\small\setstretch{1.1}
 \begin{longtable}{|P{3.4cm}|P{5.3cm}|P{5.3cm}|}

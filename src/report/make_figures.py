@@ -163,9 +163,14 @@ def fig_delivery_time():
     b.bar(edges[:-1], counts, width=1, align="edge", color=np.where(edges[:-1] >= 1, ORANGE, SOFT),
           edgecolor="white", linewidth=0.4)
     b.axvline(0.5, color=INK, lw=0.8)
+    dmed = df.delay.median()
+    b.axvline(dmed + 0.5, color=INK, lw=0.8, ls="--")
+    b.set_ylim(0, counts.max() * 1.3)
+    b.text(dmed - 0.3, counts.max() * 1.27, f"trung vị: {vn(abs(dmed), 0)} ngày\ntrước hạn",
+           fontsize=8.5, color=INK, ha="right", va="top", linespacing=1.2)
     late = (df.delay > 0).mean() * 100
     b.text(3, counts.max() * 0.5, r"\textbf{Trễ hạn: " + pct(late, 2) + "}", color=ORANGE, fontsize=8.5)
-    b.text(-44, counts.max() * 0.93, "Sớm hoặc đúng hạn", color=INK2, fontsize=8.5, va="top")
+    b.text(-44, counts.max() * 0.45, "Sớm hoặc\nđúng hạn", color=INK2, fontsize=8.5, va="top")
     style_axis(b)
     b.set_xlabel("Ngày nhận $-$ ngày giao dự kiến (ngày)")
     b.yaxis.set_major_formatter(VN_INT)
@@ -223,28 +228,23 @@ def fig_geolocation():
 # Part 2 - exploratory data analysis (src/eda/run_eda.py)
 # =============================================================================================
 def fig_eda_missing():
+    # every column with missing values on its own bar (no grouping), largest share on top
     m = pd.read_csv(EDA / "missing.csv")
-    one = lambda f, c: m[(m.file == f) & (m.column == c)].iloc[0]
-    rows = [("order_reviews", "review_comment_title", tt("review_comment_title")),
-            ("order_reviews", "review_comment_message", tt("review_comment_message")),
-            ("orders", "order_delivered_customer_date", tt("order_delivered_customer_date")),
-            ("orders", "order_delivered_carrier_date", tt("order_delivered_carrier_date")),
-            ("products", "product_category_name", tt("product_category_name") + " và 3 cột mô tả"),
-            ("orders", "order_approved_at", tt("order_approved_at")),
-            ("products", "product_weight_g", tt("product_weight_g") + " và 3 cột kích thước")][::-1]
+    m = m[m.missing > 0].sort_values("share", ascending=False, kind="stable").reset_index(drop=True)
     color = {"order_reviews": ORANGE, "orders": BLUE, "products": AQUA}
-    fig, ax = plt.subplots(figsize=(FULL, 2.6))
-    y = np.arange(len(rows))
-    vals = [one(f, c).share * 100 for f, c, _ in rows]
-    ax.barh(y, vals, height=0.6, color=[color[f] for f, _, _ in rows])
-    for yi, (f, c, _), v in zip(y, rows, vals):
-        ax.text(v * 1.18, yi, f"{vn(one(f, c).missing)} dòng ({pct(v, 2 if v < 1 else 1)})", va="center",
-                fontsize=7.8, color=INK2)
+    fig, ax = plt.subplots(figsize=(FULL, 3.7))
+    y = np.arange(len(m))[::-1]           # first row on top; ties keep the column order of the file
+    vals = m.share * 100
+    ax.barh(y, vals, height=0.62, color=[color[f] for f in m.file])
+    for yi, n, v in zip(y, m.missing, vals):
+        d = 1 if v >= 1 else 2 if v >= 0.1 else 3
+        ax.text(v * 1.18, yi, f"{vn(n)} dòng ({pct(v, d)})", va="center", fontsize=7.8, color=INK2)
     ax.set_xscale("log")
     ax.minorticks_off()
     ax.set_xlim(0.003, 900)
+    ax.set_ylim(-0.6, len(m) - 0.4)
     ax.set_xticks([0.01, 0.1, 1, 10, 100], ["0,01\\%", "0,1\\%", "1\\%", "10\\%", "100\\%"])
-    ax.set_yticks(y, [lab for _, _, lab in rows], fontsize=7.8)
+    ax.set_yticks(y, [tt(c) for c in m.column], fontsize=7.8)
     ax.set_xlabel("Tỷ lệ giá trị thiếu trên số dòng của tập tin (thang log)")
     style_axis(ax, "x")
     ax.spines["left"].set_visible(False)
@@ -324,11 +324,12 @@ def fig_eda_correlation():
 
 def fig_eda_late_by_bin():
     b = pd.read_csv(EDA / "late_by_bin.csv")
-    panels = [("distance_km", "(a) Khoảng cách (nghìn km)", ["<0,1", "0,1-0,5", "0,5-1", "1-2", ">2"]),
-              ("promised_days", "(b) Số ngày hứa giao", [r"$\leq$15", "16-20", "21-25", "26-30", ">30"]),
-              ("handling_days", "(c) Chuẩn bị hàng (ngày)", [r"$\leq$1", "1-3", "3-5", "5-10", ">10"])]
-    fig, axes = plt.subplots(1, 3, figsize=(FULL, 2.3), sharey=True)
-    for ax, (attr, title, labels) in zip(axes, panels):
+    panels = [("distance_km", "(a) Khoảng cách giao", "nghìn km", ["<0,1", "0,1-0,5", "0,5-1", "1-2", ">2"]),
+              ("promised_days", "(b) Số ngày hứa giao", "ngày", [r"$\leq$15", "16-20", "21-25", "26-30", ">30"]),
+              ("handling_days", "(c) Chuẩn bị hàng", "ngày", [r"$\leq$1", "1-3", "3-5", "5-10", ">10"])]
+    fig, axes = plt.subplots(1, 3, figsize=(FULL, 2.6), sharey=True)
+    fig.get_layout_engine().set(wspace=0.08)
+    for ax, (attr, title, unit, labels) in zip(axes, panels):
         g = b[b.attribute == attr]
         vals = g.late_rate * 100
         ax.axhline(6.77, color=INK2, lw=0.6, ls=(0, (3, 2)), zorder=1)
@@ -336,10 +337,12 @@ def fig_eda_late_by_bin():
         for i, v in enumerate(vals):
             ax.text(i, v + 0.7, vn(v, 1), ha="center", fontsize=7.5, color=INK2,
                     bbox=dict(fc="white", ec="none", pad=0.4))
-        ax.set_xticks(range(len(g)), labels, fontsize=7.6)
+        ax.set_xticks(range(len(g)), labels, fontsize=7.0)
         style_axis(ax)
         ax.yaxis.set_major_formatter(VN_PCT)
-        ax.set_title(title, loc="left", fontsize=8.8, fontweight="bold", pad=6)
+        ax.tick_params(axis="y", labelleft=True)
+        ax.set_xlabel(unit, fontsize=8)
+        ax.set_title(title, loc="center", fontsize=8.8, fontweight="bold", pad=6)
     axes[0].set_ylabel("Tỷ lệ giao trễ")
     axes[0].set_ylim(0, 33)
     save(fig, "fig-eda-ty-le-tre-theo-nhom")

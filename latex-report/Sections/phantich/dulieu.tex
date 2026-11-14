@@ -37,7 +37,7 @@ Toàn bộ dữ liệu gồm 9 tập tin CSV với tổng cộng 1.550.922 dòng
 
 \subsubsection{Quan hệ giữa các tập dữ liệu}\label{sec:quanhe}
 
-Các tập dữ liệu liên kết với nhau qua khóa như trong Bảng~\ref{tab:quanhe} và Hình~\ref{fig:quanhenguon}. Bảng \code{orders} là trung tâm: mọi tập còn lại đều nối về đơn hàng, trực tiếp hoặc qua \code{order\_items}.
+Các tập dữ liệu liên kết với nhau qua khóa như trong Bảng~\ref{tab:quanhe} và Hình~\ref{fig:quanhe-nguon}. Bảng \code{orders} là trung tâm: mọi tập còn lại đều nối về đơn hàng, trực tiếp hoặc qua \code{order\_items}.
 
 \begingroup\small\setstretch{1.1}
 \begin{longtable}{|p{2.8cm}|p{4.1cm}|p{4.3cm}|l|}
@@ -57,9 +57,20 @@ Các tập dữ liệu liên kết với nhau qua khóa như trong Bảng~\ref{t
 \end{longtable}
 \endgroup
 
-\input{Sections/hinh/quanhe-nguon}
+% \input{Sections/hinh/quanhe-nguon}
 
-Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu. Thứ nhất, dữ liệu không cùng mức chi tiết: giá, phí vận chuyển và người bán được ghi theo từng dòng sản phẩm, còn thanh toán, đánh giá và các mốc giao hàng được ghi theo đơn hàng. Thứ hai, \code{customer\_id} được sinh mới cho mỗi đơn hàng, nên không thể dùng nó để đếm khách hàng. Mã nhận diện khách hàng thật là \code{customer\_unique\_id}, với 96.096 giá trị, trong đó 2.997 khách hàng có từ hai \code{customer\_id} trở lên. Thứ ba, tập \code{geolocation} không có khóa duy nhất: một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên phải gom lại trước khi nối với khách hàng và người bán.
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/quanhe_nguon.png}
+\caption{Sơ đồ quan hệ giữa các tập dữ liệu nguồn}
+\label{fig:quanhe-nguon}
+\end{figure}
 
+
+Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu: 
+\begin{enumerate}
+    \item Dữ liệu không cùng mức chi tiết: giá, phí vận chuyển và người bán được ghi theo từng dòng sản phẩm, còn thanh toán, đánh giá và các mốc giao hàng được ghi theo đơn hàng.
+    \item \code{customer\_id} được sinh mới cho mỗi đơn hàng, nên không thể dùng nó để đếm khách hàng. Mã nhận diện khách hàng thật là \code{customer\_unique\_id}, với 96.096 giá trị, trong đó 2.997 khách hàng có từ hai \code{customer\_id} trở lên. 
+    \item Tập \code{geolocation} không có khóa duy nhất: một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên phải gom lại trước khi nối với khách hàng và người bán.
+\end{enumerate}
 Phân bố của từng thuộc tính, các giá trị thiếu, ngoại lai và lỗi dữ liệu được khảo sát chi tiết ở mục~\ref{sec:eda}, cùng với các quy tắc tiền xử lý rút ra từ đó.
-
