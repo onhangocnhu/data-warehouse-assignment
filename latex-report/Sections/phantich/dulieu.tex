@@ -57,7 +57,15 @@ Các tập dữ liệu liên kết với nhau qua khóa như trong Bảng~\ref{t
 \end{longtable}
 \endgroup
 
-\input{Sections/hinh/quanhe-nguon}
+% \input{Sections/hinh/quanhe-nguon}
+
+\begin{figure}[H]
+\centering
+\includegraphics[width=\linewidth]{Pictures/quanhe_nguon.png}
+\caption{Sơ đồ quan hệ giữa các tập dữ liệu nguồn}
+\label{fig:quanhe-nguon}
+\end{figure}
+
 
 Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến thiết kế kho dữ liệu: 
 \begin{enumerate}
@@ -66,4 +74,3 @@ Các quan hệ này có ba đặc điểm ảnh hưởng trực tiếp đến th
     \item Tập \code{geolocation} không có khóa duy nhất: một tiền tố mã bưu chính ứng với nhiều dòng tọa độ, nên phải gom lại trước khi nối với khách hàng và người bán.
 \end{enumerate}
 Phân bố của từng thuộc tính, các giá trị thiếu, ngoại lai và lỗi dữ liệu được khảo sát chi tiết ở mục~\ref{sec:eda}, cùng với các quy tắc tiền xử lý rút ra từ đó.
-
