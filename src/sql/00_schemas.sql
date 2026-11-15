@@ -1,5 +1,5 @@
 -- 00_schemas.sql
--- Creates the four schemas of the system (see latex-report/Sections/thietke/khainiem.tex, sec:kientruc).
+-- Creates the four schemas of the system (see report/Sections/thietke/khainiem.tex, sec:kientruc).
 --   staging : raw copies of the 9 CSV files (raw_*) and cleaned tables (stg_*)
 --   dm      : the Data Mart (snowflake schema: fact_sales + 7 dimension tables)
 --   meta    : metadata repository (data dictionary, lineage, ETL run log, data-quality results)

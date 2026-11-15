@@ -5,7 +5,7 @@ fonts as the report, then rasterised to PNG at 300 dpi with pdftoppm (poppler, s
 TeX Live). The PNG carries its resolution, so LaTeX prints it at the size it was built: FULL = text
 width; include it WITHOUT a width option.
 
-Output: latex-report/Pictures/fig-*.png
+Output: report/Pictures/fig-*.png
 Usage:  python -m src.report.make_figures            (all figures)
         python -m src.report.make_figures dss        (only figures whose function name contains 'dss')
 """
@@ -28,7 +28,7 @@ from sqlalchemy import create_engine, text
 from src.eda.run_eda import load_raw, raw_delivery_days
 from src.etl.config import ROOT, SQLALCHEMY_URL
 
-OUT = ROOT / "latex-report" / "Pictures"
+OUT = ROOT / "report" / "Pictures"
 OLAP = ROOT / "src" / "olap" / "results"
 DSS = ROOT / "src" / "dss" / "results"
 EDA = ROOT / "src" / "eda" / "results"

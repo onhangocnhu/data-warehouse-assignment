@@ -29,46 +29,37 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 
 ```
 .
-├── latex-report/            LaTeX report (main version)
-│   ├── main.tex             Cover page and section order
-│   ├── main.pdf             Compiled report
+├── report/                  Report (rule 5.1 item 1)
+│   ├── main.tex, main.pdf   Cover page, section order, compiled report
 │   ├── Pictures/            Images used in the report
-│   └── Sections/
-│       ├── preamp.tex       Preamble: margins, fonts, header/footer, macros
-│       ├── workload.tex     Task assignment table
-│       ├── phantich/        Part 1: business requirements analysis
-│       ├── eda.tex          Part 2: exploratory data analysis and preprocessing
-│       ├── thietke/         Part 3: data warehouse and ETL design
-│       ├── hienthuc/        Part 4: implementation (environment, ETL run, OLAP, dashboard)
-│       ├── dss.tex          Part 5: decision support (late-delivery warning at carrier handover)
-│       ├── danhgia.tex, ketluan.tex, phuluc.tex   Parts 6-7 and appendix
-│       └── hinh/            TikZ diagrams
-├── src/                     Source code to submit (assignment rule 5.1)
+│   ├── Sections/            LaTeX sections (phantich, eda, thietke, hienthuc, dss, ..., hinh/ = TikZ diagrams)
+│   ├── drawio-files/        Diagram sources (draw.io, Mermaid)
+│   ├── drawio-mcp/start.sh  Script that starts the draw.io MCP server
+│   ├── CO4031_Assignment_HK261.pdf   Assignment rules
+│   └── AGENTS.md            Instructions for AI agents working on the report
+├── src/                     Source code (rule 5.1 item 2)
 │   ├── sql/                 DDL (00-04) and ETL / OLAP SQL steps
-│   ├── eda/                 Exploratory data analysis (raw files and cleaned data)
-│   ├── etl/                 Python ETL orchestration
+│   ├── eda/ etl/ olap/      Exploratory analysis, Python ETL, OLAP queries
 │   ├── dss/                 Decision support component
-│   └── dashboard/           Streamlit dashboard
-├── data/
+│   ├── dashboard/           Streamlit dashboard
+│   ├── report/              Script that renders the report charts
+│   ├── docker-compose.yml   PostgreSQL 16
+│   ├── .env.example         Database settings template (copy to src/.env)
+│   ├── requirements.txt     Python packages
+│   ├── .streamlit/          Dashboard theme
+│   └── HUONG_DAN_CHAY.md    Which command produces which part of the report
+├── data/                    Sample data (rule 5.1 item 3)
 │   ├── raw/                 Olist source data (9 CSV, read-only)
 │   └── reference/           Lookup tables added by the team (state -> region, translation patch)
-├── slides/                  Presentation slides (PDF, rule 5.1 item 4)
-├── docker-compose.yml       PostgreSQL 16
-├── .env.example             Database settings template (copy to .env)
-├── requirements.txt         Python packages
-├── drawio-files/            Diagram sources (draw.io, Mermaid)
-├── drawio-mcp/start.sh      Script that starts the draw.io MCP server
-├── Documents/               Course lecture slides
-├── sample_report/           CO4031 report of a previous group (chapter coverage reference)
-├── CO4031_Assignment_HK261.pdf   Assignment rules
-└── AGENTS.md                Instructions for AI agents working in this repo
+└── slides/                  Presentation slides (PDF, rule 5.1 item 4)
 ```
+
 
 ## Submission checklist (assignment rule 5.1)
 
 | Required item | Location in this repo |
 |---|---|
-| Report (PDF) | `latex-report/main.pdf` |
+| Report (PDF) | `report/main.pdf` |
 | Source code (`src/`) | `src/` (SQL, ETL, OLAP, DSS, dashboard) |
 | Sample data (`data/`) | `data/` |
 | Presentation slides (PDF) | `slides/slides.pdf` |
@@ -80,16 +71,16 @@ Prerequisites: Docker Desktop running, Python 3.11+ (tested with 3.14), and for 
 distribution with `pdflatex` and `pdftoppm` on PATH (MiKTeX or TeX Live).
 
 ```bash
-copy .env.example .env               # Linux/macOS: cp .env.example .env; set DB_PASSWORD (DB_PORT=5433 if 5432 is taken)
-docker compose up -d                 # PostgreSQL 16
+copy src\.env.example src\.env               # Linux/macOS: cp src/.env.example src/.env; set DB_PASSWORD (DB_PORT=5433 if 5432 is taken)
+docker compose -f src/docker-compose.yml up -d                 # PostgreSQL 16
 python -m venv .venv && .venv\Scripts\activate   # Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 python -m src.etl.run_etl --init     # schemas, tables and a full ETL run (~10-20 s)
 python -m src.eda.run_eda            # EDA before/after preprocessing -> src/eda/results/
 python -m src.olap.run_olap          # 14 OLAP queries -> src/olap/results/
 python -m src.dss.evaluate_models    # model selection on 01-05/2018 + walk-forward (~1-2 h); add --reuse to skip the search
 python -m src.dss.score_delay        # needs results/best_config.json from the step above; scores + backtest -> dss.*
-python -m src.report.make_figures    # report charts -> latex-report/Pictures/fig-*.png (filter: make_figures dss)
+python -m src.report.make_figures    # report charts -> report/Pictures/fig-*.png (filter: make_figures dss)
 ```
 
 What to check after each step:
@@ -114,7 +105,7 @@ Details of every entry point are in [`src/README.md`](src/README.md); the report
 Requirements: a TeX distribution with `pdflatex`, `latexmk`, and the `vntex` package (MiKTeX or TeX Live).
 
 ```bash
-cd latex-report
+cd report
 latexmk -pdf main.tex
 ```
 
@@ -126,19 +117,19 @@ All figures of the report share one visual style (same colours, fonts and line w
 
 | Kind | Source | Notes |
 |---|---|---|
-| Diagrams (architecture, ETL flow, snowflake schema, order lifecycle, source relations, hierarchies, data cube, DSS flow) | TikZ files in `latex-report/Sections/hinh/` | Common colours and styles (`dwbox`, `dwdb`, `\dwtable`, ...) are defined in `Sections/preamp.tex` |
+| Diagrams (architecture, ETL flow, snowflake schema, order lifecycle, source relations, hierarchies, data cube, DSS flow) | TikZ files in `report/Sections/hinh/` | Common colours and styles (`dwbox`, `dwdb`, `\dwtable`, ...) are defined in `Sections/preamp.tex` |
 | Data charts (`fig-*.png`) | `src/report/make_figures.py` | Built from the database with matplotlib's PGF backend (text in the report's own vntex font), then rasterised to PNG at 300 dpi with `pdftoppm` (ships with MiKTeX / TeX Live). Re-run after every ETL/DSS run |
 
-The draw.io files in `drawio-files/` are the earlier versions of the architecture, ETL and schema diagrams (kept for reference; the report no longer uses their PNG exports). To export them without installing draw.io:
+The draw.io files in `report/drawio-files/` are the earlier versions of the architecture, ETL and schema diagrams (kept for reference; the report no longer uses their PNG exports). To export them without installing draw.io:
 
 ```bash
-docker run --rm -v "$PWD/drawio-files:/data" rlespinasse/drawio-export:v4.5.0 --format png --scale 2 --border 10 --output export
+docker run --rm -v "$PWD/report/drawio-files:/data" rlespinasse/drawio-export:v4.5.0 --format png --scale 2 --border 10 --output export
 ```
 
 The draw.io MCP server requires Node.js:
 
 ```bash
-./drawio-mcp/start.sh            # start the server at http://localhost:3000
+./report/drawio-mcp/start.sh            # start the server at http://localhost:3000
 pkill -f drawio-mcp-server       # stop the server
 ```
 
@@ -146,4 +137,4 @@ pkill -f drawio-mcp-server       # stop the server
 
 The report is written in Vietnamese and follows the style of the sample report.
 
-See [`AGENTS.md`](AGENTS.md) for the full conventions.
+See [`report/AGENTS.md`](report/AGENTS.md) for the full conventions.

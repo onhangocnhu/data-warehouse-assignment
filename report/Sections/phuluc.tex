@@ -5,7 +5,7 @@ Phụ lục này mô tả cách dựng lại toàn bộ hệ thống trên một
 
 \subsection{Yêu cầu phần mềm}
 
-Máy cần có Docker (để chạy PostgreSQL 16), Python 3.11 trở lên (đã chạy thử với 3.14) và một bản phân phối \LaTeX{} có \code{pdflatex} với gói \code{vntex} nếu muốn biên dịch lại báo cáo và các biểu đồ. Các thư viện Python được liệt kê trong \code{requirements.txt}.
+Máy cần có Docker (để chạy PostgreSQL 16), Python 3.11 trở lên (đã chạy thử với 3.14) và một bản phân phối \LaTeX{} có \code{pdflatex} với gói \code{vntex} nếu muốn biên dịch lại báo cáo và các biểu đồ. Các thư viện Python được liệt kê trong \code{src/requirements.txt}.
 
 \subsection{Các bước chạy}
 
@@ -13,13 +13,13 @@ Tất cả lệnh dưới đây chạy từ thư mục gốc của kho mã ngu�
 
 \begin{lstlisting}[style=SQLStyle, language=bash]
 # 1. Cấu hình và khởi động PostgreSQL 16 trong Docker
-copy .env.example .env            # sửa DB_PASSWORD
-docker compose up -d
+copy src\.env.example src\.env            # sửa DB_PASSWORD
+docker compose -f src/docker-compose.yml up -d
 
 # 2. Môi trường Python
 python -m venv .venv
 .venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 
 # 3. Tạo schema, bảng và chạy ETL đầy đủ (khoảng 10 giây)
 python -m src.etl.run_etl --init
@@ -65,8 +65,8 @@ src/dss/                  features.py (đặc trưng point-in-time), evaluate_mo
 src/dashboard/            app.py (điều hướng), db.py, filters.py, ui.py, views/ (7 trang),
                           setup_role.py, run.sh (chạy dashboard bằng một lệnh)
 src/report/               make_figures.py: sinh biểu đồ của báo cáo từ cơ sở dữ liệu
-latex-report/             mã nguồn LaTeX của báo cáo; Sections/hinh/ chứa các sơ đồ TikZ
-docker-compose.yml        PostgreSQL 16
+report/                   mã nguồn LaTeX của báo cáo; Sections/hinh/ chứa các sơ đồ TikZ
+src/docker-compose.yml    PostgreSQL 16
 \end{lstlisting}
 
 \section{Phụ lục: Bảng mã bang của Brazil}\label{sec:mabang}

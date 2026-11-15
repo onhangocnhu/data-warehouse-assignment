@@ -2,7 +2,7 @@
 
 ## Run
 
-Streamlit + Plotly (both already in `requirements.txt`). From the repository root, with Docker Desktop running:
+Streamlit + Plotly (both already in `src/requirements.txt`). From the repository root, with Docker Desktop running:
 
 ```bash
 bash src/dashboard/run.sh            # prepares what is missing, then opens http://localhost:8501 (Ctrl+C to stop)
@@ -10,7 +10,7 @@ bash src/dashboard/run.sh --check    # prepare and check only
 ```
 
 `run.sh` is safe to re-run; each step is skipped when already done: `.env` (asks you to set `DB_PASSWORD`),
-PostgreSQL via `docker compose`, `.venv` + `requirements.txt`, the ETL if `dm.fact_sales` is empty,
+PostgreSQL via `docker compose`, `.venv` + `src/requirements.txt`, the ETL if `dm.fact_sales` is empty,
 `src.dss.score_delay` if `dss.delay_risk_score` is empty, the login role `dashboard_app` (appended to `.env`),
 then Streamlit. The manual equivalent of the last two steps:
 
@@ -20,7 +20,7 @@ streamlit run src/dashboard/app.py
 ```
 
 Without the two `DASHBOARD_DB_*` lines the app falls back to the ETL account and shows a warning in the sidebar.
-Theme: Light / Dark / System in the ⋮ menu (top right); colours are in `.streamlit/config.toml`.
+Theme: Light / Dark / System in the ⋮ menu (top right); colours are in `src/.streamlit/config.toml`.
 
 | File | Role |
 |---|---|
@@ -35,7 +35,7 @@ Theme: Light / Dark / System in the ⋮ menu (top right); colours are in `.strea
 ## Specification (from Thịnh)
 
 Web dashboard on top of the Data Mart. Free choice of technology; record it in the report
-(`latex-report/Sections/hienthuc/trienkhai.tex`, table `tab:congnghe`, and section 4.4 `hienthuc/dashboard.tex`).
+(`report/Sections/hienthuc/trienkhai.tex`, table `tab:congnghe`, and section 4.4 `hienthuc/dashboard.tex`).
 Connect with the read-only role or a dedicated user; only `dss.decision_log` needs write access.
 
 ## Data to read
