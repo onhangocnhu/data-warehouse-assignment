@@ -32,7 +32,8 @@ report/
 │   ├── phantich.tex            \section 1, \inputs its child files
 │   ├── phantich/{dongluc,nghiepvu,dulieu,yeucau}.tex
 │   ├── thietke.tex             \section 2 + table of document abbreviations (Ch1, Ch2, Ch2-cont, Ch3)
-│   └── thietke/{khainiem,dachieu,logic,etl}.tex
+│   ├── thietke/{khainiem,dachieu,logic,etl}.tex
+│   └── tailieuthamkhao.tex     thebibliography
 └── Pictures/hcmut.png
 ```
 - **Every child file** starts with `% !TeX root = ../../main.tex`, or `../main.tex` if the file sits directly in `Sections/`.
@@ -85,7 +86,15 @@ The original style sample (`sample written report/CO3103_L06_Nhom10_Report.pdf`)
   - Use the Vietnamese terms **chiều**, **bảng chiều**, **phân cấp**, **thước đo**. The English name appears in parentheses only at the first mention in the whole report: "bảng chiều (dimension table)", "chiều phân tích (dimensions)", "thước đo (measures)" (all in `phantich/yeucau.tex`), "phân cấp (hierarchies)" (`thietke/dachieu.tex`, 2.2.3).
   - Keep the English terms **granularity**, **transformation**, **staging**, **surrogate key**, **snowflake schema**, **bảng fact** as they are.
   - Named Kimball techniques keep their English name in parentheses: role-playing dimension, degenerate dimension, Slowly Changing Dimension, accumulating snapshot.
-- **Citations:** the references section ("Tài liệu tham khảo") was removed from the report, so do not add `\cite{...}` or a bibliography.
+- **Citations:**
+  - **Do not name the author in the sentence.** No "Theo Han và cộng sự…", "Theo Kimball…", "theo định nghĩa của Inmon…", "phương pháp của Kimball…". Write the statement itself and put `\cite{...}` at the end of the cited sentence, e.g. "Bước này bao gồm làm sạch dữ liệu, ánh xạ dữ liệu và áp dụng các quy tắc nghiệp vụ \cite{han}."
+  - **Never cite the course slides.** There is no `slides` entry. Cite the textbook the slide content comes from:
+    - `\cite{han}` [6] (Han, Kamber, Pei) for the three DW models, three-tier architecture, star/snowflake/fact constellation, Data Cube and OLAP, data quality, transformation, metadata;
+    - `\cite{inmon}` [1] for the four DW characteristics, granularity, derived data;
+    - `\cite{kimball}` [2] for ETL and staging, incremental load, 4-step design, accumulating snapshot, surrogate key, SCD, role-playing/degenerate/conformed dimensions;
+    - `\cite{tmq}` [8] for relational database concepts;
+    - `\cite{olist}` [9] for the dataset.
+  - The bibliography lists all 8 syllabus references in syllabus order, plus the Olist dataset as [9]. Keys `turban`, `elmasri`, `sharda`, `burstein` are available for the DSS parts.
 
 ## 5. LaTeX conventions
 

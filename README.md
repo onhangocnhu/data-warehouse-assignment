@@ -32,7 +32,7 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 ├── report/                  Report (rule 5.1 item 1)
 │   ├── main.tex, main.pdf   Cover page, section order, compiled report
 │   ├── Pictures/            Images used in the report
-│   ├── Sections/            LaTeX sections (phantich, eda, thietke, hienthuc, dss, ..., hinh/ = TikZ diagrams)
+│   ├── Sections/            LaTeX sections (phantich, eda, thietke, hienthuc, dss, ..., tailieuthamkhao = references, hinh/ = TikZ diagrams)
 │   ├── drawio-files/        Diagram sources (draw.io, Mermaid)
 │   ├── drawio-mcp/start.sh  Script that starts the draw.io MCP server
 │   ├── CO4031_Assignment_HK261.pdf   Assignment rules
@@ -62,7 +62,7 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 | Report (PDF) | `report/main.pdf` |
 | Source code (`src/`) | `src/` (SQL, ETL, OLAP, DSS, dashboard) |
 | Sample data (`data/`) | `data/` |
-| Presentation slides (PDF) | `slides/slides.pdf` |
+| Presentation slides (PDF) | `slides/Nhóm 10_L01_SlideReport.pdf` |
 | Video link (on the report cover) | [Google Drive folder](https://drive.google.com/drive/folders/1U7ONwhEVuUqJkst1z5X8fvamymiwy6j7?usp=drive_link) |
 
 ## Running the system
