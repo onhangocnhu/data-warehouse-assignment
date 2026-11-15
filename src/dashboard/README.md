@@ -64,7 +64,7 @@ Rules that keep the dashboard consistent with the report:
 | Late rate (delivered orders) | 6,77 % |
 | Average review late vs on time | 2,27 vs 4,29 |
 | Late rate RJ / SP | 12,11 % / 4,49 % |
-| DSS, RED level, actual late rate | 28,8 % (925 orders, 06-08/2018) |
+| DSS, RED level, actual late rate | 30,8 % (925 orders, 06-08/2018) |
 
 For the report (section 4.4 and the `\TODO` in `dss.tex`): one screenshot per page with a caption,
 and a short check that at least the five numbers above match.

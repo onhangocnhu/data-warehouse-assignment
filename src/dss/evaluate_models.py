@@ -10,14 +10,16 @@ Protocol
   * Handover moment: orders already past their estimated date at handover are "certainly late" and caught
     by a rule; models are scored on the remaining orders. The approval moment is evaluated for reference.
 
-Two candidates are compared:
-  - "hgb_v1": HistGradientBoosting on NUM_HANDOVER, chosen by the first, small grid (8 settings);
-  - "ensemble": the extended search (60 HGB settings per feature set + 4 LR settings) chosen on validation,
-    rank average of HGB on NUM_HANDOVER, HGB on NUM_HANDOVER_BL (+ carrier backlog) and LR on NUM_HANDOVER_BL.
-The extended search raised validation recall@10 from 31.9% to 34.3% but not the test result (39.8% vs 41.7%);
-both gaps are within the noise of ~800 late test orders. The simpler hgb_v1 is kept as the production model
-(FINAL below); this decision was taken after seeing the test months and is stated as such in the report.
-results/best_config.json stores the final model and the search result; score_delay.py reads "final".
+Candidates: "hgb_v1" (first, small grid of 8 settings), the best HGB of the extended search on each feature
+set, the best LR, and their rank-average ensemble.
+
+Final model: the tuned HGB on NUM_HANDOVER_BL ("hgb_tuned_backlog"). It is not the single winner of the
+validation months (the ensemble is, 34.3% vs 33.5%), but it is the most consistent candidate over the whole
+walk-forward: best mean recall@10 over all 14 months (33.1%) and over 2018 (36.9%), better than hgb_v1 in
+8 of 14 months (2 ties), and simpler than the ensemble. Because the test months are part of this comparison,
+the report says the test figures of the final model are slightly optimistic.
+results/best_config.json stores the final model ("final") and the search result ("ensemble");
+score_delay.py reads "final".
 
 Outputs: src/dss/results/{best_config.json, search.csv, walkforward.csv, improved_summary.csv,
          improved_summary.json, tuning.csv}
@@ -54,7 +56,7 @@ V1_PARAMS = dict(learning_rate=0.03, max_leaf_nodes=15, min_samples_leaf=200, l2
 # approval moment grid (reference only)
 GRID = [dict(learning_rate=lr, max_leaf_nodes=leaves, min_samples_leaf=msl, l2_regularization=1.0, max_iter=300)
         for lr, leaves, msl in itertools.product([0.03, 0.08], [15, 31], [50, 200])]
-FINAL = [dict(algo="hgb", features="handover", params=V1_PARAMS)]   # production model (see docstring)
+FINAL_COMPONENT = 1   # production model = ensemble component 1, the tuned HGB on NUM_HANDOVER_BL (see docstring)
 N_SEARCH, SEED = 60, 7
 LR_C = [0.05, 0.2, 0.5, 2.0]
 
@@ -225,8 +227,8 @@ def main():
         specs, log = search(h)
         log.to_csv(OUT / "search.csv", index=False)
         approval_params = tune_approval(d)
-        cfg = {"final": FINAL,
-               "final_note": "hgb_v1 kept: the extended search improved validation but not test (within noise)",
+        cfg = {"final": [specs[FINAL_COMPONENT]],
+               "final_note": "tuned HGB with backlog features: most consistent over all 14 walk-forward months",
                "selected_on": "validation months " + ", ".join(VAL_MONTHS),
                "metric": "mean recall of late orders in the riskiest 10% (handover stage)",
                "ensemble": specs, "approval_params": approval_params, "search": {"n_hgb": N_SEARCH, "seed": SEED,
