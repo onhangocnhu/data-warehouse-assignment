@@ -23,17 +23,17 @@ src/
 ├── dss/                     features.py (point-in-time features, labels), evaluate_baseline.py (first
 │                            baseline), evaluate_models.py (walk-forward + tuning), score_delay.py
 │                            (scores at carrier handover, policies, backtest -> dss.*) -> results/
-├── report/                  make_figures.py -> latex-report/Pictures/fig-*.png (24 data figures, 300 dpi)
+├── report/                  make_figures.py -> report/Pictures/fig-*.png (24 data figures, 300 dpi)
 └── dashboard/               (Bảo) web dashboard
 ```
 
 Quick start (repository root, Docker running):
 
 ```bash
-copy .env.example .env                    # set DB_PASSWORD; use DB_PORT=5433 if 5432 is taken
-docker compose up -d
+copy src\.env.example src\.env                    # set DB_PASSWORD; use DB_PORT=5433 if 5432 is taken
+docker compose -f src/docker-compose.yml up -d
 python -m venv .venv && .venv\Scripts\activate
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 python -m src.etl.run_etl --init          # create schemas + full load (about 20 seconds)
 python -m src.etl.run_etl                 # later full reloads
 python -m src.eda.run_eda                 # EDA results (raw files + cleaned data)

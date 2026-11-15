@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Start the drawio MCP server (persistent) and print connection config.
-# Usage: scripts/drawio-mcp/start.sh
+# Usage: report/drawio-mcp/start.sh
 set -uo pipefail
 
 HTTP_PORT=3000

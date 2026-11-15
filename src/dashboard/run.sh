@@ -17,19 +17,19 @@ fail() { printf '\033[31mError: %s\033[0m\n' "$*" >&2; exit 1; }
 
 # 1. .env (database settings, git-ignored)
 step "Settings (.env)"
-if [[ ! -f .env ]]; then
-    cp .env.example .env
+if [[ ! -f src/.env ]]; then
+    cp src/.env.example src/.env
     fail "created .env from .env.example. Open it, set DB_PASSWORD, then run this script again."
 fi
-set -a; source .env; set +a
+set -a; source src/.env; set +a
 [[ "${DB_PASSWORD:-change_me}" == "change_me" ]] && fail "set DB_PASSWORD in .env (it is still 'change_me')."
 echo "ok"
 
 # 2. PostgreSQL 16 in Docker
 step "PostgreSQL (Docker)"
 docker info >/dev/null 2>&1 || fail "Docker is not running. Start Docker Desktop and try again."
-docker compose up -d --wait postgres
-psql_q() { docker compose exec -T postgres psql -U "${DB_USER:-dw_admin}" -d "${DB_NAME:-olist_dw}" -tAc "$1"; }
+docker compose -f src/docker-compose.yml up -d --wait postgres
+psql_q() { docker compose -f src/docker-compose.yml exec -T postgres psql -U "${DB_USER:-dw_admin}" -d "${DB_NAME:-olist_dw}" -tAc "$1"; }
 
 # 3. Python environment
 step "Python environment (.venv)"
@@ -39,10 +39,10 @@ if [[ ! -x .venv/bin/python ]]; then
     "$PY" -m venv .venv
 fi
 if command -v uv >/dev/null; then                 # a venv made by uv has no pip
-    uv pip install -q --python .venv/bin/python -r requirements.txt
+    uv pip install -q --python .venv/bin/python -r src/requirements.txt
 else
     .venv/bin/python -m pip --version >/dev/null 2>&1 || .venv/bin/python -m ensurepip -q
-    .venv/bin/python -m pip install -q -r requirements.txt
+    .venv/bin/python -m pip install -q -r src/requirements.txt
 fi
 .venv/bin/python --version
 
@@ -68,8 +68,8 @@ echo "dss.delay_risk_score: $(psql_q 'SELECT COUNT(*) FROM dss.delay_risk_score'
 
 # 6. Dashboard login: SELECT on dm/meta/dss + INSERT on dss.decision_log only
 step "Dashboard login (dashboard_app)"
-if ! grep -q '^DASHBOARD_DB_USER=' .env; then
-    .venv/bin/python -m src.dashboard.setup_role | grep '^DASHBOARD_DB_' >> .env
+if ! grep -q '^DASHBOARD_DB_USER=' src/.env; then
+    .venv/bin/python -m src.dashboard.setup_role | grep '^DASHBOARD_DB_' >> src/.env
     echo "role created, login added to .env"
 else
     echo "already in .env"

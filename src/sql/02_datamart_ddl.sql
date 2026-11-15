@@ -1,6 +1,6 @@
 -- 02_datamart_ddl.sql
--- Data Mart in snowflake schema, exactly as designed in latex-report/Sections/thietke/logic.tex
--- (tab:fact, tab:dim) and drawio-files/schema-snowflake.mmd.
+-- Data Mart in snowflake schema, exactly as designed in report/Sections/thietke/logic.tex
+-- (tab:fact, tab:dim) and report/drawio-files/schema-snowflake.mmd.
 --   fact_sales  : granularity = one product in one order (order_id, order_item_id), accumulating snapshot
 --   dimensions  : dim_date, dim_state, dim_city, dim_category, dim_product, dim_customer, dim_seller (7 tables)
 -- Every dimension has an "unknown" member with key -1, so the fact table never holds a NULL foreign key.

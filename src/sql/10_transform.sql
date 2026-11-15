@@ -1,6 +1,6 @@
 -- 10_transform.sql
 -- Transformation: staging.raw_* (TEXT, as in the CSV files) -> staging.stg_* (typed, cleaned, integrated).
--- Implements the rules of tab:quytac in latex-report/Sections/thietke/etl.tex.
+-- Implements the rules of tab:quytac in report/Sections/thietke/etl.tex.
 -- Every table is dropped and rebuilt, so the step can be re-run safely.
 -- Expects the session setting etl.run_id (set by run_etl.py) for meta.rejected_record.
 

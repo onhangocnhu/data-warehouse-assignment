@@ -2,7 +2,7 @@
 \subsection{Thiết kế quy trình ETL}
 \subsubsection{Tổng quan quy trình ETL}
 
-ETL đưa dữ liệu từ nguồn vào kho qua ba bước trích xuất (Extract), biến đổi (Transform) và nạp (Load); dữ liệu được xử lý ở khu vực staging nằm giữa nguồn và kho trước khi vào kho \cite{kimball}. Hình~\ref{fig:etl} là luồng ETL của hệ thống.
+ETL đưa dữ liệu từ nguồn vào kho qua ba bước trích xuất (Extract), biến đổi (Transform) và nạp (Load); dữ liệu được xử lý ở khu vực staging nằm giữa nguồn và kho trước khi vào kho. Hình~\ref{fig:etl} là luồng ETL của hệ thống.
 
 \input{Sections/hinh/etlflow}
 
@@ -18,7 +18,7 @@ Mọi cột ở bảng thô đều có kiểu chuỗi và chưa qua bất kỳ b
 
 \subsubsection{Transformation -- Biến đổi dữ liệu}
 
-Bước transformation biến dữ liệu thô thành dữ liệu sạch và nhất quán, sẵn sàng nạp vào Data Mart; công việc gồm làm sạch, ánh xạ dữ liệu và áp dụng quy tắc nghiệp vụ \cite{han}. Kết quả được lưu vào các bảng đã làm sạch trong schema \code{staging}, tên có tiền tố \code{stg\_}.
+Bước transformation biến dữ liệu thô thành dữ liệu sạch và nhất quán, sẵn sàng nạp vào Data Mart; công việc gồm làm sạch, ánh xạ dữ liệu và áp dụng quy tắc nghiệp vụ. Kết quả được lưu vào các bảng đã làm sạch trong schema \code{staging}, tên có tiền tố \code{stg\_}.
 
 \paragraph{Làm sạch dữ liệu}
 
@@ -38,7 +38,7 @@ Bốn khoảng thời gian \code{approval\_days}, \code{handling\_days}, \code{s
 
 Dữ liệu sạch được nạp từ staging vào Data Mart theo thứ tự từ bảng cha đến bảng con: \code{dim\_date}, \code{dim\_state}, \code{dim\_city}, \code{dim\_category}, \code{dim\_product}, \code{dim\_customer}, \code{dim\_seller}, rồi mới đến bảng fact. Như vậy, khi một bảng được nạp thì mọi bảng mà nó tham chiếu đã có dữ liệu. Khi nạp bảng fact, mỗi mã gốc như \code{product\_id}, \code{seller\_id}, \code{customer\_unique\_id} và mỗi mốc thời gian được tra sang surrogate key tương ứng; mã nào không tìm thấy được gán về bản ghi không xác định.
 
-Vì dữ liệu nguồn là một tập lịch sử cố định, hệ thống dùng hình thức nạp toàn bộ (full load): mỗi lần chạy, Data Mart được xóa và nạp lại từ đầu. Toàn bộ bước Load nằm trong một giao dịch (transaction); nếu có lỗi, giao dịch bị hủy và Data Mart giữ nguyên dữ liệu của lần chạy trước, không nạp dở dang hay trùng dữ liệu. Khi nguồn dữ liệu phát sinh liên tục, quy trình có thể chuyển sang nạp tăng dần (incremental load) dựa trên thời điểm mua của đơn hàng \cite{kimball}.
+Vì dữ liệu nguồn là một tập lịch sử cố định, hệ thống dùng hình thức nạp toàn bộ (full load): mỗi lần chạy, Data Mart được xóa và nạp lại từ đầu. Toàn bộ bước Load nằm trong một giao dịch (transaction); nếu có lỗi, giao dịch bị hủy và Data Mart giữ nguyên dữ liệu của lần chạy trước, không nạp dở dang hay trùng dữ liệu. Khi nguồn dữ liệu phát sinh liên tục, quy trình có thể chuyển sang nạp tăng dần (incremental load) dựa trên thời điểm mua của đơn hàng.
 
 Chỉ mục được tạo trên các khóa ngoại của bảng fact và trên \code{order\_id}, để tăng tốc phép kết nối và các truy vấn gom theo đơn hàng. Với quy mô hiện tại, nhóm chưa cần phân vùng (partition) bảng fact.
 
@@ -68,7 +68,7 @@ Số bản ghi bị loại hoặc bị sửa ở bước transformation, cùng l
 
 \subsubsection{Quản lý metadata}
 
-Metadata là ``dữ liệu về dữ liệu'', mô tả số liệu trong kho chứ không phải bản thân số liệu \cite{han}. Metadata được lưu trong schema \code{meta} trên PostgreSQL (mục~\ref{sec:kientruc}) và gồm ba phần:
+Metadata là ``dữ liệu về dữ liệu'', mô tả số liệu trong kho chứ không phải bản thân số liệu. Metadata được lưu trong schema \code{meta} trên PostgreSQL (mục~\ref{sec:kientruc}) và gồm ba phần:
 \begin{itemize}
     \item \textbf{Từ điển dữ liệu} (\code{data\_dictionary}) cho biết \emph{cột này là gì}: tên, kiểu, ý nghĩa nghiệp vụ và đơn vị tính của từng cột trong Data Mart.
     \item \textbf{Nguồn gốc dữ liệu} (\code{data\_lineage}) cho biết \emph{cột này từ đâu ra}: tập tin, cột nguồn và quy tắc biến đổi, giúp lần ngược về nguồn khi gặp con số bất thường.

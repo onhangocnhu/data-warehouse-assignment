@@ -1,6 +1,6 @@
 # Hướng dẫn chạy mã nguồn theo từng phần của báo cáo
 
-Tài liệu này cho biết mỗi phần nội dung trong báo cáo (`latex-report/main.pdf`) được tạo bởi đoạn mã nào, chạy bằng lệnh gì, và sau khi chạy thì cần thấy kết quả gì. Mọi lệnh chạy từ **thư mục gốc của repo** (thư mục có `docker-compose.yml`).
+Tài liệu này cho biết mỗi phần nội dung trong báo cáo (`report/main.pdf`) được tạo bởi đoạn mã nào, chạy bằng lệnh gì, và sau khi chạy thì cần thấy kết quả gì. Mọi lệnh chạy từ **thư mục gốc của repo** (thư mục có `docker-compose.yml`).
 
 ## 0. Chuẩn bị một lần
 
@@ -11,12 +11,12 @@ Tài liệu này cho biết mỗi phần nội dung trong báo cáo (`latex-repo
 | MiKTeX hoặc TeX Live | Chỉ cần khi sinh lại biểu đồ (`pdflatex`, `pdftoppm`) hoặc biên dịch báo cáo |
 
 ```powershell
-copy .env.example .env            # Linux/macOS: cp .env.example .env
+copy src\.env.example src\.env            # Linux/macOS: cp src/.env.example src/.env
 # Sửa DB_PASSWORD trong .env. Nếu máy đã có PostgreSQL chiếm cổng 5432 thì đặt DB_PORT=5433.
-docker compose up -d
+docker compose -f src/docker-compose.yml up -d
 python -m venv .venv
 .venv\Scripts\activate            # Linux/macOS: source .venv/bin/activate
-pip install -r requirements.txt
+pip install -r src/requirements.txt
 ```
 
 **Kiểm tra:** `docker ps` thấy `olist_dw_postgres ... (healthy)`.
@@ -180,7 +180,7 @@ python -m src.report.make_figures dss      # chỉ các hình có "dss" trong t�
 python -m src.report.make_figures eda      # chỉ các hình có "eda" trong tên hàm
 ```
 
-Hình được ghi vào `latex-report/Pictures/fig-*.png` (300 dpi). Cần chạy lại sau mỗi lần chạy ETL/EDA/OLAP/DSS.
+Hình được ghi vào `report/Pictures/fig-*.png` (300 dpi). Cần chạy lại sau mỗi lần chạy ETL/EDA/OLAP/DSS.
 
 | Phần báo cáo | Hàm trong `make_figures.py` | Đọc từ |
 |---|---|---|
@@ -189,12 +189,12 @@ Hình được ghi vào `latex-report/Pictures/fig-*.png` (300 dpi). Cần chạ
 | 4.3 OLAP | `fig_rollup_month`, `fig_drilldown_state`, `fig_dice`, `fig_pivot`, `fig_late_vs_review`, `fig_stage_durations`, `fig_route_heatmap`, `fig_black_friday`, `fig_category_growth`, `fig_seller_vs_orders` | cơ sở dữ liệu |
 | 5 DSS | `fig_dss_model_compare`, `fig_dss_by_month`, `fig_dss_importance`, `fig_dss_confusion`, `fig_dss_risk_levels`, `fig_dss_capacity` | `src/dss/results` |
 
-Các sơ đồ (kiến trúc, luồng ETL, lược đồ snowflake, vòng đời đơn hàng, luồng DSS) không sinh bằng Python mà vẽ bằng TikZ trong `latex-report/Sections/hinh/`.
+Các sơ đồ (kiến trúc, luồng ETL, lược đồ snowflake, vòng đời đơn hàng, luồng DSS) không sinh bằng Python mà vẽ bằng TikZ trong `report/Sections/hinh/`.
 
 ## 6. Biên dịch báo cáo
 
 ```powershell
-cd latex-report
+cd report
 latexmk -pdf main.tex
 ```
 
