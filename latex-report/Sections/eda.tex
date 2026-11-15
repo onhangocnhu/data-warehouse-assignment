@@ -1,7 +1,7 @@
 % !TeX root = ../main.tex
 \section{Khám phá và tiền xử lý dữ liệu}\label{sec:eda}
 
-Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis -- EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}.
+Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis -- EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}. Dữ liệu sau tiền xử lý được nạp vào Data Mart gồm bảng fact \code{fact\_sales}, mỗi dòng ứng với một sản phẩm trong một đơn hàng, và 7 bảng chiều (thiết kế chi tiết ở mục~\ref{sec:thietke}); bản ghi nào không được nạp vào bảng fact thì không được tính vào các chỉ số của kho.
 
 \subsection{Khám phá dữ liệu thô}\label{sec:edatho}
 
