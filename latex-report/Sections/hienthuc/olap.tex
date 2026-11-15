@@ -1,7 +1,7 @@
 % !TeX root = ../../main.tex
 \subsection{Phân tích OLAP trên Data Mart}\label{sec:olap}
 
-Theo mô hình ROLAP đã chọn (mục~\ref{sec:kientruc}), khối dữ liệu chính là bảng fact \code{fact\_sales} cùng các bảng chiều, và mỗi phép toán OLAP là một truy vấn SQL dùng \code{GROUP BY}, \code{ROLLUP} hoặc \code{CUBE} \cite{han}. Tập tin \code{50\_olap\_queries.sql} có 14 truy vấn, mỗi truy vấn trả lời một nhu cầu ở Bảng~\ref{tab:quyetdinh}. Hai quy ước được áp dụng cho mọi truy vấn: thước đo theo đơn hàng (thời gian giao, cờ trễ, điểm đánh giá) luôn lấy từ view \code{dm.v\_order} để mỗi đơn chỉ được tính một lần (mục~\ref{sec:dodo}), và doanh thu không tính các đơn ở trạng thái \code{canceled} hay \code{unavailable}.
+Theo mô hình ROLAP đã chọn (mục~\ref{sec:kientruc}), khối dữ liệu chính là bảng fact \code{fact\_sales} cùng các bảng chiều, và mỗi phép toán OLAP là một truy vấn SQL dùng \code{GROUP BY}, \code{ROLLUP} hoặc \code{CUBE}. Tập tin \code{50\_olap\_queries.sql} có 14 truy vấn, mỗi truy vấn trả lời một nhu cầu ở Bảng~\ref{tab:quyetdinh}. Hai quy ước được áp dụng cho mọi truy vấn: thước đo theo đơn hàng (thời gian giao, cờ trễ, điểm đánh giá) luôn lấy từ view \code{dm.v\_order} để mỗi đơn chỉ được tính một lần (mục~\ref{sec:dodo}), và doanh thu không tính các đơn ở trạng thái \code{canceled} hay \code{unavailable}.
 
 \subsubsection{Roll-up}
 

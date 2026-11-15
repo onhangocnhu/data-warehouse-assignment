@@ -42,8 +42,7 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 │       ├── hienthuc/        Part 4: implementation (environment, ETL run, OLAP, dashboard)
 │       ├── dss.tex          Part 5: decision support (late-delivery warning at carrier handover)
 │       ├── danhgia.tex, ketluan.tex, phuluc.tex   Parts 6-7 and appendix
-│       ├── hinh/            TikZ diagrams
-│       └── tailieuthamkhao.tex   Bibliography
+│       └── hinh/            TikZ diagrams
 ├── src/                     Source code to submit (assignment rule 5.1)
 │   ├── sql/                 DDL (00-04) and ETL / OLAP SQL steps
 │   ├── eda/                 Exploratory data analysis (raw files and cleaned data)
@@ -53,6 +52,7 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 ├── data/
 │   ├── raw/                 Olist source data (9 CSV, read-only)
 │   └── reference/           Lookup tables added by the team (state -> region, translation patch)
+├── slides/                  Presentation slides (PDF, rule 5.1 item 4)
 ├── docker-compose.yml       PostgreSQL 16
 ├── .env.example             Database settings template (copy to .env)
 ├── requirements.txt         Python packages
@@ -63,6 +63,16 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 ├── CO4031_Assignment_HK261.pdf   Assignment rules
 └── AGENTS.md                Instructions for AI agents working in this repo
 ```
+
+## Submission checklist (assignment rule 5.1)
+
+| Required item | Location in this repo |
+|---|---|
+| Report (PDF) | `latex-report/main.pdf` |
+| Source code (`src/`) | `src/` (SQL, ETL, OLAP, DSS, dashboard) |
+| Sample data (`data/`) | `data/` |
+| Presentation slides (PDF) | `slides/slides.pdf` |
+| Video link (on the report cover) | [Google Drive folder](https://drive.google.com/drive/folders/1U7ONwhEVuUqJkst1z5X8fvamymiwy6j7?usp=drive_link) |
 
 ## Running the system
 

@@ -5,11 +5,11 @@ Phần OLAP ở mục~\ref{sec:olap} cho nhà quản lý biết chuyện gì đ�
 
 \subsection{Cách tiếp cận}
 
-Một DSS gồm ba thành phần cơ bản: phần dữ liệu, phần mô hình và giao diện người dùng \cite{turban}. Trong đề tài, phần dữ liệu là Data Mart đã xây dựng ở các phần trước; phần mô hình gồm mô hình dự báo xác suất giao trễ, luật chọn đơn cần can thiệp và mô hình chi phí kỳ vọng; giao diện là trang DSS trên dashboard, nơi người vận hành xem danh sách đơn rủi ro, lý do và hành động đề xuất. DSS không tự quyết định thay con người: mọi đề xuất đều được người vận hành phê duyệt hoặc từ chối.
+Một DSS gồm ba thành phần cơ bản: phần dữ liệu, phần mô hình và giao diện người dùng. Trong đề tài, phần dữ liệu là Data Mart đã xây dựng ở các phần trước; phần mô hình gồm mô hình dự báo xác suất giao trễ, luật chọn đơn cần can thiệp và mô hình chi phí kỳ vọng; giao diện là trang DSS trên dashboard, nơi người vận hành xem danh sách đơn rủi ro, lý do và hành động đề xuất. DSS không tự quyết định thay con người: mọi đề xuất đều được người vận hành phê duyệt hoặc từ chối.
 
-Trong nhóm hệ hỗ trợ quản lý (Management Support Systems -- MSS), thành phần này là một DSS hướng mô hình (model-driven) chạy trên dữ liệu của kho: giá trị của nó nằm ở các mô hình chứ không chỉ ở việc truy vấn dữ liệu như OLAP \cite{turban}. Phần mô hình gồm ba loại. Mô hình dự báo (Gradient Boosting) ước lượng xác suất trễ của từng đơn. Mô hình chọn theo năng lực là một bài toán tối ưu đơn giản: chọn $k$ đơn có rủi ro cao nhất khi chỉ xử lý được $k$ đơn mỗi ngày. Mô hình chi phí kỳ vọng hỗ trợ quyết định trong điều kiện rủi ro, có phân tích độ nhạy (what-if) theo các giả định chi phí. Cả ba là mô hình tĩnh, được ước lượng lại mỗi tháng trên dữ liệu mới.
+Trong nhóm hệ hỗ trợ quản lý (Management Support Systems -- MSS), thành phần này là một DSS hướng mô hình (model-driven) chạy trên dữ liệu của kho: giá trị của nó nằm ở các mô hình chứ không chỉ ở việc truy vấn dữ liệu như OLAP. Phần mô hình gồm ba loại. Mô hình dự báo (Gradient Boosting) ước lượng xác suất trễ của từng đơn. Mô hình chọn theo năng lực là một bài toán tối ưu đơn giản: chọn $k$ đơn có rủi ro cao nhất khi chỉ xử lý được $k$ đơn mỗi ngày. Mô hình chi phí kỳ vọng hỗ trợ quyết định trong điều kiện rủi ro, có phân tích độ nhạy (what-if) theo các giả định chi phí. Cả ba là mô hình tĩnh, được ước lượng lại mỗi tháng trên dữ liệu mới.
 
-Quá trình xây dựng DSS đi theo bốn giai đoạn ra quyết định: nhận diện vấn đề (intelligence), thiết kế phương án (design), lựa chọn (choice) và thực hiện (implementation) \cite{turban}. Bảng~\ref{tab:simon} tóm tắt nội dung của từng giai đoạn; các mục tiếp theo đi lần lượt qua từng giai đoạn.
+Quá trình xây dựng DSS đi theo bốn giai đoạn ra quyết định: nhận diện vấn đề (intelligence), thiết kế phương án (design), lựa chọn (choice) và thực hiện (implementation). Bảng~\ref{tab:simon} tóm tắt nội dung của từng giai đoạn; các mục tiếp theo đi lần lượt qua từng giai đoạn.
 
 \begin{table}[H]
 \centering
@@ -63,7 +63,7 @@ Quy tắc thứ hai xác định lúc nào một nhãn được dùng. Ở thán
 
 \subsubsection{Đặc trưng}
 
-Mọi đặc trưng được tính từ Data Mart và chỉ dùng thông tin đã biết tại lúc bàn giao (point-in-time). Các tỷ lệ lịch sử của người bán, tuyến hay bang chỉ tính từ những đơn mà kết quả đã biết trước ngày đặt của đơn đang xét, và được làm mượt về tỷ lệ chung khi có ít đơn \cite{han}. Bảng~\ref{tab:dactrungdss} liệt kê các nhóm đặc trưng.
+Mọi đặc trưng được tính từ Data Mart và chỉ dùng thông tin đã biết tại lúc bàn giao (point-in-time). Các tỷ lệ lịch sử của người bán, tuyến hay bang chỉ tính từ những đơn mà kết quả đã biết trước ngày đặt của đơn đang xét, và được làm mượt về tỷ lệ chung khi có ít đơn. Bảng~\ref{tab:dactrungdss} liệt kê các nhóm đặc trưng.
 
 \begingroup\small\setstretch{1.1}
 \begin{longtable}{|P{3.3cm}|>{\raggedright\arraybackslash}p{10.4cm}|}
@@ -92,7 +92,7 @@ Mô hình được đánh giá theo kiểu \textit{walk-forward}: với mỗi th
 
 \subsection{Kết quả mô hình}\label{sec:dssketqua}
 
-Các phương án được so sánh gồm hai luật đơn giản, Logistic Regression và Gradient Boosting (\code{HistGradientBoostingClassifier} của scikit-learn) \cite{han}. Hai luật là xếp hạng theo tỷ lệ trễ lịch sử của tuyến, và xếp hạng theo số ngày còn lại tới hạn khi bàn giao. Với Gradient Boosting, tám bộ tham số được thử trên các tháng validation; bộ được chọn có tốc độ học 0,03, tối đa 15 lá mỗi cây và ít nhất 200 đơn mỗi lá. Để kiểm tra xem còn cải thiện được không, một đợt tìm kiếm mở rộng (TK mở rộng) được chạy thêm, cũng chỉ trên các tháng validation: 60 bộ tham số Gradient Boosting cho mỗi bộ đặc trưng, bốn mức điều chuẩn cho Logistic Regression, ba đặc trưng mới về đơn tồn đọng (tỷ lệ đơn đã bàn giao trong 45 ngày qua đã quá hạn mà chưa giao, tính cho toàn sàn, theo bang khách và theo tuyến), và một mô hình kết hợp ba mô hình tốt nhất bằng trung bình thứ hạng. Hình~\ref{fig:dsssosanh} và Bảng~\ref{tab:dssketqua} so sánh các phương án trên tập test.
+Các phương án được so sánh gồm hai luật đơn giản, Logistic Regression và Gradient Boosting (\code{HistGradientBoostingClassifier} của scikit-learn). Hai luật là xếp hạng theo tỷ lệ trễ lịch sử của tuyến, và xếp hạng theo số ngày còn lại tới hạn khi bàn giao. Với Gradient Boosting, tám bộ tham số được thử trên các tháng validation; bộ được chọn có tốc độ học 0,03, tối đa 15 lá mỗi cây và ít nhất 200 đơn mỗi lá. Để kiểm tra xem còn cải thiện được không, một đợt tìm kiếm mở rộng (TK mở rộng) được chạy thêm, cũng chỉ trên các tháng validation: 60 bộ tham số Gradient Boosting cho mỗi bộ đặc trưng, bốn mức điều chuẩn cho Logistic Regression, ba đặc trưng mới về đơn tồn đọng (tỷ lệ đơn đã bàn giao trong 45 ngày qua đã quá hạn mà chưa giao, tính cho toàn sàn, theo bang khách và theo tuyến), và một mô hình kết hợp ba mô hình tốt nhất bằng trung bình thứ hạng. Hình~\ref{fig:dsssosanh} và Bảng~\ref{tab:dssketqua} so sánh các phương án trên tập test.
 
 \begin{figure}[H]
 \centering
@@ -175,7 +175,7 @@ Tỷ lệ trễ của mức ĐỎ so với mức XANH & gấp ít nhất 5 lần
 
 \subsection{Chính sách quyết định}\label{sec:dsschinhsach}
 
-Mô hình chỉ cho ra xác suất trễ. Việc chọn đơn nào để can thiệp là một quyết định trong điều kiện rủi ro: với mỗi đơn ta biết xác suất xảy ra kết quả xấu chứ không biết chắc kết quả \cite{turban}. DSS đưa ra hai chính sách để người quản lý chọn tùy tình huống.
+Mô hình chỉ cho ra xác suất trễ. Việc chọn đơn nào để can thiệp là một quyết định trong điều kiện rủi ro: với mỗi đơn ta biết xác suất xảy ra kết quả xấu chứ không biết chắc kết quả. DSS đưa ra hai chính sách để người quản lý chọn tùy tình huống.
 
 \subsubsection{Chính sách theo năng lực xử lý}
 
