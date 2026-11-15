@@ -3,11 +3,11 @@
 
 \subsubsection{Mô hình kho dữ liệu}\label{sec:mohinhkho}
 
-Có ba mô hình kho dữ liệu thường được nhắc tới: kho dữ liệu doanh nghiệp (Enterprise Data Warehouse -- EDW), Data Mart và kho dữ liệu ảo (Virtual Data Warehouse). Với phạm vi đã xác định ở mục~\ref{sec:phamvi}, đề tài xây dựng một \textit{Data Mart} lấy dữ liệu trực tiếp từ bộ dữ liệu nguồn.
+Có ba mô hình kho dữ liệu thường được nhắc tới: kho dữ liệu doanh nghiệp (Enterprise Data Warehouse -- EDW), Data Mart và kho dữ liệu ảo (Virtual Data Warehouse) \cite{han}. Với phạm vi đã xác định ở mục~\ref{sec:phamvi}, đề tài xây dựng một \textit{Data Mart} lấy dữ liệu trực tiếp từ bộ dữ liệu nguồn.
 
 EDW được thiết kế để gom dữ liệu của cả tổ chức, từ bán hàng đến nhân sự, kế toán, marketing, và thường phải tích hợp nhiều hệ thống nguồn khác nhau. Dữ liệu của đề tài thì chỉ có một mảng nghiệp vụ là đơn hàng và giao nhận, đến từ một nguồn duy nhất là 9 tập tin CSV của Olist (Bảng~\ref{tab:nguon}). Xây một EDW cho phạm vi này vừa thừa vừa không có dữ liệu để lấp đầy. Kho dữ liệu ảo cũng không phù hợp: mô hình này truy vấn thẳng trên dữ liệu nguồn mà không lưu bản đã xử lý, trong khi dữ liệu nguồn có hàng loạt vấn đề phải làm sạch trước (Bảng~\ref{tab:chatluong}) và truy vấn trên dữ liệu thô sẽ chậm hơn nhiều. Data Mart, ngược lại, tập trung vào một chủ đề và thường được tổ chức theo star schema hoặc snowflake schema, đúng với yêu cầu thiết kế đa chiều của đề tài.
 
-Hệ thống phục vụ nhiều nhóm người dùng (ban điều hành, vận hành, quản lý người bán, chăm sóc khách hàng), nhưng tất cả đều khai thác cùng một mảng dữ liệu là \textit{đơn hàng}, nên một Data Mart vẫn đủ. Điểm yếu thường được nhắc tới của Data Mart là dễ trở thành một ``ốc đảo'' dữ liệu khi tổ chức có thêm nguồn khác. Để hạn chế điều này, các chiều thời gian, địa lý và sản phẩm được thiết kế theo dạng chiều đồng nhất (conformed dimensions), tức có cấu trúc và cách mã hóa đủ chung để Data Mart khác dùng lại được, chẳng hạn một Data Mart thanh toán trong tương lai.
+Hệ thống phục vụ nhiều nhóm người dùng (ban điều hành, vận hành, quản lý người bán, chăm sóc khách hàng), nhưng tất cả đều khai thác cùng một mảng dữ liệu là \textit{đơn hàng}, nên một Data Mart vẫn đủ. Điểm yếu thường được nhắc tới của Data Mart là dễ trở thành một ``ốc đảo'' dữ liệu khi tổ chức có thêm nguồn khác. Để hạn chế điều này, các chiều thời gian, địa lý và sản phẩm được thiết kế theo dạng chiều đồng nhất (conformed dimensions) \cite{kimball}, tức có cấu trúc và cách mã hóa đủ chung để Data Mart khác dùng lại được, chẳng hạn một Data Mart thanh toán trong tương lai.
 
 \subsubsection{Hướng tiếp cận xây dựng mô hình}
 
@@ -17,7 +17,7 @@ Thứ tự triển khai là: xây Data Mart cho mảng bán hàng và giao nhậ
 
 \subsubsection{Kiến trúc tổng thể của hệ thống}\label{sec:kientruc}
 
-Hệ thống theo kiến trúc ba tầng của kho dữ liệu, tách riêng phần lưu trữ, phần xử lý phân tích và phần trình bày để mỗi tầng phát triển độc lập. Hình~\ref{fig:kientruc} mô tả kiến trúc này.
+Hệ thống theo kiến trúc ba tầng của kho dữ liệu \cite{han}, tách riêng phần lưu trữ, phần xử lý phân tích và phần trình bày để mỗi tầng phát triển độc lập. Hình~\ref{fig:kientruc} mô tả kiến trúc này.
 
 \input{Sections/hinh/kientruc}
 

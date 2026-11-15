@@ -1,7 +1,7 @@
 % !TeX root = ../../main.tex
 \subsection{Mô hình dữ liệu đa chiều}
 
-Mô hình đa chiều được thiết kế theo bốn bước: chọn quy trình nghiệp vụ, xác định granularity, xác định các chiều và xác định các thước đo. Mỗi bước dưới đây đều dựa trên kết quả phân tích ở phần trước.
+Mô hình đa chiều được thiết kế theo bốn bước: chọn quy trình nghiệp vụ, xác định granularity, xác định các chiều và xác định các thước đo \cite{kimball}. Mỗi bước dưới đây đều dựa trên kết quả phân tích ở phần trước.
 
 \subsubsection{Xác định quy trình nghiệp vụ}
 
@@ -9,11 +9,11 @@ Quy trình nghiệp vụ là một hoạt động thực tế của doanh nghi�
 
 Quy trình thanh toán không được đưa vào. Một đơn có thể có nhiều khoản thanh toán, và quy trình này chỉ phục vụ một chỉ số phụ về cơ cấu phương thức thanh toán đã nằm ngoài phạm vi (mục~\ref{sec:phamvi}).
 
-Ba quy trình còn lại thực chất là các giai đoạn nối tiếp nhau của cùng một đơn hàng. Vì vậy nhóm gộp chúng vào một bảng fact duy nhất dạng \textit{accumulating snapshot}: mỗi dòng là một đối tượng đi qua cả quy trình, mỗi mốc được lưu bằng một cột ngày riêng, và thước đo gồm cả giá trị phát sinh lẫn khoảng thời gian giữa các mốc. Với một bảng fact, doanh thu, giao hàng và đánh giá có thể phân tích cùng lúc mà không phải ghép nhiều bảng fact với nhau.
+Ba quy trình còn lại thực chất là các giai đoạn nối tiếp nhau của cùng một đơn hàng. Vì vậy nhóm gộp chúng vào một bảng fact duy nhất dạng \textit{accumulating snapshot} \cite{kimball}: mỗi dòng là một đối tượng đi qua cả quy trình, mỗi mốc được lưu bằng một cột ngày riêng, và thước đo gồm cả giá trị phát sinh lẫn khoảng thời gian giữa các mốc. Với một bảng fact, doanh thu, giao hàng và đánh giá có thể phân tích cùng lúc mà không phải ghép nhiều bảng fact với nhau.
 
 \subsubsection{Xác định granularity}\label{sec:granularity}
 
-Granularity, tức mức chi tiết của mỗi dòng dữ liệu, là quyết định ảnh hưởng lớn nhất đến dung lượng kho và những câu hỏi mà kho trả lời được. Granularity của bảng fact được chọn như sau:
+Granularity, tức mức chi tiết của mỗi dòng dữ liệu, là quyết định ảnh hưởng lớn nhất đến dung lượng kho và những câu hỏi mà kho trả lời được \cite{inmon}. Granularity của bảng fact được chọn như sau:
 
 \begin{center}
 \textit{Mỗi dòng của bảng fact là một sản phẩm trong một đơn hàng}, xác định bởi cặp khóa (\code{order\_id}, \code{order\_item\_id}).
@@ -51,15 +51,15 @@ Ngoài số dòng ở Bảng~\ref{tab:chieu}, mỗi bảng chiều có thêm m�
 
 \input{Sections/hinh/phancap}
 
-Chiều thời gian được dùng theo nhiều vai trò. Bảng fact có sáu cột ngày (mua, duyệt, bàn giao vận chuyển, nhận hàng, giao dự kiến và đánh giá), cả sáu cùng trỏ về một chiều thời gian duy nhất, mỗi cột là một vai trò khác nhau (role-playing dimension). Chiều này được sinh đủ cho các năm 2016-2018 để bao trọn mọi mốc thời gian trong dữ liệu, từ 04/9/2016 đến 12/11/2018.
+Chiều thời gian được dùng theo nhiều vai trò. Bảng fact có sáu cột ngày (mua, duyệt, bàn giao vận chuyển, nhận hàng, giao dự kiến và đánh giá), cả sáu cùng trỏ về một chiều thời gian duy nhất, mỗi cột là một vai trò khác nhau (role-playing dimension) \cite{kimball}. Chiều này được sinh đủ cho các năm 2016-2018 để bao trọn mọi mốc thời gian trong dữ liệu, từ 04/9/2016 đến 12/11/2018.
 
 Khách hàng và người bán cùng trỏ về chiều thành phố và chiều bang. Nhờ dùng chung, có thể phân tích tuyến giao hàng từ bang của người bán đến bang của khách hàng mà không lo hai bên mã hóa địa lý khác nhau. Đây cũng là các chiều đồng nhất đã nhắc tới ở mục~\ref{sec:mohinhkho}. Dữ liệu nguồn không có thông tin vùng, nên nhóm tự gán 27 bang vào năm vùng địa lý của Brazil (Norte, Nordeste, Centro-Oeste, Sudeste, Sul) ở bước transformation.
 
-Chiều sản phẩm được tách thành bảng ngành hàng, còn chiều khách hàng và người bán được tách thành bảng thành phố và bảng bang, theo dạng snowflake. Cách tách này tránh lặp lại tên ngành hàng và thông tin địa lý trên hàng chục nghìn dòng, và làm các phân cấp hiện rõ ra thành bảng, thuận tiện cho \texttt{roll-up} và \texttt{drill-down}. Riêng mã đơn hàng (\code{order\_id}) không có thuộc tính mô tả nào nên được giữ thẳng trong bảng fact dưới dạng degenerate dimension, dùng để gom các dòng sản phẩm của cùng một đơn.
+Chiều sản phẩm được tách thành bảng ngành hàng, còn chiều khách hàng và người bán được tách thành bảng thành phố và bảng bang, theo dạng snowflake. Cách tách này tránh lặp lại tên ngành hàng và thông tin địa lý trên hàng chục nghìn dòng, và làm các phân cấp hiện rõ ra thành bảng, thuận tiện cho \texttt{roll-up} và \texttt{drill-down}. Riêng mã đơn hàng (\code{order\_id}) không có thuộc tính mô tả nào nên được giữ thẳng trong bảng fact dưới dạng degenerate dimension \cite{kimball}, dùng để gom các dòng sản phẩm của cùng một đơn.
 
 \subsubsection{Xác định các thước đo}\label{sec:dodo}
 
-Thước đo được rút ra từ các chỉ số ở Bảng~\ref{tab:kpi} và được phân loại theo khả năng cộng dồn. Thước đo cộng được (additive) cộng được theo mọi chiều; thước đo cộng được một phần (semi-additive) chỉ cộng được theo một số chiều; thước đo không cộng được (non-additive) phải tổng hợp bằng hàm khác như trung bình hay tỷ lệ. Bảng~\ref{tab:dodo} liệt kê các thước đo được lưu trong bảng fact.
+Thước đo được rút ra từ các chỉ số ở Bảng~\ref{tab:kpi} và được phân loại theo khả năng cộng dồn. Thước đo cộng được (additive) cộng được theo mọi chiều; thước đo cộng được một phần (semi-additive) chỉ cộng được theo một số chiều; thước đo không cộng được (non-additive) phải tổng hợp bằng hàm khác như trung bình hay tỷ lệ \cite{kimball}. Bảng~\ref{tab:dodo} liệt kê các thước đo được lưu trong bảng fact.
 
 \begingroup\small\setstretch{1.1}
 \begin{longtable}{|P{3.2cm}|P{4.4cm}|P{2.4cm}|P{3.6cm}|}
@@ -85,7 +85,7 @@ Nguồn chỉ có một điểm đánh giá cho mỗi đơn, nên ở 1.278 đơ
 
 \subsubsection{Data Cube và các phép toán OLAP}\label{sec:datacube}
 
-Data Cube là cách nhìn dữ liệu đa chiều: mỗi trục là một góc nhìn phân tích, mỗi ô chứa giá trị tổng hợp của thước đo tại giao điểm của các chiều. Với thiết kế ở trên, khối dữ liệu của hệ thống có các chiều chính là thời gian, ngành hàng và khu vực của khách hàng và người bán; thước đo là doanh thu, phí vận chuyển, thời gian giao hàng, tỷ lệ trễ và điểm đánh giá. Hình~\ref{fig:datacube} minh họa một khối ba chiều: ô được tô màu là doanh thu của ngành \code{watches\_gifts} tại bang SP trong quý 3/2017.
+Data Cube là cách nhìn dữ liệu đa chiều: mỗi trục là một góc nhìn phân tích, mỗi ô chứa giá trị tổng hợp của thước đo tại giao điểm của các chiều \cite{han}. Với thiết kế ở trên, khối dữ liệu của hệ thống có các chiều chính là thời gian, ngành hàng và khu vực của khách hàng và người bán; thước đo là doanh thu, phí vận chuyển, thời gian giao hàng, tỷ lệ trễ và điểm đánh giá. Hình~\ref{fig:datacube} minh họa một khối ba chiều: ô được tô màu là doanh thu của ngành \code{watches\_gifts} tại bang SP trong quý 3/2017.
 
 \input{Sections/hinh/datacube}
 
