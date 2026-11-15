@@ -1,9 +1,11 @@
 % !TeX root = ../../main.tex
 \subsection{Dashboard và giao diện truy vấn}\label{sec:dashboard}
 
-Dashboard được viết bằng Streamlit 1.67, biểu đồ vẽ bằng Plotly 7.1. Streamlit được chọn vì toàn bộ ETL và DSS đã viết bằng Python, nên dashboard dùng lại được cấu hình kết nối, cùng môi trường \code{.venv} và không cần thêm một tầng frontend riêng. Dashboard không giữ bản sao dữ liệu nào: mỗi biểu đồ là một truy vấn SQL chạy thẳng trên Data Mart qua SQLAlchemy và psycopg, đúng mô hình ROLAP đã chọn ở mục~\ref{sec:kientruc}. Kết quả truy vấn được lưu đệm 10 phút, vì Data Mart chỉ thay đổi sau mỗi lần chạy ETL. Mã nguồn nằm trong thư mục \code{src/dashboard}, gồm tập tin điều hướng \code{app.py}, phần kết nối \code{db.py}, bộ lọc \code{filters.py}, định dạng và màu biểu đồ \code{ui.py}, và mỗi trang một tập tin trong \code{views}.
+Dashboard được viết bằng Streamlit 1.67 và vẽ biểu đồ bằng Plotly 7.1. Nhóm chọn Streamlit vì ETL và DSS đều viết bằng Python, nên dashboard dùng chung môi trường và cấu hình kết nối mà không cần làm thêm frontend. Mỗi biểu đồ là một truy vấn SQL chạy trực tiếp trên Data Mart, đúng mô hình ROLAP ở mục~\ref{sec:kientruc}. Do Data Mart chỉ đổi sau mỗi lần chạy ETL, kết quả truy vấn được lưu đệm trong 10 phút. Mã nguồn nằm trong thư mục \code{src/dashboard}, gồm tập tin điều hướng \code{app.py}, phần kết nối \code{db.py}, bộ lọc \code{filters.py}, định dạng và màu biểu đồ \code{ui.py}, và mỗi trang một tập tin trong \code{views}.
 
-Dashboard kết nối bằng một tài khoản riêng là \code{dashboard\_app}, do chương trình \code{setup\_role.py} tạo. Tài khoản này thừa hưởng quyền \code{SELECT} trên ba schema \code{dm}, \code{meta}, \code{dss} từ role chỉ đọc \code{analyst\_ro}, và chỉ được ghi thêm (\code{INSERT}) vào bảng \code{dss.decision\_log}, nơi lưu quyết định duyệt hoặc từ chối đề xuất của DSS. Khi thử với tài khoản này, lệnh \code{UPDATE} và \code{DELETE} trên \code{decision\_log} đều bị từ chối. Để chạy dashboard, chỉ cần lệnh \code{bash src/dashboard/run.sh} từ thư mục gốc. Kịch bản này lần lượt kiểm tra tập tin \code{.env}, khởi động PostgreSQL, tạo môi trường Python, chạy ETL nếu Data Mart còn trống, chấm điểm DSS nếu chưa có, tạo tài khoản \code{dashboard\_app}, rồi mở dashboard tại \url{http://localhost:8501}. Bước nào đã xong thì được bỏ qua.
+Dashboard kết nối bằng tài khoản riêng \code{dashboard\_app}. Tài khoản này chỉ được đọc ba schema \code{dm}, \code{meta}, \code{dss} (quyền kế thừa từ role chỉ đọc \code{analyst\_ro}) và chỉ được thêm dòng vào bảng \code{dss.decision\_log}, nơi lưu các quyết định duyệt hay từ chối đề xuất của DSS. Nhóm đã thử sửa và xóa dòng trong bảng này bằng tài khoản trên, cả hai lệnh đều bị từ chối.
+
+Để chạy dashboard, chỉ cần gõ \code{bash src/dashboard/run.sh} ở thư mục gốc. Kịch bản sẽ tự khởi động PostgreSQL, tạo môi trường Python, chạy ETL và chấm điểm DSS nếu chưa có dữ liệu, tạo tài khoản \code{dashboard\_app}, rồi mở dashboard tại \url{http://localhost:8501}; bước nào đã làm rồi thì bỏ qua.
 
 \subsubsection{Tổ chức trang theo nhóm người dùng}
 
@@ -27,7 +29,16 @@ Người phụ trách kỹ thuật & Giám sát ETL & Nhật ký từng bước,
 \end{tabularx}
 \end{table}
 
-Thanh bên trái có ba bộ lọc dùng chung cho các trang phân tích: khoảng tháng đặt hàng, vùng của khách hàng và ngành hàng. Về mặt OLAP, mỗi lần chọn bộ lọc là một phép slice hoặc dice trên khối dữ liệu. Giá trị đã chọn được giữ khi chuyển trang và được nhắc lại trên một dòng ngay dưới tên trang; nút ``Xóa bộ lọc'' đưa về toàn bộ dữ liệu. Mọi truy vấn của dashboard xuất phát từ hai biểu thức \code{WITH} dùng chung: \code{items} đọc \code{fact\_sales} cho các thước đo cộng được như doanh thu, phí vận chuyển; \code{orders} đọc view \code{dm.v\_order} cho các thước đo theo đơn như thời gian giao, cờ trễ, điểm đánh giá. Nhờ vậy dashboard giữ đúng quy ước ở mục~\ref{sec:dodo}: một đơn có nhiều sản phẩm vẫn chỉ được tính một lần. Dưới mỗi biểu đồ có mục ``Bảng số liệu'' để xem con số cụ thể, và mọi con số đều theo định dạng Việt Nam (13.494.400,74; 6,77\%). Người xem có thể chọn giao diện sáng hoặc tối; màu biểu đồ đổi theo.
+\textbf{Bộ lọc.} Thanh bên trái có ba bộ lọc dùng chung cho các trang phân tích: khoảng tháng đặt hàng, vùng của khách hàng và ngành hàng. Về mặt OLAP, mỗi lần chọn bộ lọc là một phép slice hoặc dice trên khối dữ liệu. Giá trị đã chọn được giữ khi chuyển trang và được nhắc lại ngay dưới tên trang; nút ``Xóa bộ lọc'' đưa về toàn bộ dữ liệu.
+
+\textbf{Truy vấn.} Mọi truy vấn của dashboard xuất phát từ hai biểu thức \code{WITH} dùng chung:
+\begin{itemize}
+    \item \code{items} đọc \code{fact\_sales}, dùng cho các thước đo cộng được như doanh thu, phí vận chuyển;
+    \item \code{orders} đọc view \code{dm.v\_order}, dùng cho các thước đo theo đơn như thời gian giao, cờ trễ, điểm đánh giá.
+\end{itemize}
+Nhờ vậy dashboard giữ đúng quy ước ở mục~\ref{sec:dodo}: một đơn có nhiều sản phẩm vẫn chỉ được tính một lần.
+
+\textbf{Hiển thị.} Dưới mỗi biểu đồ có mục ``Bảng số liệu'' để xem con số cụ thể. Mọi con số đều theo định dạng Việt Nam (13.494.400,74; 6,77\%). Người xem có thể chọn giao diện sáng hoặc tối, màu biểu đồ đổi theo.
 
 \subsubsection{Các trang phân tích}
 
@@ -105,8 +116,8 @@ Tỷ lệ giao trễ bang RJ / SP & Giao hàng & 12,11\% / 4,49\% (Bảng~\ref{t
 Điểm đánh giá TB đơn đúng hạn / đơn trễ & Mức độ hài lòng & 4,29 / 2,27 (mục~\ref{sec:olapnghiepvu}) & 4,29 / 2,27\\ \hline
 Doanh thu Sudeste năm 2018 (slice) & Doanh thu & 4.866.163,13 BRL; 66,3\% (Bảng~\ref{tab:slice}) & 4.866.163,13 BRL; 66,3\%\\ \hline
 Người bán doanh thu cao, chất lượng thấp & Người bán & 12 người bán (mục~\ref{sec:olapnghiepvu}) & 12 người bán\\ \hline
-Tỷ lệ trễ thực tế của đơn mức ĐỎ & Cảnh báo giao trễ & 28,8\% (Bảng~\ref{tab:dsschinhsach}) & 28,8\%\\ \hline
-Chính sách chi phí kỳ vọng, tham số mặc định & Cảnh báo giao trễ & $p^{*} = 0{,}667$; 190 đơn; precision 96,8\%; lợi ích ròng 688 BRL & $p^{*} = 0{,}667$; 190 đơn; precision 96,8\%; lợi ích ròng 688 BRL\\ \hline
+Tỷ lệ trễ thực tế của đơn mức ĐỎ & Cảnh báo giao trễ & 30,8\% (Bảng~\ref{tab:dsschinhsach}) & 30,8\%\\ \hline
+Chính sách chi phí kỳ vọng, tham số mặc định & Cảnh báo giao trễ & $p^{*} = 0{,}667$; 238 đơn; precision 89,1\%; lợi ích ròng 640 BRL & $p^{*} = 0{,}667$; 238 đơn; precision 89,1\%; lợi ích ròng 640 BRL\\ \hline
 \end{tabularx}
 \end{table}
 

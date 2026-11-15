@@ -68,3 +68,31 @@ src/report/               make_figures.py: sinh biểu đồ của báo cáo t�
 latex-report/             mã nguồn LaTeX của báo cáo; Sections/hinh/ chứa các sơ đồ TikZ
 docker-compose.yml        PostgreSQL 16
 \end{lstlisting}
+
+\section{Phụ lục: Bảng mã bang của Brazil}\label{sec:mabang}
+
+Bảng~\ref{tab:mabang} liệt kê 27 đơn vị hành chính cấp bang của Brazil (26 bang và Quận Liên bang DF) theo mã hai chữ cái dùng trong dữ liệu và trong báo cáo, cùng vùng mà nhóm gán cho từng bang trong bảng chiều \code{dim\_state}.
+
+\begin{table}[H]
+\centering
+\small
+\caption{Mã, tên và vùng của 27 bang Brazil}\label{tab:mabang}
+\begin{tabular}{|c|l|l||c|l|l|}
+\hline
+\textbf{Mã} & \textbf{Tên bang} & \textbf{Vùng} & \textbf{Mã} & \textbf{Tên bang} & \textbf{Vùng}\\ \hline
+AC & Acre & Norte & PB & Paraíba & Nordeste\\ \hline
+AL & Alagoas & Nordeste & PE & Pernambuco & Nordeste\\ \hline
+AM & Amazonas & Norte & PI & Piauí & Nordeste\\ \hline
+AP & Amapá & Norte & PR & Paraná & Sul\\ \hline
+BA & Bahia & Nordeste & RJ & Rio de Janeiro & Sudeste\\ \hline
+CE & Ceará & Nordeste & RN & Rio Grande do Norte & Nordeste\\ \hline
+DF & Distrito Federal & Centro-Oeste & RO & Rondônia & Norte\\ \hline
+ES & Espírito Santo & Sudeste & RR & Roraima & Norte\\ \hline
+GO & Goiás & Centro-Oeste & RS & Rio Grande do Sul & Sul\\ \hline
+MA & Maranhão & Nordeste & SC & Santa Catarina & Sul\\ \hline
+MG & Minas Gerais & Sudeste & SE & Sergipe & Nordeste\\ \hline
+MS & Mato Grosso do Sul & Centro-Oeste & SP & São Paulo & Sudeste\\ \hline
+MT & Mato Grosso & Centro-Oeste & TO & Tocantins & Norte\\ \hline
+PA & Pará & Norte & & & \\ \hline
+\end{tabular}
+\end{table}

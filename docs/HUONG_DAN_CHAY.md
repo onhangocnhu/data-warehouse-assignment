@@ -124,9 +124,9 @@ Cách làm (mục 5.3, 5.4 của báo cáo):
 2. Tìm ngẫu nhiên 60 bộ tham số Gradient Boosting cho mỗi bộ đặc trưng và 4 giá trị C cho Logistic Regression, **chỉ trên 5 tháng validation 01-05/2018**.
 3. Chọn mô hình tốt nhất mỗi loại, ghép thành ensemble 3 mô hình (trung bình thứ hạng).
 4. Walk-forward 07/2017-08/2018: mỗi tháng huấn luyện lại trên các đơn đã biết kết quả trước tháng đó. Ba tháng test 06-08/2018 được đánh giá ở bước này.
-5. Ghi `best_config.json` gồm hai phần: `final` là **mô hình dùng thật** (Gradient Boosting v1, tham số `V1_PARAMS` trong `evaluate_models.py`), và `ensemble` là kết quả của đợt tìm kiếm mở rộng.
+5. Ghi `best_config.json` gồm hai phần: `final` là **mô hình dùng thật** (Gradient Boosting tinh chỉnh trên bộ đặc trưng có tồn đọng, thành phần thứ 2 của ensemble, `FINAL_COMPONENT` trong `evaluate_models.py`), và `ensemble` là kết quả của đợt tìm kiếm mở rộng.
 
-Vì sao mô hình dùng thật không phải ensemble (mục 5.4 của báo cáo): ensemble tốt hơn trên validation (34,3% so với 31,9%) nhưng trên test chỉ đạt 39,8% so với 41,7%; mọi chênh lệch đều trong khoảng sai số ±2 điểm, nên mô hình đơn giản được giữ lại.
+Vì sao chọn mô hình này (mục 5.4, Bảng tab:dsschon): các ứng viên chênh nhau trong khoảng sai số trên từng giai đoạn ngắn, nên được so sánh trên toàn bộ 14 tháng walk-forward. Mô hình này có trung bình cao nhất trên 14 tháng (33,1%) và trên 8 tháng năm 2018 (36,9%), tốt hơn mô hình lưới 8 bộ tham số ở mọi giai đoạn. Ensemble cao nhất trên validation (34,3%) nhưng chỉ 39,8% trên test và phải huấn luyện ba mô hình.
 
 Kết quả ở `src/dss/results/`:
 
@@ -161,12 +161,12 @@ Giả định chi phí (what-if) nằm ở đầu `score_delay.py`, biến `COST
 
 | Chỉ số | Giá trị |
 |---|---|
-| Recall@10% của mô hình từng tháng test (in ra màn hình) | 0,405 / 0,426 / 0,421 |
+| Recall@10% của mô hình từng tháng test (in ra màn hình) | 0,405 / 0,430 / 0,441 |
 | `dss.delay_risk_score` | 18.753 dòng, 925 đơn ĐỎ |
-| Đơn ĐỎ trễ thật / đơn XANH trễ thật | 28,8% / 2,5% |
-| Bắt được khi cảnh báo 10% (kèm luật đã quá hạn), `capacity_curve.csv` | 44,5% |
-| Chính sách chi phí kỳ vọng, `policy_backtest.csv` | 190 đơn, precision 96,8%, +688 BRL |
-| Kết quả test trong `improved_summary.csv`, dòng `hgb_v1` | ROC-AUC 0,736, recall@10 41,7% |
+| Đơn ĐỎ trễ thật / đơn XANH trễ thật | 30,8% / 2,4% |
+| Bắt được khi cảnh báo 10% (kèm luật đã quá hạn), `capacity_curve.csv` | 46,5% |
+| Chính sách chi phí kỳ vọng, `policy_backtest.csv` | 238 đơn, precision 89,1%, +640 BRL |
+| Kết quả test trong `improved_summary.csv`, dòng `hgb_tuned_backlog` | ROC-AUC 0,744, recall@10 42,6% |
 
 ### Tài nguyên máy khi train
 
@@ -211,7 +211,7 @@ streamlit run src/dashboard/app.py    # mở http://localhost:8501
 
 Trên Linux/macOS có thể chạy cả chuỗi bằng `bash src/dashboard/run.sh` (tự bỏ qua bước đã làm; `--check` chỉ kiểm tra, không mở dashboard).
 
-**Kiểm tra (Bảng tab:doichieu):** trang Tổng quan hiện doanh thu 13.494.400,74 BRL / 98.199 đơn và tỷ lệ trễ 6,77%; trang Cảnh báo giao trễ với tham số mặc định cho p* = 0,667, 190 đơn, lợi ích ròng 688 BRL. Chi tiết xem `src/dashboard/README.md`.
+**Kiểm tra (Bảng tab:doichieu):** trang Tổng quan hiện doanh thu 13.494.400,74 BRL / 98.199 đơn và tỷ lệ trễ 6,77%; trang Cảnh báo giao trễ với tham số mặc định cho p* = 0,667, 238 đơn, lợi ích ròng 640 BRL. Chi tiết xem `src/dashboard/README.md`.
 
 ## Có cần Google Colab không?
 

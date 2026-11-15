@@ -110,11 +110,11 @@ Norte & 164.596,25 & 883 & 2,2\%\\ \hline
 \label{fig:dice}
 \end{figure}
 
-Năm 2018, riêng vùng Sudeste đã chiếm hai phần ba doanh thu. Trong mùa cao điểm quý 4/2017, SP dẫn đầu mọi ngành hàng như dự đoán, nhưng thứ tự ngành hàng thay đổi theo bang: \code{watches\_gifts} đứng đầu ở SP (87.690,54 BRL) và MG, trong khi ở RJ ngành bán chạy nhất là \code{bed\_bath\_table} (37.163,75 BRL). Một chương trình khuyến mãi chung cho cả ba bang vì vậy sẽ không tối ưu bằng chương trình riêng cho từng bang.
+Năm 2018, riêng vùng Sudeste đã chiếm hai phần ba doanh thu. Trong mùa cao điểm quý 4/2017, SP dẫn đầu mọi ngành hàng như dự đoán, nhưng thứ tự ngành hàng thay đổi theo bang: \code{watches\_gifts} đứng đầu ở SP (87.690,54 BRL) và MG, trong khi ở RJ ngành bán chạy nhất là \code{bed\_bath\_table} (37.163,75 BRL). Vì vậy, thay vì áp dụng một chương trình khuyến mãi chung, nên chọn ngành hàng ưu tiên riêng cho từng bang.
 
 \subsubsection{Pivot}
 
-Phép pivot xoay chiều vùng từ dòng sang cột để so điểm đánh giá của từng ngành hàng giữa các vùng. Trong SQL, phép xoay được viết bằng hàm tổng hợp có điều kiện \code{AVG(...) FILTER (WHERE region = ...)}, mỗi vùng một cột. Hình~\ref{fig:pivot} là kết quả cho mười ngành hàng có nhiều đơn nhất, sắp theo điểm trung bình chung tăng dần, từ 3,97 của \code{bed\_bath\_table} đến 4,20 của \code{toys}.
+Phép pivot xoay chiều vùng từ dòng sang cột để so điểm đánh giá của từng ngành hàng giữa các vùng. Trong SQL, phép xoay được viết bằng hàm tổng hợp có điều kiện \code{AVG(...) FILTER (WHERE region = ...)}, mỗi vùng một cột. Hình~\ref{fig:pivot} là kết quả cho mười ngành hàng có nhiều đơn nhất. Các dòng được xếp theo điểm trung bình của ngành trên toàn quốc, tính trên mọi đơn của ngành và không hiển thị trong hình, tăng dần từ trên xuống: thấp nhất là \code{bed\_bath\_table} (3,97), cao nhất là \code{toys} (4,20). Vì phần lớn đơn thuộc vùng Sudeste nên điểm toàn quốc của mỗi ngành khá gần với cột Sudeste.
 
 \begin{figure}[H]
 \centering
@@ -180,7 +180,7 @@ So với cùng kỳ tháng 01-08/2017, doanh thu tháng 01-08/2018 của mọi n
 \end{figure}
 
 \paragraph{Người bán}
-Có 12 người bán thuộc nhóm 20\% doanh thu cao nhất nhưng có hơn 20\% đánh giá 1-2 sao. Người bán lớn nhất trong nhóm này có 973 đơn, doanh thu 186.570,05 BRL và 25,4\% đánh giá thấp; đây là kiểu người bán mà quản lý ngành hàng cần làm việc trước tiên, vì vừa quan trọng về doanh thu vừa đang làm giảm trải nghiệm của nhiều khách. Ở góc độ phân bố, Hình~\ref{fig:nguoibankhachhang} cho thấy SP chiếm 59,7\% người bán nhưng chỉ 41,9\% đơn hàng, còn RJ có 12,9\% đơn hàng nhưng chỉ 5,5\% người bán. Phần lớn đơn của RJ vì vậy phải đi liên bang từ SP, và điều này khớp với tỷ lệ trễ cao của tuyến SP $\rightarrow$ RJ ở trên.
+Trong nhóm 20\% người bán có doanh thu cao nhất, có 12 người bán bị chấm 1-2 sao ở hơn một phần năm số đơn. Lớn nhất trong số này là một người bán có 973 đơn, doanh thu 186.570,05 BRL và 25,4\% đánh giá thấp. Đây là những người bán mà quản lý ngành hàng nên ưu tiên làm việc cùng, vì họ vừa đóng góp nhiều doanh thu vừa khiến không ít khách hàng không hài lòng. Ở góc độ phân bố, Hình~\ref{fig:nguoibankhachhang} cho thấy SP chiếm 59,7\% người bán nhưng chỉ 41,9\% đơn hàng, còn RJ có 12,9\% đơn hàng nhưng chỉ 5,5\% người bán. Phần lớn đơn của RJ vì vậy phải đi liên bang từ SP, và điều này khớp với tỷ lệ trễ cao của tuyến SP $\rightarrow$ RJ ở trên.
 
 \begin{figure}[H]
 \centering

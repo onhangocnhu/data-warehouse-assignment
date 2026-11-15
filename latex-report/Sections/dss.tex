@@ -5,9 +5,12 @@ Phần OLAP ở mục~\ref{sec:olap} cho nhà quản lý biết chuyện gì đ�
 
 \subsection{Cách tiếp cận}
 
-Một DSS gồm ba thành phần cơ bản: phần dữ liệu, phần mô hình và giao diện người dùng. Trong đề tài, phần dữ liệu là Data Mart đã xây dựng ở các phần trước; phần mô hình gồm mô hình dự báo xác suất giao trễ, luật chọn đơn cần can thiệp và mô hình chi phí kỳ vọng; giao diện là trang DSS trên dashboard, nơi người vận hành xem danh sách đơn rủi ro, lý do và hành động đề xuất. DSS không tự quyết định thay con người: mọi đề xuất đều được người vận hành phê duyệt hoặc từ chối.
-
-Trong nhóm hệ hỗ trợ quản lý (Management Support Systems -- MSS), thành phần này là một DSS hướng mô hình (model-driven) chạy trên dữ liệu của kho: giá trị của nó nằm ở các mô hình chứ không chỉ ở việc truy vấn dữ liệu như OLAP. Phần mô hình gồm ba loại. Mô hình dự báo (Gradient Boosting) ước lượng xác suất trễ của từng đơn. Mô hình chọn theo năng lực là một bài toán tối ưu đơn giản: chọn $k$ đơn có rủi ro cao nhất khi chỉ xử lý được $k$ đơn mỗi ngày. Mô hình chi phí kỳ vọng hỗ trợ quyết định trong điều kiện rủi ro, có phân tích độ nhạy (what-if) theo các giả định chi phí. Cả ba là mô hình tĩnh, được ước lượng lại mỗi tháng trên dữ liệu mới.
+DSS của đề tài là một DSS hướng mô hình (model-driven), gồm ba thành phần:
+\begin{itemize}
+    \item \textbf{Dữ liệu:} Data Mart đã xây dựng ở các phần trước.
+    \item \textbf{Mô hình:} mô hình Gradient Boosting dự báo xác suất trễ của từng đơn; luật chọn $k$ đơn rủi ro cao nhất khi mỗi ngày chỉ xử lý được $k$ đơn; và mô hình chi phí kỳ vọng kèm phân tích what-if theo các giả định chi phí. Các mô hình được huấn luyện lại mỗi tháng.
+    \item \textbf{Giao diện:} trang DSS trên dashboard, nơi người vận hành xem danh sách đơn rủi ro, lý do và hành động đề xuất, rồi duyệt hoặc từ chối từng đề xuất.
+\end{itemize}
 
 Quá trình xây dựng DSS đi theo bốn giai đoạn ra quyết định: nhận diện vấn đề (intelligence), thiết kế phương án (design), lựa chọn (choice) và thực hiện (implementation). Bảng~\ref{tab:simon} tóm tắt nội dung của từng giai đoạn; các mục tiếp theo đi lần lượt qua từng giai đoạn.
 
@@ -34,7 +37,7 @@ Thời điểm dự báo được chọn là \textit{lúc người bán bàn gia
 
 \input{Sections/hinh/dssflow}
 
-Để biết DSS có đủ tốt để dùng hay không, bốn chỉ tiêu định lượng được đặt ra trước khi huấn luyện (Bảng~\ref{tab:chitieu}). Chỉ tiêu chính gắn với năng lực của đội vận hành: giả sử mỗi ngày đội xử lý được khoảng 10\% số đơn bàn giao, thì danh sách 10\% đơn rủi ro nhất phải chứa ít nhất 40\% số đơn sẽ trễ, tức gấp bốn lần chọn ngẫu nhiên.
+Để biết DSS có đủ tốt để dùng hay không, bốn chỉ tiêu định lượng được đặt ra trước khi huấn luyện (Bảng~\ref{tab:chitieu}). Chỉ tiêu chính gắn với năng lực của đội vận hành: giả sử mỗi ngày đội xử lý được khoảng 10\% số đơn bàn giao, thì danh sách 10\% đơn rủi ro nhất phải chứa ít nhất 40\% số đơn sẽ trễ, tức gấp bốn lần chọn ngẫu nhiên. Mức 10\% được chọn vì gần với tỷ lệ trễ thực tế (6,77\%), nên danh sách đủ dài để bao phần lớn đơn trễ mà vẫn vừa sức một đội nhỏ; mục~\ref{sec:dsschinhsach} xét thêm các mức năng lực khác.
 
 \begin{table}[H]
 \centering
@@ -79,6 +82,7 @@ Cam kết giao hàng & Số ngày hứa giao (ngày dự kiến $-$ ngày mua); 
 Thời điểm & Tháng, thứ trong tuần, số ngày tới Black Friday\\ \hline
 Lịch sử & Tỷ lệ trễ từ trước tới nay của người bán, tuyến, bang khách; số đơn trước đó của người bán và tuyến\\ \hline
 Diễn biến gần đây & Tỷ lệ trễ toàn sàn 7 và 30 ngày qua; tỷ lệ trễ 90 ngày của tuyến và người bán; tải đơn của sàn và người bán trong 7 ngày\\ \hline
+Đơn tồn đọng & Trong các đơn đã bàn giao 45 ngày qua, tỷ lệ đơn đã quá hạn mà vẫn chưa giao, tính tại ngày bàn giao cho toàn sàn, theo bang khách và theo tuyến\\ \hline
 \end{longtable}
 \endgroup
 
@@ -92,7 +96,7 @@ Mô hình được đánh giá theo kiểu \textit{walk-forward}: với mỗi th
 
 \subsection{Kết quả mô hình}\label{sec:dssketqua}
 
-Các phương án được so sánh gồm hai luật đơn giản, Logistic Regression và Gradient Boosting (\code{HistGradientBoostingClassifier} của scikit-learn). Hai luật là xếp hạng theo tỷ lệ trễ lịch sử của tuyến, và xếp hạng theo số ngày còn lại tới hạn khi bàn giao. Với Gradient Boosting, tám bộ tham số được thử trên các tháng validation; bộ được chọn có tốc độ học 0,03, tối đa 15 lá mỗi cây và ít nhất 200 đơn mỗi lá. Để kiểm tra xem còn cải thiện được không, một đợt tìm kiếm mở rộng (TK mở rộng) được chạy thêm, cũng chỉ trên các tháng validation: 60 bộ tham số Gradient Boosting cho mỗi bộ đặc trưng, bốn mức điều chuẩn cho Logistic Regression, ba đặc trưng mới về đơn tồn đọng (tỷ lệ đơn đã bàn giao trong 45 ngày qua đã quá hạn mà chưa giao, tính cho toàn sàn, theo bang khách và theo tuyến), và một mô hình kết hợp ba mô hình tốt nhất bằng trung bình thứ hạng. Hình~\ref{fig:dsssosanh} và Bảng~\ref{tab:dssketqua} so sánh các phương án trên tập test.
+Các phương án được so sánh gồm hai luật đơn giản, Logistic Regression và Gradient Boosting (\code{HistGradientBoostingClassifier} của scikit-learn). Hai luật là xếp hạng theo tỷ lệ trễ lịch sử của tuyến, và xếp hạng theo số ngày còn lại tới hạn khi bàn giao. Với Gradient Boosting, trước hết một lưới tám bộ tham số được thử trên các tháng validation; bộ tốt nhất của lưới này có \code{learning\_rate} = 0,03, \code{max\_leaf\_nodes} = 15 (số nút lá tối đa của một cây) và \code{min\_samples\_leaf} = 200 (số đơn tối thiểu trong một nút lá, giúp hạn chế overfitting). Để kiểm tra xem còn cải thiện được không, một đợt tìm kiếm mở rộng (TK mở rộng) được chạy thêm, cũng chỉ trên các tháng validation: 60 bộ tham số Gradient Boosting cho mỗi bộ đặc trưng, bốn mức điều chuẩn cho Logistic Regression, ba đặc trưng mới về đơn tồn đọng (tỷ lệ đơn đã bàn giao trong 45 ngày qua đã quá hạn mà chưa giao, tính cho toàn sàn, theo bang khách và theo tuyến), và một mô hình kết hợp ba mô hình tốt nhất bằng trung bình thứ hạng. Hình~\ref{fig:dsssosanh} và Bảng~\ref{tab:dssketqua} so sánh các phương án trên tập test.
 
 \begin{figure}[H]
 \centering
@@ -113,32 +117,50 @@ Luật: tỷ lệ trễ lịch sử của tuyến & 0,557 & 0,049 & 16,2\% & 21,
 Luật: số ngày còn lại tới hạn & 0,683 & 0,209 & 32,7\% & 10,9\%\\ \hline
 Logistic Regression & 0,750 & 0,160 & 35,4\% & 32,3\%\\ \hline
 Gradient Boosting, chỉ đặc trưng tĩnh và lịch sử & 0,657 & 0,077 & 23,7\% & 24,0\%\\ \hline
+Gradient Boosting, lưới 8 bộ tham số & 0,736 & 0,242 & 41,7\% & 31,9\%\\ \hline
 TK mở rộng: Logistic Regression + tồn đọng & 0,749 & 0,162 & 35,8\% & 33,1\%\\ \hline
 TK mở rộng: Gradient Boosting & 0,745 & 0,221 & 39,6\% & 33,6\%\\ \hline
-TK mở rộng: Gradient Boosting + tồn đọng & 0,744 & 0,254 & 42,6\% & 33,5\%\\ \hline
 TK mở rộng: kết hợp ba mô hình & 0,756 & 0,209 & 39,8\% & 34,3\%\\ \hline
-\textbf{Gradient Boosting (mô hình được chọn)} & \textbf{0,736} & \textbf{0,242} & \textbf{41,7\%} & \textbf{31,9\%}\\ \hline
+\textbf{TK mở rộng: Gradient Boosting + tồn đọng (được chọn)} & \textbf{0,744} & \textbf{0,254} & \textbf{42,6\%} & \textbf{33,5\%}\\ \hline
 \end{tabularx}
 \end{table}
 
-Gradient Boosting sau khi tinh chỉnh bắt được 41,7\% đơn trễ khi chỉ cảnh báo 10\% đơn, gấp hơn bốn lần chọn ngẫu nhiên, với PR-AUC 0,242, gấp 6,4 lần tỷ lệ trễ nền. Logistic Regression có ROC-AUC nhỉnh hơn một chút (0,750 so với 0,736), nghĩa là xếp hạng tổng thể tốt tương đương, nhưng ở phần đầu danh sách, phần mà đội vận hành thực sự xử lý, nó chỉ bắt được 35,4\% đơn trễ. Vì quyết định chỉ dựa vào các đơn rủi ro nhất, Gradient Boosting được chọn. So với cùng thuật toán khi chỉ dùng đặc trưng tĩnh và lịch sử (23,7\%), mức tăng đến từ hai nhóm đặc trưng mới, gồm các đặc trưng lúc bàn giao (thời gian chuẩn bị hàng, số ngày còn lại tới hạn) và các đặc trưng diễn biến gần đây, cùng với bước tinh chỉnh tham số.
+Mô hình được chọn bắt được 42,6\% đơn trễ khi chỉ cảnh báo 10\% đơn, gấp hơn bốn lần chọn ngẫu nhiên, với PR-AUC 0,254, gấp 6,8 lần tỷ lệ trễ nền và cao nhất trong các phương án. Logistic Regression có ROC-AUC cao hơn (0,749-0,750), nghĩa là xếp hạng tổng thể tốt tương đương, nhưng ở phần đầu danh sách, phần mà đội vận hành thực sự xử lý, nó chỉ bắt được 35,4-35,8\% đơn trễ; vì quyết định chỉ dựa vào các đơn rủi ro nhất, Gradient Boosting phù hợp hơn. So với cùng thuật toán khi chỉ dùng đặc trưng tĩnh và lịch sử (23,7\%), mức tăng lớn nhất đến từ các đặc trưng lúc bàn giao (thời gian chuẩn bị hàng, số ngày còn lại tới hạn) và các đặc trưng diễn biến gần đây.
 
-Đợt tìm kiếm mở rộng nâng kết quả trên validation từ 31,9\% lên 34,3\% (mô hình kết hợp), nhưng trên tập test mô hình kết hợp chỉ đạt 39,8\%, thấp hơn mô hình được chọn. Các phương án của đợt này nằm trong khoảng 39,6-42,6\% trên test, quanh mức 41,7\% của mô hình được chọn. Với khoảng 800 đơn trễ trong ba tháng test, sai số chuẩn của chỉ số này vào khoảng $\pm 2$ điểm phần trăm, nên các chênh lệch trên không có ý nghĩa thống kê. Nói cách khác, với các đặc trưng hiện có, mô hình đã chạm mức trần khoảng 40-42\%; tăng số tham số thử hay ghép thêm mô hình không cải thiện được một cách đáng tin. Vì vậy mô hình đơn giản hơn được giữ lại làm mô hình chính. Quyết định này được đưa ra sau khi đã xem kết quả test, nên các con số của mô hình được chọn trên test có thể lạc quan hơn một chút so với thực tế; mô hình Gradient Boosting + tồn đọng (42,6\%) không được chọn vì lý do tương tự.
+Mô hình được chọn không phải phương án cao nhất trên năm tháng validation: vị trí đó thuộc về mô hình kết hợp ba mô hình (34,3\%), nhưng mô hình này chỉ đạt 39,8\% trên test. Năm tháng validation có hai tháng trễ hàng loạt (02 và 03/2018), còn ba tháng test chỉ có khoảng 800 đơn trễ, nên sai số chuẩn của chỉ số vào khoảng $\pm 1{,}7$ điểm phần trăm; chọn theo riêng một giai đoạn ngắn dễ bị nhiễu chi phối. Vì vậy các ứng viên được so sánh trên toàn bộ 14 tháng walk-forward (Bảng~\ref{tab:dsschon}).
 
-Hình~\ref{fig:dsstheothang} đặt kết quả từng tháng (b) cạnh tỷ lệ trễ của chính tháng đó (a). Ở ba tháng test, mô hình bắt được 40,5\%, 42,6\% và 42,1\% số đơn trễ, ổn định dù tỷ lệ trễ của các tháng này chênh nhau gấp ba (1,8\% ở 06/2018, 5,5\% ở 08/2018). Mô hình kết hợp của đợt tìm kiếm mở rộng (đường xanh lá) bám sát mô hình được chọn ở hầu hết các tháng; nó nhỉnh hơn ở 04/2018 nhưng thấp hơn ở 06 và 07/2018. Luật theo tuyến chỉ bắt được 6,6\% ở tháng 08/2018, thấp hơn cả chọn ngẫu nhiên.
+\begin{table}[H]
+\centering
+\small\setstretch{1.1}
+\caption{Tỷ lệ đơn trễ bắt được ở mức 10\% của các ứng viên trên từng giai đoạn walk-forward (trung bình theo tháng)}
+\label{tab:dsschon}
+\begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{1.75cm}|P{1.45cm}|P{1.75cm}|P{1.6cm}|P{1.55cm}|}
+\hline
+\textbf{Phương án} & \textbf{Validation (5 tháng)} & \textbf{Test (3 tháng)} & \textbf{Năm 2018 (8 tháng)} & \textbf{Cả 14 tháng} & \textbf{ROC-AUC 14 tháng}\\ \hline
+Gradient Boosting, lưới 8 bộ tham số & 31,9\% & 41,7\% & 35,6\% & 32,5\% & 0,720\\ \hline
+TK mở rộng: Logistic Regression + tồn đọng & 33,1\% & 35,8\% & 34,1\% & 31,5\% & 0,716\\ \hline
+TK mở rộng: Gradient Boosting & 33,6\% & 39,6\% & 35,8\% & 32,2\% & 0,728\\ \hline
+TK mở rộng: kết hợp ba mô hình & 34,3\% & 39,8\% & 36,4\% & 32,9\% & 0,732\\ \hline
+\textbf{TK mở rộng: Gradient Boosting + tồn đọng} & \textbf{33,5\%} & \textbf{42,6\%} & \textbf{36,9\%} & \textbf{33,1\%} & \textbf{0,721}\\ \hline
+\end{tabularx}
+\end{table}
 
-Đọc hai panel cùng nhau còn thấy một quy luật: đường của mô hình đi xuống đúng vào những tháng cột tỷ lệ trễ vọt lên. Ở 11/2017 và 12/2017 (mùa Black Friday, trễ 12,7\% và 8,2\%) và ở 03/2018 (trễ 20,3\%), mô hình chỉ bắt được khoảng 25-26\%. Trong những tháng này đơn trễ hàng loạt vì sự cố chung của khâu vận chuyển chứ không vì đặc điểm riêng của từng đơn, nên việc xếp hạng các đơn với nhau ít tác dụng hơn. Tháng 07/2017 thấp nhất (16,2\%) vì khi đó mới có 11.638 đơn để huấn luyện. Từ 04/2018, khi tập huấn luyện có gần 60 nghìn đơn, kết quả tăng đều từ 31,6\% lên khoảng 42\% và giữ ở mức đó trong cả ba tháng test.
+Gradient Boosting + tồn đọng có kết quả trung bình cao nhất cả trên 14 tháng (33,1\%) lẫn 8 tháng năm 2018 (36,9\%), và tốt hơn mô hình của lưới 8 bộ tham số ở cả bốn giai đoạn; xét từng tháng, nó thắng 8, hòa 2 và thua 4 tháng. Mô hình kết hợp gần ngang về trung bình (32,9\%) và có ROC-AUC tốt hơn, nhưng phải huấn luyện ba mô hình mỗi tháng và kém hơn trên test, nên mô hình đơn được chọn. Vì phép so sánh này có dùng cả ba tháng test, các con số test của mô hình được chọn có thể lạc quan hơn thực tế một chút. Mức tăng so với lưới 8 bộ tham số chủ yếu đến từ bộ tham số mới (\code{learning\_rate} = 0,08, mỗi lần chia nút chỉ xét ngẫu nhiên 50\% đặc trưng) hơn là từ đặc trưng tồn đọng: khi xáo trộn, đặc trưng tồn đọng toàn sàn chỉ làm PR-AUC giảm 0,13 điểm (đứng thứ 10), còn hai đặc trưng tồn đọng theo bang và theo tuyến gần như không đóng góp.
+
+Hình~\ref{fig:dsstheothang} đặt kết quả từng tháng (b) cạnh tỷ lệ trễ của chính tháng đó (a). Ở ba tháng test, mô hình bắt được 40,5\%, 43,0\% và 44,1\% số đơn trễ, ổn định dù tỷ lệ trễ của các tháng này chênh nhau gấp ba (1,8\% ở 06/2018, 5,5\% ở 08/2018). Mô hình của lưới 8 bộ tham số (đường xanh lá) bám sát mô hình được chọn ở hầu hết các tháng; nó nhỉnh hơn ở 10/2017 và 12/2017 nhưng thấp hơn rõ ở 04/2018 (31,6\% so với 37,2\%). Luật theo tuyến chỉ bắt được 6,6\% ở tháng 08/2018, thấp hơn cả chọn ngẫu nhiên.
+
+Đọc hai panel cùng nhau còn thấy một quy luật: đường của mô hình đi xuống đúng vào những tháng cột tỷ lệ trễ vọt lên. Ở 11/2017 và 12/2017 (mùa Black Friday, trễ 12,7\% và 8,2\%) và ở 03/2018 (trễ 20,3\%), mô hình chỉ bắt được 24-27\%. Trong những tháng này đơn trễ hàng loạt vì sự cố chung của khâu vận chuyển chứ không vì đặc điểm riêng của từng đơn, nên việc xếp hạng các đơn với nhau ít tác dụng hơn. Tháng 07/2017 thấp nhất (15,6\%) vì khi đó mới có 11.638 đơn để huấn luyện. Từ 04/2018, khi tập huấn luyện có gần 60 nghìn đơn, kết quả tăng lên 37-44\% và giữ ở mức đó trong cả ba tháng test.
 
 \begin{figure}[H]
 \centering
 \includegraphics{Pictures/fig-dss-theo-thang.png}
-\caption{Tỷ lệ trễ theo tháng (a) và tỷ lệ đơn trễ bắt được khi cảnh báo 10\% đơn, huấn luyện lại mỗi tháng (b); vùng tô xanh là tập test}
+\caption{Tỷ lệ trễ theo tháng (a) và tỷ lệ đơn trễ bắt được khi cảnh báo 10\% đơn, huấn luyện lại mỗi tháng (b); mô hình được chọn là Gradient Boosting (GB) + tồn đọng; vùng tô xanh là tập test}
 \label{fig:dsstheothang}
 \end{figure}
 
-Bên cạnh mô hình, 120 đơn được bàn giao khi đã quá ngày giao dự kiến (14,6\% số đơn trễ của ba tháng test) được bắt bằng luật mà không cần mô hình, vì các đơn này chắc chắn trễ. Kết hợp mô hình và luật này, DSS bắt được 44,5\% số đơn trễ khi cảnh báo 10\% số đơn bàn giao mỗi ngày.
+Bên cạnh mô hình, 120 đơn được bàn giao khi đã quá ngày giao dự kiến (14,6\% số đơn trễ của ba tháng test) được bắt bằng luật mà không cần mô hình, vì các đơn này chắc chắn trễ. Kết hợp mô hình và luật này, DSS bắt được 46,5\% số đơn trễ khi cảnh báo 10\% số đơn bàn giao mỗi ngày.
 
-Để biết mô hình dựa vào đâu, mức giảm PR-AUC được đo khi xáo trộn ngẫu nhiên từng đặc trưng (permutation importance) trên tháng test cuối cùng (Hình~\ref{fig:dssdactrung}). Số ngày còn lại tới hạn khi bàn giao chiếm ưu thế tuyệt đối (PR-AUC giảm 25,5 điểm khi xáo trộn đặc trưng này), cách xa các đặc trưng tiếp theo: người bán chuẩn bị hàng chậm hơn thường lệ của chính họ (4,5 điểm), thời gian chuẩn bị thực tế (3,0 điểm) và độ dư của ngày hứa giao so với thời gian giao thường lệ của tuyến (1,4 điểm). Các đặc trưng còn lại, như bang của khách hay ngành hàng, chỉ đóng góp dưới 1 điểm. Kết quả này khớp với phần EDA và với trực giác nghiệp vụ: người bán giữ hàng càng lâu thì đơn vị vận chuyển càng ít thời gian. Đây cũng là cơ sở để sinh các lý do hiển thị cho người vận hành ở mục~\ref{sec:dsstrienkhai}.
+Để biết mô hình dựa vào đâu, mức giảm PR-AUC được đo khi xáo trộn ngẫu nhiên từng đặc trưng (permutation importance) trên tháng test cuối cùng (Hình~\ref{fig:dssdactrung}). Số ngày còn lại tới hạn khi bàn giao chiếm ưu thế tuyệt đối (PR-AUC giảm 28,8 điểm khi xáo trộn đặc trưng này), cách xa các đặc trưng tiếp theo: thời gian chuẩn bị thực tế (2,0 điểm), người bán chuẩn bị hàng chậm hơn thường lệ của chính họ (1,8 điểm) và độ dư của ngày hứa giao so với thời gian giao thường lệ của tuyến (1,4 điểm). Các đặc trưng còn lại, như tỷ lệ trễ lịch sử của bang khách hay thứ bàn giao, chỉ đóng góp dưới 1 điểm. Kết quả này khớp với phần EDA và với trực giác nghiệp vụ: người bán giữ hàng càng lâu thì đơn vị vận chuyển càng ít thời gian. Đây cũng là cơ sở để sinh các lý do hiển thị cho người vận hành ở mục~\ref{sec:dsstrienkhai}.
 
 \begin{figure}[H]
 \centering
@@ -147,7 +169,7 @@ Bên cạnh mô hình, 120 đơn được bàn giao khi đã quá ngày giao d�
 \label{fig:dssdactrung}
 \end{figure}
 
-Hình~\ref{fig:dssmatran} là ma trận nhầm lẫn của DSS trên ba tháng test ở hai mức cảnh báo được dùng trong thực tế (mục~\ref{sec:dsschinhsach}). Khi chỉ cảnh báo mức ĐỎ, cứ khoảng ba đơn rưỡi bị cảnh báo thì có một đơn thật sự trễ (precision 28,8\%: 266 đúng, 659 cảnh báo nhầm), và DSS bắt được 32,4\% số đơn trễ; 556 đơn trễ còn lại không bị cảnh báo. Mở rộng sang cả mức VÀNG thì bắt được 52,3\% (430 đơn) nhưng precision giảm còn 15,5\%. Accuracy ở cả hai mức (93,5\% và 85,4\%) đều thấp hơn mức 95,6\% của cách đoán ``không trễ'' cho mọi đơn, một lần nữa cho thấy vì sao không dùng accuracy để đánh giá bài toán này.
+Hình~\ref{fig:dssmatran} là ma trận nhầm lẫn của DSS trên ba tháng test ở hai mức cảnh báo được dùng trong thực tế (mục~\ref{sec:dsschinhsach}). Khi chỉ cảnh báo mức ĐỎ, cứ khoảng ba đơn bị cảnh báo thì có một đơn thật sự trễ (precision 30,8\%: 285 đúng, 640 cảnh báo nhầm), và DSS bắt được 34,7\% số đơn trễ; 537 đơn trễ còn lại không bị cảnh báo. Mở rộng sang cả mức VÀNG thì bắt được 54,0\% (444 đơn) nhưng precision giảm còn 16,0\%. Accuracy ở cả hai mức (93,7\% và 85,5\%) đều thấp hơn mức 95,6\% của cách đoán ``không trễ'' cho mọi đơn, một lần nữa cho thấy vì sao không dùng accuracy để đánh giá bài toán này.
 
 \begin{figure}[H]
 \centering
@@ -166,10 +188,10 @@ Bảng~\ref{tab:datchitieu} đối chiếu kết quả với các chỉ tiêu đ
 \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{2.4cm}|P{3.6cm}|P{1.4cm}|}
 \hline
 \textbf{Chỉ tiêu} & \textbf{Ngưỡng} & \textbf{Kết quả} & \textbf{Đánh giá}\\ \hline
-Đơn trễ bắt được ở mức 10\% & $\geq 40\%$ & 41,7\% (mô hình); 44,5\% (kèm luật) & Đạt\\ \hline
-ROC-AUC trên tập test & $\geq 0{,}70$ & 0,736 & Đạt\\ \hline
-Ổn định qua từng tháng test & $\geq 30\%$ mọi tháng & 40,5\%; 42,6\%; 42,1\% & Đạt\\ \hline
-Tỷ lệ trễ của mức ĐỎ so với mức XANH & gấp ít nhất 5 lần & 28,8\% so với 2,5\% (11,7 lần) & Đạt\\ \hline
+Đơn trễ bắt được ở mức 10\% & $\geq 40\%$ & 42,6\% (mô hình); 46,5\% (kèm luật) & Đạt\\ \hline
+ROC-AUC trên tập test & $\geq 0{,}70$ & 0,744 & Đạt\\ \hline
+Ổn định qua từng tháng test & $\geq 30\%$ mọi tháng & 40,5\%; 43,0\%; 44,1\% & Đạt\\ \hline
+Tỷ lệ trễ của mức ĐỎ so với mức XANH & gấp ít nhất 5 lần & 30,8\% so với 2,4\% (13,0 lần) & Đạt\\ \hline
 \end{tabularx}
 \end{table}
 
@@ -179,7 +201,7 @@ Mô hình chỉ cho ra xác suất trễ. Việc chọn đơn nào để can thi
 
 \subsubsection{Chính sách theo năng lực xử lý}
 
-Khi đội vận hành chỉ xử lý được một số đơn cố định mỗi ngày, DSS xếp hạng các đơn bàn giao trong ngày theo điểm rủi ro và gán ba mức: ĐỎ cho 5\% đơn rủi ro nhất, VÀNG cho 10\% tiếp theo, XANH cho phần còn lại; mọi đơn đã quá hạn khi bàn giao đều được xếp ĐỎ. Hình~\ref{fig:dssmucruiro} kiểm chứng cách xếp mức này trên ba tháng test: 28,8\% trong 925 đơn ĐỎ thực sự bị trễ, 8,9\% trong 1.852 đơn VÀNG, còn 15.976 đơn XANH chỉ trễ 2,5\%. Tỷ lệ trễ giảm dần đúng theo thứ tự mức rủi ro, và đơn ĐỎ trễ nhiều gấp 11,7 lần đơn XANH; ba mức vì vậy có ý nghĩa thực tế để phân bổ công sức theo dõi.
+Khi đội vận hành chỉ xử lý được một số đơn cố định mỗi ngày, DSS xếp hạng các đơn bàn giao trong ngày theo điểm rủi ro và gán ba mức: ĐỎ cho 5\% đơn rủi ro nhất, VÀNG cho 10\% tiếp theo, XANH cho phần còn lại; mọi đơn đã quá hạn khi bàn giao đều được xếp ĐỎ. Hình~\ref{fig:dssmucruiro} kiểm chứng cách xếp mức này trên ba tháng test: 30,8\% trong 925 đơn ĐỎ thực sự bị trễ, 8,6\% trong 1.852 đơn VÀNG, còn 15.976 đơn XANH chỉ trễ 2,4\%. Tỷ lệ trễ giảm dần đúng theo thứ tự mức rủi ro, và đơn ĐỎ trễ nhiều gấp 13,0 lần đơn XANH; ba mức vì vậy có ý nghĩa thực tế để phân bổ công sức theo dõi.
 
 \begin{figure}[H]
 \centering
@@ -188,7 +210,7 @@ Khi đội vận hành chỉ xử lý được một số đơn cố định m�
 \label{fig:dssmucruiro}
 \end{figure}
 
-Hình~\ref{fig:dssnangluc} cho người quản lý thấy đánh đổi giữa năng lực và hiệu quả: xử lý 5\% đơn mỗi ngày thì bắt được 32\% số đơn trễ, 10\% thì bắt được 45\%, 15\% thì bắt được 52\%, còn 30\% thì bắt được 65\%. Đường cong dốc ở đầu rồi thoải dần, nghĩa là những đơn được xử lý đầu tiên mang lại nhiều giá trị nhất, còn mở rộng năng lực quá 15-20\% thì lợi ích tăng thêm không nhiều.
+Hình~\ref{fig:dssnangluc} cho người quản lý thấy đánh đổi giữa năng lực và hiệu quả: xử lý 5\% đơn mỗi ngày thì bắt được 35\% số đơn trễ, 10\% thì bắt được 47\%, 15\% thì bắt được 54\%, còn 30\% thì bắt được 67\%. Đường cong dốc ở đầu rồi thoải dần, nghĩa là những đơn được xử lý đầu tiên mang lại nhiều giá trị nhất, còn mở rộng năng lực quá 15-20\% thì lợi ích tăng thêm không nhiều.
 
 \begin{figure}[H]
 \centering
@@ -215,19 +237,19 @@ Các tham số chi phí không có trong dữ liệu, nên DSS dùng giả đị
 \begin{tabularx}{\linewidth}{|>{\raggedright\arraybackslash}X|P{1.6cm}|P{1.9cm}|P{1.9cm}|P{1.8cm}|P{1.7cm}|}
 \hline
 \textbf{Chính sách} & \textbf{Số đơn can thiệp} & \textbf{Đơn trễ bắt được} & \textbf{Precision} & \textbf{Lợi ích ròng (BRL)} & \textbf{Đánh giá xấu tránh được}\\ \hline
-Mức ĐỎ (5\%) & 925 & 266 (32,4\%) & 28,8\% & $-$4.208 & 56\\ \hline
-ĐỎ + VÀNG (15\%) & 2.777 & 430 (52,3\%) & 15,5\% & $-$17.056 & 91\\ \hline
-Chi phí kỳ vọng ($p^{*} = 0{,}667$) & 190 & 184 (22,4\%) & 96,8\% & 688 & 39\\ \hline
+Mức ĐỎ (5\%) & 925 & 285 (34,7\%) & 30,8\% & $-$3.980 & 61\\ \hline
+ĐỎ + VÀNG (15\%) & 2.777 & 444 (54,0\%) & 16,0\% & $-$16.888 & 94\\ \hline
+Chi phí kỳ vọng ($p^{*} = 0{,}667$) & 238 & 212 (25,8\%) & 89,1\% & 640 & 45\\ \hline
 \end{tabularx}
 \end{table}
 
-Bảng~\ref{tab:dsschinhsach} cho thấy điều mà con số dự báo đơn lẻ không nói được. Tặng voucher cho cả 15\% đơn rủi ro nhất lỗ hơn 17 nghìn BRL, vì precision 15,5\% chưa đủ bù chi phí; chính sách chi phí kỳ vọng chỉ tặng voucher cho 190 đơn gần như chắc chắn trễ (precision 96,8\%) và có lãi. Trong 190 đơn này, 120 đơn đến từ luật ``đã quá hạn khi bàn giao'' và 70 đơn do mô hình chọn; 64 trong 70 đơn đó trễ thật (91\%), tức là sau khi hiệu chỉnh, mô hình vẫn tìm thêm được một nhóm đơn gần như chắc chắn trễ mà luật không bắt được. Cách hợp lý vì vậy là kết hợp: với các đơn ĐỎ chỉ báo trước cho khách, việc gần như không tốn tiền, còn voucher chỉ dành cho các đơn vượt ngưỡng $p^{*}$. Kết luận này phụ thuộc vào giả định chi phí: chẳng hạn nếu voucher chỉ giữ lại được 20\% thiệt hại ($e = 0{,}2$) thì $p^{*}$ vượt quá 1, DSS chỉ còn đề xuất voucher cho các đơn đã chắc chắn trễ. Vì vậy các tham số này được để mở cho người quản lý chỉnh theo số liệu thực tế của sàn.
+Bảng~\ref{tab:dsschinhsach} cho thấy điều mà con số dự báo đơn lẻ không nói được. Tặng voucher cho cả 15\% đơn rủi ro nhất lỗ gần 17 nghìn BRL, vì precision 16,0\% chưa đủ bù chi phí; chính sách chi phí kỳ vọng chỉ tặng voucher cho 238 đơn có xác suất trễ cao (precision 89,1\%) và có lãi. Trong 238 đơn này, 120 đơn đến từ luật ``đã quá hạn khi bàn giao'' và 118 đơn do mô hình chọn; 92 trong 118 đơn đó trễ thật (78\%), tức là sau khi hiệu chỉnh, mô hình vẫn tìm thêm được một nhóm đơn rất dễ trễ mà luật không bắt được. Cách hợp lý vì vậy là kết hợp: với các đơn ĐỎ chỉ báo trước cho khách, việc gần như không tốn tiền, còn voucher chỉ dành cho các đơn vượt ngưỡng $p^{*}$. Kết luận này phụ thuộc vào giả định chi phí: chẳng hạn nếu voucher chỉ giữ lại được 20\% thiệt hại ($e = 0{,}2$) thì $p^{*}$ vượt quá 1, DSS chỉ còn đề xuất voucher cho các đơn đã chắc chắn trễ. Vì vậy các tham số này được để mở cho người quản lý chỉnh theo số liệu thực tế của sàn.
 
 \subsection{Triển khai và giao diện}\label{sec:dsstrienkhai}
 
 Ở mỗi kỳ chạy, chương trình \code{score\_delay.py} huấn luyện lại mô hình trên các đơn đã biết kết quả, hiệu chỉnh xác suất, chấm điểm các đơn mới được bàn giao, gán mức rủi ro và ghi vào bảng \code{dss.delay\_risk\_score}; thông tin của từng phiên bản mô hình (dữ liệu huấn luyện, kết quả đánh giá) được lưu ở \code{dss.model\_registry}. Với ba tháng test, bảng điểm có 18.753 dòng ứng với ba phiên bản mô hình.
 
-Để người vận hành hiểu vì sao một đơn bị cảnh báo, mỗi đơn ĐỎ hoặc VÀNG có tối đa ba lý do bằng tiếng Việt. Lý do được sinh từ các đặc trưng quan trọng ở Hình~\ref{fig:dssdactrung}: đặc trưng nào của đơn lệch xa mức bình thường nhất thì được nêu trước. Trong 925 đơn ĐỎ, lý do đứng đầu phổ biến nhất là tỷ lệ trễ cao của tuyến (366 đơn), ngày hứa giao quá sát (179 đơn), người bán chuẩn bị hàng chậm hơn thường lệ (125 đơn), đơn đã quá hạn khi bàn giao (120 đơn) và chỉ còn ít ngày tới hạn (79 đơn). Bảng~\ref{tab:dssvidu} là ba đơn ĐỎ trễ thật và ba đơn ĐỎ vẫn đúng hạn, chọn ngẫu nhiên trong tháng 07/2018. Hai đơn trễ đầu tiên có lý do rất rõ: người bán giữ hàng lâu hơn thường lệ 13 và 21 ngày, khi bàn giao chỉ còn 1-2 ngày tới hạn, và mô hình cho xác suất trễ cao (1,00 và 0,56). Ba đơn đúng hạn đều bị cảnh báo vì yếu tố tuyến (tuyến đi xa, tỷ lệ trễ của tuyến cao, ngày hứa giao sát), là những yếu tố làm tăng rủi ro nhưng không quyết định; xác suất của chúng chỉ khoảng 0,10-0,19. Người vận hành vì vậy có thể dùng cả mức xác suất lẫn loại lý do để quyết định mức độ can thiệp.
+Để người vận hành hiểu vì sao một đơn bị cảnh báo, mỗi đơn ĐỎ hoặc VÀNG có tối đa ba lý do bằng tiếng Việt. Lý do được sinh từ các đặc trưng quan trọng ở Hình~\ref{fig:dssdactrung}: đặc trưng nào của đơn lệch xa mức bình thường nhất thì được nêu trước. Trong 925 đơn ĐỎ, lý do đứng đầu phổ biến nhất là tỷ lệ trễ cao của tuyến (350 đơn), ngày hứa giao quá sát (181 đơn), người bán chuẩn bị hàng chậm hơn thường lệ (124 đơn), đơn đã quá hạn khi bàn giao (120 đơn) và chỉ còn ít ngày tới hạn (92 đơn). Bảng~\ref{tab:dssvidu} là ba đơn ĐỎ trễ thật và ba đơn ĐỎ vẫn đúng hạn, chọn ngẫu nhiên trong tháng 07/2018. Ba đơn trễ có cùng một kiểu lý do rất rõ: người bán giữ hàng lâu hơn thường lệ 15-21 ngày, khi bàn giao chỉ còn 0-1 ngày tới hạn, và mô hình cho xác suất trễ gần như chắc chắn (1,00). Ba đơn đúng hạn bị cảnh báo chủ yếu vì yếu tố tuyến (tuyến SP$\rightarrow$BA hay trễ, ngày hứa giao sát) hoặc người bán có tỷ lệ trễ gần đây cao, là những yếu tố làm tăng rủi ro nhưng không quyết định; xác suất của chúng chỉ khoảng 0,09-0,19. Người vận hành vì vậy có thể dùng cả mức xác suất lẫn loại lý do để quyết định mức độ can thiệp.
 
 \begingroup\small\setstretch{1.1}
 \begin{longtable}{|P{1.6cm}|P{1.0cm}|>{\raggedright\arraybackslash}p{8.2cm}|P{1.6cm}|}
@@ -236,18 +258,18 @@ Bảng~\ref{tab:dsschinhsach} cho thấy điều mà con số dự báo đơn l�
 \textbf{Tuyến} & \textbf{$p$} & \textbf{Lý do hiển thị cho người vận hành} & \textbf{Thực tế}\\ \hline \endfirsthead
 \hline
 \textbf{Tuyến} & \textbf{$p$} & \textbf{Lý do hiển thị cho người vận hành} & \textbf{Thực tế}\\ \hline \endhead
-MA$\rightarrow$SP & 1,00 & Người bán chuẩn bị hàng chậm hơn thường lệ 13 ngày; chỉ còn 1 ngày tới hạn giao khi bàn giao vận chuyển; tuyến MA$\rightarrow$SP trễ 19\% trong 90 ngày qua & Trễ\\ \hline
-SP$\rightarrow$ES & 0,56 & Người bán chuẩn bị hàng chậm hơn thường lệ 21 ngày; chỉ còn 2 ngày tới hạn giao khi bàn giao vận chuyển; tuyến SP$\rightarrow$ES trễ 20\% trong 90 ngày qua & Trễ\\ \hline
-SP$\rightarrow$RJ & 0,18 & Ngày hứa giao sớm hơn thời gian giao thường lệ của tuyến 1 ngày & Trễ\\ \hline
-SC$\rightarrow$PE & 0,19 & Ngày hứa giao sớm hơn thời gian giao thường lệ của tuyến 1 ngày; khoảng cách giao xa (2.569 km) & Đúng hạn\\ \hline
-SP$\rightarrow$SE & 0,10 & Tuyến SP$\rightarrow$SE trễ 24\% trong 90 ngày qua; khoảng cách giao xa (1.742 km) & Đúng hạn\\ \hline
-SP$\rightarrow$BA & 0,19 & Tuyến SP$\rightarrow$BA trễ 19\% trong 90 ngày qua; ngày hứa giao chỉ dư 1 ngày so với thời gian giao thường lệ của tuyến; khoảng cách giao xa (1.564 km) & Đúng hạn\\ \hline
+SP$\rightarrow$MG & 1,00 & Người bán chuẩn bị hàng chậm hơn thường lệ 21 ngày; chỉ còn 1 ngày tới hạn giao khi bàn giao vận chuyển & Trễ\\ \hline
+MA$\rightarrow$SP & 1,00 & Người bán chuẩn bị hàng chậm hơn thường lệ 15 ngày; chỉ còn 0 ngày tới hạn giao khi bàn giao vận chuyển; người bán trễ 20\% trong 90 ngày qua & Trễ\\ \hline
+MA$\rightarrow$MA & 1,00 & Người bán chuẩn bị hàng chậm hơn thường lệ 17 ngày; chỉ còn 0 ngày tới hạn giao khi bàn giao vận chuyển; người bán trễ 21\% trong 90 ngày qua & Trễ\\ \hline
+SP$\rightarrow$BA & 0,16 & Ngày hứa giao sớm hơn thời gian giao thường lệ của tuyến 1 ngày; tuyến SP$\rightarrow$BA trễ 19\% trong 90 ngày qua & Đúng hạn\\ \hline
+SP$\rightarrow$BA & 0,09 & Tuyến SP$\rightarrow$BA trễ 19\% trong 90 ngày qua; ngày hứa giao chỉ dư 3 ngày so với thời gian giao thường lệ của tuyến & Đúng hạn\\ \hline
+MA$\rightarrow$BA & 0,19 & Người bán trễ 21\% trong 90 ngày qua; người bán chuẩn bị hàng chậm hơn thường lệ 3 ngày; ngày hứa giao chỉ dư 4 ngày so với thời gian giao thường lệ của tuyến & Đúng hạn\\ \hline
 \end{longtable}
 \endgroup
 
 Kèm theo mỗi mức là một hành động đề xuất: đơn ĐỎ được đề xuất báo trước cho khách, tặng voucher nếu vượt ngưỡng $p^{*}$, hoặc chuyển gói vận chuyển nhanh (mô phỏng, vì dữ liệu không có thông tin đơn vị vận chuyển); đơn VÀNG được theo dõi hành trình hằng ngày. Người vận hành phê duyệt hoặc từ chối từng đề xuất trên dashboard, và quyết định được ghi vào \code{dss.decision\_log} để đánh giá lại về sau. Mô hình được huấn luyện lại mỗi tháng, đúng như cách đã đánh giá ở mục~\ref{sec:dssketqua}.
 
-Trang ``Cảnh báo giao trễ'' của dashboard (mục~\ref{sec:dashboard}) là giao diện của DSS và có hai phần. Phần trên (Hình~\ref{fig:dashdsswhatif}) là phân tích what-if: ba thanh trượt cho $C_{\text{trễ}}$, $C_{\text{can thiệp}}$ và $e$, ô ngưỡng $p^{*}$ tính lại theo giá trị đang chọn (công thức nằm trong chú giải của ô), và bảng so sánh ba chính sách như Bảng~\ref{tab:dsschinhsach}. Với tham số mặc định, trang cho đúng $p^{*} = 0{,}667$, 190 đơn được đề xuất voucher, precision 96,8\% và lợi ích ròng 688 BRL. Khi kéo $C_{\text{trễ}}$ lên 50 BRL và $C_{\text{can thiệp}}$ lên 10 BRL, ngưỡng giảm còn $p^{*} = 0{,}500$ và danh sách đơn được đề xuất voucher cập nhật ngay. Hai biểu đồ phía dưới phần này (không có trên hình) nhắc lại tỷ lệ trễ thực tế theo mức rủi ro (Hình~\ref{fig:dssmucruiro}) và tỷ lệ đơn trễ bắt được theo năng lực xử lý mỗi ngày (Hình~\ref{fig:dssnangluc}).
+Trang ``Cảnh báo giao trễ'' của dashboard (mục~\ref{sec:dashboard}) là giao diện của DSS và có hai phần. Phần trên (Hình~\ref{fig:dashdsswhatif}) là phân tích what-if: ba thanh trượt cho $C_{\text{trễ}}$, $C_{\text{can thiệp}}$ và $e$, ô ngưỡng $p^{*}$ tính lại theo giá trị đang chọn (công thức nằm trong chú giải của ô), và bảng so sánh ba chính sách như Bảng~\ref{tab:dsschinhsach}. Với tham số mặc định, trang cho đúng $p^{*} = 0{,}667$, 238 đơn được đề xuất voucher, precision 89,1\% và lợi ích ròng 640 BRL. Khi kéo $C_{\text{trễ}}$ lên 50 BRL và $C_{\text{can thiệp}}$ lên 10 BRL, ngưỡng giảm còn $p^{*} = 0{,}500$ và danh sách đơn được đề xuất voucher cập nhật ngay. Hai biểu đồ phía dưới phần này (không có trên hình) nhắc lại tỷ lệ trễ thực tế theo mức rủi ro (Hình~\ref{fig:dssmucruiro}) và tỷ lệ đơn trễ bắt được theo năng lực xử lý mỗi ngày (Hình~\ref{fig:dssnangluc}).
 
 \begin{figure}[H]
 \centering

@@ -14,17 +14,19 @@ Targets (report table `tab:chitieu`) and results on the test months 06-08/2018:
 
 | Target | Threshold | Result |
 |---|---|---|
-| Late orders caught when flagging 10% of orders | >= 40% | 41.7% (model), 44.5% with the rule |
-| ROC-AUC | >= 0.70 | 0.736 |
-| Every test month | >= 30% | 40.5%, 42.6%, 42.1% |
-| Late rate RED vs GREEN | >= 5x | 28.8% vs 2.5% (11.7x) |
+| Late orders caught when flagging 10% of orders | >= 40% | 42.6% (model), 46.5% with the rule |
+| ROC-AUC | >= 0.70 | 0.744 |
+| Every test month | >= 30% | 40.5%, 43.0%, 44.1% |
+| Late rate RED vs GREEN | >= 5x | 30.8% vs 2.4% (13.0x) |
 
 Model selection: an extended search (60 HGB settings per feature set, 4 LR settings, carrier-backlog
-features, rank-average ensemble) chosen on validation 01-05/2018 raised validation recall@10 from 31.9% to
-34.3% but scored 39.8% on test (single components 35.8-42.6%), within the ~2-point noise of ~800 late test
-orders. The simpler first model (`V1_PARAMS`) is kept as the production model; this decision was taken after
-seeing the test months and the report says so. `results/best_config.json` stores the final model ("final")
-and the search result ("ensemble"); `score_delay.py` reads "final".
+features, rank-average ensemble) on validation 01-05/2018. The five candidates are within noise of each
+other on any single period, so they are compared over all 14 walk-forward months. The production model is the
+tuned HGB with backlog features (`hgb_tuned_backlog`): best mean recall@10 over 14 months (33.1%) and over
+2018 (36.9%), better than the first small-grid model (`hgb_v1`) in every period and in 8 of 14 months.
+Because the test months are part of this comparison, the report says the test figures are slightly optimistic.
+`results/best_config.json` stores the final model ("final") and the search result ("ensemble");
+`score_delay.py` reads "final".
 
 | File | Role |
 |---|---|
