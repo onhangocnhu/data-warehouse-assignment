@@ -1,7 +1,7 @@
 % !TeX root = ../main.tex
 \section{Khám phá và tiền xử lý dữ liệu}\label{sec:eda}
 
-Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis, EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}.
+Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis -- EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}.
 
 \subsection{Khám phá dữ liệu thô}\label{sec:edatho}
 
@@ -175,7 +175,7 @@ Dòng trùng lặp trong \code{geolocation} (261.831 dòng) & Loại bỏ, chỉ
 Tọa độ nằm ngoài lãnh thổ Brazil (42 dòng) & Loại bỏ trước khi tính tọa độ trung bình của thành phố. & Mã bưu chính 18243 (bang SP) có một dòng tọa độ (28,01; $-$15,54), nằm ngoài Brazil $\rightarrow$ loại dòng này.\\ \hline
 Mã bưu chính thuộc nhiều bang (8 mã) & Chọn bang xuất hiện nhiều nhất để mỗi mã bưu chính tra ra đúng một bang trong bảng tra cứu; bang của khách hàng và người bán vẫn lấy từ dữ liệu gốc, không bị thay đổi. & Mã 02116 có 12 dòng ở bang SP và 1 dòng ở bang RN $\rightarrow$ bảng tra cứu ghi bang SP cho mã này.\\ \hline
 Mã bưu chính không có trong \code{geolocation} (278 khách hàng, 7 người bán) & Vẫn lấy tên thành phố và bang từ bảng khách hàng hoặc người bán; tọa độ lấy theo thành phố nếu thành phố có trong \code{geolocation}, ngược lại để trống. & Khách hàng ở mã 72904 vẫn có tọa độ của thành phố \code{santo antonio do descoberto}; khách hàng ở mã 36956 giữ thành phố \code{sao francisco do humaita}, bang MG, nhưng vĩ độ, kinh độ để trống.\\ \hline
-Các mã thanh toán bất thường (giá trị 0, phương thức không xác định) & Không ảnh hưởng đến Data Mart vì dữ liệu thanh toán không được nạp vào bảng fact; chỉ lưu lại trong khu vực staging. & --\\ \hline
+Các mã thanh toán bất thường (giá trị 0, phương thức không xác định) & Không ảnh hưởng đến phạm vi đề tài vì dữ liệu thanh toán không được nạp vào bảng fact; chỉ lưu lại trong khu vực staging. & --\\ \hline
 \end{longtable}
 \endgroup
 

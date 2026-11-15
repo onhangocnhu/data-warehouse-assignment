@@ -3,7 +3,7 @@
 
 \subsubsection{Quy trình nghiệp vụ chính}
 
-Olist đóng vai trò trung gian: sàn kết nối khách hàng với rất nhiều người bán độc lập. Khách đặt mua trên sàn, người bán tự chuẩn bị hàng rồi giao cho đơn vị vận chuyển, đơn vị vận chuyển đưa hàng tới khách, và sau khi nhận hàng khách có thể chấm điểm từ 1 đến 5 sao. Bảng~\ref{tab:quytrinh} tóm tắt các giai đoạn này cùng dữ liệu phát sinh ở mỗi giai đoạn. Đây cũng là cơ sở để xác định các đối tượng cần phân tích ở phần thiết kế.
+Sàn thương mại điện tử đóng vai trò trung gian kết nối khách hàng với nhiều người bán độc lập. Khách đặt mua trên sàn, người bán tự chuẩn bị hàng rồi giao cho đơn vị vận chuyển, đơn vị vận chuyển đưa hàng tới khách và sau khi nhận hàng khách có thể chấm điểm từ 1 đến 5 sao. Bảng~\ref{tab:quytrinh} tóm tắt các giai đoạn này cùng dữ liệu phát sinh ở mỗi giai đoạn. Đây cũng là cơ sở để xác định các đối tượng cần phân tích ở phần thiết kế.
 
 \begin{table}[H]
 \centering
@@ -27,9 +27,9 @@ Olist đóng vai trò trung gian: sàn kết nối khách hàng với rất nhi�
 
 \subsubsection{Phát biểu bài toán}
 
-Từ quy trình trên, bài toán được phát biểu như sau: \textit{tích hợp dữ liệu rời rạc của sàn thương mại điện tử vào một kho dữ liệu thống nhất, để nhà quản lý phân tích được doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán theo nhiều chiều, từ đó có căn cứ cho các quyết định kinh doanh và vận hành.}
+Từ quy trình trên, bài toán được phát biểu như sau: \textit{Tích hợp dữ liệu rời rạc của sàn thương mại điện tử vào một kho dữ liệu thống nhất, để nhà quản lý phân tích được doanh thu, giao hàng, mức độ hài lòng và hiệu quả người bán theo nhiều chiều, từ đó có căn cứ cho các quyết định kinh doanh và vận hành.}
 
-Hệ thống xử lý giao dịch trực tuyến (OLTP) của sàn được tối ưu để ghi nhanh từng đơn hàng, không phải để tổng hợp trên dữ liệu nhiều năm. Kho dữ liệu cần cho bài toán này phải có bốn đặc trưng cơ bản \cite{inmon}; Bảng~\ref{tab:dactrung} giải thích từng đặc trưng trong ngữ cảnh của đề tài.
+Các hệ thống xử lý giao dịch trực tuyến (OLTP) được thiết kế để ghi nhận nhanh các giao dịch hằng ngày, không tối ưu cho các truy vấn tổng hợp trên dữ liệu lịch sử. Vì vậy, bài toán cần một kho dữ liệu với bốn đặc trưng cơ bản của kho dữ liệu \cite{inmon}. Bảng~\ref{tab:dactrung} trình bày ý nghĩa của từng đặc trưng trong bài toán này.
 
 \begin{table}[H]
 \centering
@@ -45,34 +45,6 @@ Biến đổi theo thời gian (Time-variant) & Dữ liệu lịch sử được
 Không biến động (Non-volatile) & Dữ liệu sau khi nạp chỉ được đọc, nên các báo cáo chạy lại cho cùng kết quả.\\ \hline
 \end{tabularx}
 \end{table}
-
-% \subsubsection{Các câu hỏi phân tích nghiệp vụ}
-
-% Do báo cáo này không sử dụng use-case như một dự án phần mềm, nhóm mô tả nhu cầu của người dùng thông qua các câu hỏi phân tích nghiệp vụ (Business Question -- BQ), được trình bày trong Bảng~\ref{tab:bq}. Đây là cơ sở để xác định các chiều và độ đo khi thiết kế kho dữ liệu.
-
-% \begingroup\small\setstretch{1.1}
-% \begin{longtable}{|c|p{2.3cm}|p{10.5cm}|}
-% \caption{Các câu hỏi phân tích nghiệp vụ}\label{tab:bq}\\
-% \hline
-% \textbf{Mã} & \textbf{Chủ đề} & \textbf{Câu hỏi phân tích}\\ \hline \endfirsthead
-% \hline
-% \textbf{Mã} & \textbf{Chủ đề} & \textbf{Câu hỏi phân tích}\\ \hline \endhead
-% BQ01 & Doanh thu & Doanh thu và số đơn hàng thay đổi như thế nào theo tháng, quý, năm?\\ \hline
-% BQ02 & Doanh thu & Những bang, thành phố nào đóng góp nhiều doanh thu nhất?\\ \hline
-% BQ03 & Doanh thu & Những ngành hàng nào có doanh thu cao nhất và tăng trưởng tốt nhất?\\ \hline
-% BQ04 & Doanh thu & Giá trị đơn hàng trung bình và tỷ lệ phí vận chuyển trên giá trị hàng hóa khác nhau như thế nào giữa các vùng?\\ \hline
-% BQ05 & Doanh thu & Cơ cấu phương thức thanh toán và số kỳ trả góp thay đổi như thế nào theo ngành hàng và vùng?\\ \hline
-% BQ06 & Giao hàng & Thời gian giao hàng trung bình theo bang và theo ngành hàng là bao nhiêu?\\ \hline
-% BQ07 & Giao hàng & Tỷ lệ giao trễ cao ở những vùng, tuyến (bang người bán đến bang khách hàng) và thời điểm nào?\\ \hline
-% BQ08 & Giao hàng & Công đoạn nào chiếm nhiều thời gian nhất: duyệt đơn, người bán chuẩn bị hàng hay vận chuyển?\\ \hline
-% BQ09 & Hài lòng & Điểm đánh giá trung bình theo ngành hàng, người bán và khu vực là bao nhiêu?\\ \hline
-% BQ10 & Hài lòng & Giao trễ ảnh hưởng như thế nào đến điểm đánh giá của khách hàng?\\ \hline
-% BQ11 & Hài lòng & Những ngành hàng nào có tỷ lệ đánh giá thấp (1 -- 2 sao) cao nhất?\\ \hline
-% BQ12 & Người bán & Những người bán nào có doanh thu cao nhất theo vùng và ngành hàng?\\ \hline
-% BQ13 & Người bán & Người bán nào có doanh thu cao nhưng chất lượng giao hàng hoặc đánh giá thấp?\\ \hline
-% BQ14 & Người bán & Người bán phân bố ở vùng nào so với nơi tập trung khách hàng?\\ \hline
-% \end{longtable}
-% \endgroup
 
 \subsubsection{Các chỉ số đánh giá (KPI)}
 
@@ -103,7 +75,7 @@ Số người bán hoạt động & Số người bán phân biệt có đơn h�
 
 \subsubsection{Các quyết định được hỗ trợ}
 
-Bảng~\ref{tab:quyetdinh} liệt kê các quyết định của từng nhóm người dùng và thông tin họ cần theo dõi để đưa ra quyết định đó. Bảng này được dùng lại ở phần thiết kế để xác định chiều và thước đo, và ở phần OLAP để chọn các truy vấn cần xây dựng.
+Bảng~\ref{tab:quyetdinh} liệt kê các quyết định của từng nhóm người dùng và thông tin họ cần theo dõi để đưa ra quyết định đó. Bảng này được dùng lại ở phần thiết kế để xác định chiều và thước đo và ở phần OLAP để chọn các truy vấn cần xây dựng.
 
 \begin{table}[H]
 \centering

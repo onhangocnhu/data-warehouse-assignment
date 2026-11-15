@@ -5,7 +5,7 @@
 
 Trên một sàn thương mại điện tử, một đơn hàng không dừng lại ở thao tác mua và trả tiền. Sau khi khách đặt hàng, sàn phải duyệt thanh toán, người bán phải chuẩn bị hàng và giao cho đơn vị vận chuyển, đơn vị vận chuyển đưa hàng tới khách, và cuối cùng khách để lại đánh giá. Mỗi bước được ghi lại ở một nơi khác nhau, do một bên khác nhau phụ trách.
 
-Với bộ dữ liệu của sàn Olist, trả lời một câu hỏi quản lý thông thường đã khá vất vả. Chẳng hạn, để biết ngành hàng nào vừa hay giao trễ vừa bị đánh giá thấp, người phân tích phải tự nối ít nhất năm bảng: đơn hàng, dòng sản phẩm, sản phẩm, bảng dịch ngành hàng và đánh giá, đồng thời phải tự xử lý trường hợp một đơn có nhiều sản phẩm hoặc nhiều đánh giá. Nếu mỗi người tự viết truy vấn theo cách của mình, cùng một chỉ số có thể ra hai con số khác nhau.
+Quy mô của các sàn thương mại điện tử như Shopee, Amazon, Olist\dots đủ lớn để việc theo dõi hoạt động bằng các báo cáo rời rạc không còn phù hợp. Tuy nhiên trong thực tế, việc khai thác dữ liệu để phục vụ công tác quản lý sàn vẫn còn tồn tại nhiều hạn chế. Chẳng hạn, để biết ngành hàng nào vừa hay giao trễ vừa bị đánh giá thấp, người phân tích phải tự nối ít nhất năm bảng: đơn hàng, dòng sản phẩm, sản phẩm, bảng dịch ngành hàng và đánh giá, đồng thời phải tự xử lý trường hợp một đơn có nhiều sản phẩm hoặc nhiều đánh giá. Nếu mỗi người tự viết truy vấn theo cách của mình, cùng một chỉ số có thể ra hai con số khác nhau.
 
 Một khó khăn khác là các chỉ số thường được xem tách rời. Doanh thu nằm ở báo cáo kinh doanh, thời gian giao hàng nằm ở báo cáo vận hành, còn điểm đánh giá nằm ở bộ phận chăm sóc khách hàng. Một vấn đề vận hành ở một tuyến giao hàng có thể kéo theo đánh giá xấu và mất khách ở cả một khu vực, nhưng nếu không đặt các chỉ số cạnh nhau thì rất khó nhìn ra.
 
@@ -21,17 +21,15 @@ Mục tiêu chung của đề tài là giúp nhà quản lý sàn theo dõi doan
 \item Đo được thời gian của từng công đoạn giao hàng và tỷ lệ giao trễ, chi tiết đến bang, tuyến giao hàng và người bán.
 \item Theo dõi điểm đánh giá và làm rõ mức độ ảnh hưởng của chất lượng giao hàng lên điểm đánh giá.
 \item Xếp hạng người bán bằng một bộ chỉ số chung về doanh thu, giao hàng và đánh giá.
-\item Cung cấp nền dữ liệu cho dashboard và cho thành phần hệ hỗ trợ quyết định (DSS).
+\item Tạo nền tảng dữ liệu cho dashboard và cho thành phần hệ hỗ trợ quyết định (DSS).
 \end{enumerate}
 
 \subsubsection{Phạm vi của đề tài}\label{sec:phamvi}
-
-Đề tài tập trung vào giai đoạn sau khi đơn hàng được đặt, từ lúc duyệt đơn đến lúc khách đánh giá, và chỉ dùng bộ dữ liệu công khai của Olist làm nguồn. Trong phạm vi này, kho dữ liệu phục vụ bốn mảng phân tích: doanh thu (doanh thu, phí vận chuyển, số đơn và giá trị đơn theo thời gian, khu vực, ngành hàng), giao hàng (thời gian từng công đoạn và tình trạng giao đúng hạn), mức độ hài lòng (điểm đánh giá theo ngành hàng, người bán, khu vực và tình trạng giao hàng) và hiệu quả người bán.
-
-Thanh toán nằm ngoài phạm vi. Đưa thêm phần này vào sẽ cần một bảng fact riêng, trong khi các quyết định mà đề tài hướng tới đều xoay quanh giao hàng và đánh giá. Dữ liệu thanh toán vẫn được nạp vào khu vực staging, nên có thể mở rộng thành một Data Mart riêng sau này.
+Đề tài tập trung vào hoạt động phân tích sau bán hàng trên một sàn thương mại điện tử, sử dụng bộ dữ liệu có sẵn làm nguồn phân tích. Trong phạm vi này, kho dữ liệu phục vụ bốn mảng phân tích: doanh thu (doanh thu, phí vận chuyển, số đơn và giá trị đơn theo thời gian, khu vực, ngành hàng), giao hàng (thời gian từng công đoạn và tình trạng giao đúng hạn), mức độ hài lòng (điểm đánh giá theo ngành hàng, người bán, khu vực và tình trạng giao hàng) và hiệu quả người bán.
 
 \subsubsection{Các bên liên quan}
+Kho dữ liệu không chỉ phục vụ nhu cầu báo cáo của một bộ phận mà còn mang lại giá trị cho nhiều bên liên quan (stakeholder). Mỗi nhóm stakeholder đều nhận được những lợi ích cụ thể từ việc triển khai và sử dụng hệ thống.
 
-Kho dữ liệu phục vụ trực tiếp bốn nhóm người dùng bên trong sàn. Ban điều hành cần một nguồn số liệu thống nhất để theo dõi tình hình kinh doanh và chọn thị trường, ngành hàng trọng điểm. Bộ phận vận hành cần biết tuyến nào, khu vực nào và người bán nào hay giao trễ để điều chỉnh cam kết giao hàng. Bộ phận quản lý ngành hàng và người bán cần căn cứ để hỗ trợ, khuyến khích hoặc cảnh báo người bán. Bộ phận chăm sóc khách hàng cần biết đánh giá thấp tập trung ở đâu để ưu tiên xử lý.
+Ban điều hành cần một nguồn số liệu thống nhất để theo dõi tình hình kinh doanh và chọn thị trường, ngành hàng trọng điểm. Bộ phận vận hành cần biết tuyến nào, khu vực nào và người bán nào hay giao trễ để điều chỉnh cam kết giao hàng. Bộ phận quản lý ngành hàng và người bán cần căn cứ để hỗ trợ, khuyến khích hoặc cảnh báo người bán. Bộ phận chăm sóc khách hàng cần biết đánh giá thấp tập trung ở đâu để ưu tiên xử lý.
 
 Người bán và khách hàng không trực tiếp dùng hệ thống nhưng vẫn hưởng lợi. Người bán được đánh giá theo tiêu chí rõ ràng và được hỗ trợ khi chất lượng giảm, còn khách hàng nhận được dịch vụ giao hàng tốt hơn khi sàn xử lý được các điểm nghẽn.
