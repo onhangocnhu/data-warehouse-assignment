@@ -594,15 +594,15 @@ def fig_dss_model_compare():
              ("rule_days_left", "Luật: số ngày còn lại tới hạn"),
              ("hgb_base_features", "Gradient Boosting, chỉ đặc trưng tĩnh và lịch sử"),
              ("logistic_regression", "Logistic Regression"),
+             ("hgb_v1", "Gradient Boosting, lưới 8 bộ tham số"),
              ("lr_tuned_backlog", "TK mở rộng: Logistic Regression + tồn đọng"),
              ("hgb_tuned", "TK mở rộng: Gradient Boosting"),
-             ("hgb_tuned_backlog", "TK mở rộng: Gradient Boosting + tồn đọng"),
              ("ensemble", "TK mở rộng: kết hợp ba mô hình"),
-             ("hgb_v1", r"\textbf{Gradient Boosting (mô hình được chọn)}")]
+             ("hgb_tuned_backlog", r"\textbf{Gradient Boosting + tồn đọng (được chọn)}")]
     fig, ax = plt.subplots(figsize=(FULL, 3.3))
     vals = [10.0 if k == "random" else s.loc[k, "recall_top10"] * 100 for k, _ in names]
     y = np.arange(len(names))
-    ax.barh(y, vals, height=0.62, color=[BLUE if k == "hgb_v1" else SOFT for k, _ in names])
+    ax.barh(y, vals, height=0.62, color=[BLUE if k == "hgb_tuned_backlog" else SOFT for k, _ in names])
     ax.axvline(40, color=ORANGE, lw=0.9, ls=(0, (3, 2)), zorder=1)
     for yi, v in zip(y, vals):
         ax.text(v + 0.6, yi, pct(v, 1), va="center", fontsize=8, color=INK2, bbox=dict(fc="white", ec="none", pad=0.5))
@@ -632,8 +632,8 @@ def fig_dss_by_month():
     a.set_ylabel("Tỷ lệ trễ")
     style_axis(a)
     panel_title(a, "(a) Tỷ lệ trễ của các đơn bàn giao trong tháng")
-    for model, col, lab, lw in [("hgb_v1", BLUE, "Gradient Boosting (được chọn)", 1.8),
-                                ("ensemble", AQUA, "Kết hợp ba mô hình", 1.1),
+    for model, col, lab, lw in [("hgb_tuned_backlog", BLUE, "Mô hình được chọn", 1.8),
+                                ("hgb_v1", AQUA, "GB, lưới 8 bộ tham số", 1.1),
                                 ("rule_route_history", MUTED, "Luật: tỷ lệ trễ của tuyến", 1.1)]:
         g = wf[wf.model == model].set_index("month").loc[months]
         b.plot(x, g.recall_top10 * 100, color=col, lw=lw, marker="o", ms=3.4 if lw > 1.5 else 2.6, mec="white",

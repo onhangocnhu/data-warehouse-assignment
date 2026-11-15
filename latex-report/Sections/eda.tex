@@ -1,7 +1,7 @@
 % !TeX root = ../main.tex
 \section{Khám phá và tiền xử lý dữ liệu}\label{sec:eda}
 
-Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis -- EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}.
+Phần này gồm ba bước: khám phá dữ liệu thô (Exploratory Data Analysis -- EDA), đặt quy tắc tiền xử lý, rồi khám phá lại dữ liệu sau xử lý. Dữ liệu thô được khảo sát trực tiếp trên chín tập tin CSV bằng \code{src/eda/run\_eda.py}, độc lập với ETL, nên các con số ở đây cũng dùng để đối soát kết quả ETL ở mục~\ref{sec:hienthuc}. Dữ liệu sau tiền xử lý được nạp vào Data Mart gồm bảng fact \code{fact\_sales}, mỗi dòng ứng với một sản phẩm trong một đơn hàng, và 7 bảng chiều (thiết kế chi tiết ở mục~\ref{sec:thietke}); bản ghi nào không được nạp vào bảng fact thì không được tính vào các chỉ số của kho.
 
 \subsection{Khám phá dữ liệu thô}\label{sec:edatho}
 
@@ -133,7 +133,7 @@ Ngoài giá trị thiếu và ngoại lai, dữ liệu còn được kiểm tra 
 \end{longtable}
 \endgroup
 
-Các khóa chính của \code{orders} và \code{order\_items} đều toàn vẹn, nên phần lớn vấn đề nằm ở ba nhóm: giá trị thiếu, dữ liệu địa lý chưa chuẩn hóa, và mốc thời gian sai thứ tự. Dữ liệu địa lý là phần phải xử lý nhiều nhất. Khi vẽ toàn bộ tọa độ phân biệt lên mặt phẳng (Hình~\ref{fig:toado}a), 42 dòng (33 điểm phân biệt) rơi ra ngoài khung lãnh thổ Brazil, có điểm nằm ở châu Âu hoặc Bắc Mỹ. Nếu không loại các điểm này, tọa độ trung bình của thành phố sẽ bị kéo lệch hẳn. Phần còn lại (Hình~\ref{fig:toado}b) cho thấy khách hàng tập trung dày đặc ở vùng Đông Nam, quanh São Paulo và Rio de Janeiro.
+Các khóa chính của \code{orders} và \code{order\_items} đều toàn vẹn, nên phần lớn vấn đề nằm ở ba nhóm: giá trị thiếu, dữ liệu địa lý chưa chuẩn hóa, và mốc thời gian sai thứ tự. Dữ liệu địa lý là phần phải xử lý nhiều nhất. Khi vẽ toàn bộ tọa độ phân biệt lên mặt phẳng (Hình~\ref{fig:toado}a), 42 dòng (33 điểm phân biệt) rơi ra ngoài khung lãnh thổ Brazil, có điểm nằm ở châu Âu hoặc Bắc Mỹ. Nếu không loại các điểm này, tọa độ trung bình của thành phố sẽ bị kéo lệch hẳn. Phần còn lại (Hình~\ref{fig:toado}b) cho thấy khách hàng tập trung dày đặc ở vùng Đông Nam, quanh São Paulo và Rio de Janeiro. Từ đây, báo cáo ghi các bang bằng mã hai chữ cái như trong dữ liệu gốc (SP là São Paulo, RJ là Rio de Janeiro); danh sách đầy đủ 27 bang cùng vùng tương ứng nằm ở Bảng~\ref{tab:mabang} trong Phụ lục.
 
 \begin{figure}[H]
 \centering
