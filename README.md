@@ -62,7 +62,7 @@ The [Brazilian E-Commerce Public Dataset by Olist](https://www.kaggle.com/datase
 | Report (PDF) | `report/main.pdf` |
 | Source code (`src/`) | `src/` (SQL, ETL, OLAP, DSS, dashboard) |
 | Sample data (`data/`) | `data/` |
-| Presentation slides (PDF) | `slides/BTL DATAWAREHOUSE.pdf` |
+| Presentation slides (PDF) | `slides/Nhóm 10_L01_SlideReport.pdf` |
 | Video link (on the report cover) | [Google Drive folder](https://drive.google.com/drive/folders/1U7ONwhEVuUqJkst1z5X8fvamymiwy6j7?usp=drive_link) |
 
 ## Running the system
