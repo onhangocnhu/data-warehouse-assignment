@@ -38,7 +38,7 @@ Bốn khoảng thời gian \code{approval\_days}, \code{handling\_days}, \code{s
 
 Dữ liệu sạch được nạp từ staging vào Data Mart theo thứ tự từ bảng cha đến bảng con: \code{dim\_date}, \code{dim\_state}, \code{dim\_city}, \code{dim\_category}, \code{dim\_product}, \code{dim\_customer}, \code{dim\_seller}, rồi mới đến bảng fact. Như vậy, khi một bảng được nạp thì mọi bảng mà nó tham chiếu đã có dữ liệu. Khi nạp bảng fact, mỗi mã gốc như \code{product\_id}, \code{seller\_id}, \code{customer\_unique\_id} và mỗi mốc thời gian được tra sang surrogate key tương ứng; mã nào không tìm thấy được gán về bản ghi không xác định.
 
-Vì dữ liệu nguồn là một tập lịch sử cố định, hệ thống dùng hình thức nạp toàn bộ (full load): mỗi lần chạy, Data Mart được xóa và nạp lại từ đầu. Toàn bộ bước Load nằm trong một giao dịch (transaction); nếu có lỗi, giao dịch bị hủy và Data Mart giữ nguyên dữ liệu của lần chạy trước, không có chuyện nạp dở dang hay trùng dữ liệu. Khi nguồn dữ liệu phát sinh liên tục, quy trình có thể chuyển sang nạp tăng dần (incremental load) dựa trên thời điểm mua của đơn hàng \cite{kimball}.
+Vì dữ liệu nguồn là một tập lịch sử cố định, hệ thống dùng hình thức nạp toàn bộ (full load): mỗi lần chạy, Data Mart được xóa và nạp lại từ đầu. Toàn bộ bước Load nằm trong một giao dịch (transaction); nếu có lỗi, giao dịch bị hủy và Data Mart giữ nguyên dữ liệu của lần chạy trước, không nạp dở dang hay trùng dữ liệu. Khi nguồn dữ liệu phát sinh liên tục, quy trình có thể chuyển sang nạp tăng dần (incremental load) dựa trên thời điểm mua của đơn hàng \cite{kimball}.
 
 Chỉ mục được tạo trên các khóa ngoại của bảng fact và trên \code{order\_id}, để tăng tốc phép kết nối và các truy vấn gom theo đơn hàng. Với quy mô hiện tại, nhóm chưa cần phân vùng (partition) bảng fact.
 
@@ -68,4 +68,9 @@ Số bản ghi bị loại hoặc bị sửa ở bước transformation, cùng l
 
 \subsubsection{Quản lý metadata}
 
-Metadata là ``dữ liệu về dữ liệu'', giúp người dùng hiểu cấu trúc, nguồn gốc và cách dữ liệu đã được biến đổi \cite{han}. Metadata của hệ thống được lưu trong kho metadata trên PostgreSQL (mục~\ref{sec:kientruc}) và gồm ba phần. Từ điển dữ liệu mô tả từng bảng, từng cột của Data Mart: tên, kiểu, ý nghĩa nghiệp vụ và đơn vị tính. Nguồn gốc dữ liệu cho biết mỗi cột trong Data Mart lấy từ tập tin và cột nào của nguồn, qua quy tắc transformation nào. Nhật ký ETL ghi lại mỗi lần chạy: mã lần chạy, thời điểm bắt đầu và kết thúc, tên bước, số dòng vào, số dòng ra, số dòng bị loại, trạng thái và thông báo lỗi nếu có; đây chính là chức năng giám sát (Monitoring) trong kiến trúc hệ thống.
+Metadata là ``dữ liệu về dữ liệu'', mô tả số liệu trong kho chứ không phải bản thân số liệu \cite{han}. Metadata được lưu trong schema \code{meta} trên PostgreSQL (mục~\ref{sec:kientruc}) và gồm ba phần:
+\begin{itemize}
+    \item \textbf{Từ điển dữ liệu} (\code{data\_dictionary}) cho biết \emph{cột này là gì}: tên, kiểu, ý nghĩa nghiệp vụ và đơn vị tính của từng cột trong Data Mart.
+    \item \textbf{Nguồn gốc dữ liệu} (\code{data\_lineage}) cho biết \emph{cột này từ đâu ra}: tập tin, cột nguồn và quy tắc biến đổi, giúp lần ngược về nguồn khi gặp con số bất thường.
+    \item \textbf{Nhật ký ETL} cho biết \emph{lần nạp có ổn không}. \code{etl\_run\_log} ghi mỗi bước của mỗi lần chạy (thời gian, số dòng vào, ra, bị loại, trạng thái, lỗi); \code{rejected\_record} lưu bản ghi bị loại hoặc bị sửa kèm lý do; \code{dq\_result} lưu kết quả đối soát. Đây là chức năng giám sát (Monitoring) trong kiến trúc hệ thống.
+\end{itemize}

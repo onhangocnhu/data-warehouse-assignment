@@ -21,7 +21,7 @@ Granularity, tức mức chi tiết của mỗi dòng dữ liệu, là quyết �
 
 Đây là mức chi tiết thấp nhất của dữ liệu nguồn, vì giá bán, phí vận chuyển, sản phẩm và người bán đều được ghi theo từng dòng sản phẩm. Nếu chọn mức đơn hàng, kho sẽ mất thông tin sản phẩm và người bán ở các đơn nhiều sản phẩm hoặc nhiều người bán. Từ mức dòng sản phẩm vẫn tổng hợp lên được mức đơn hàng, người bán, ngành hàng và khu vực, nên mọi chỉ số ở Bảng~\ref{tab:kpi} đều tính được. Về dung lượng, bảng fact có 112.650 dòng ứng với 98.666 đơn có sản phẩm; với khoảng 20 cột, nhóm ước tính bảng chiếm 15-20 MB chưa kể chỉ mục (thực tế sau khi nạp là 17 MB), nên không cần tổng hợp trước để tiết kiệm chỗ.
 
-Cái giá của lựa chọn này là thông tin giao hàng và đánh giá, vốn ghi theo đơn, bị lặp lại trên mọi dòng sản phẩm của cùng một đơn. Nếu lấy trung bình trực tiếp trên bảng fact, đơn nhiều sản phẩm sẽ được tính nhiều lần. Nhóm xử lý bằng cách tổng hợp các thước đo này trên tập đơn hàng phân biệt, như trình bày ở mục~\ref{sec:dodo}.
+Cái giá của lựa chọn này là thông tin giao hàng và đánh giá, vốn ghi theo đơn, bị lặp lại trên mọi dòng sản phẩm của cùng một đơn. Nếu lấy trung bình trực tiếp trên bảng fact, đơn nhiều sản phẩm sẽ được tính nhiều lần. Nhóm xử lý bằng cách tổng hợp các thước đo này trên tập đơn hàng phân biệt, sẽ trình bày ở mục~\ref{sec:dodo}.
 
 Có 775 đơn hàng không có dòng sản phẩm nào, phần lớn ở trạng thái \code{unavailable} (603 đơn) và \code{canceled} (164 đơn). Các đơn này không xuất hiện trong bảng fact nên không được tính vào chỉ số của kho.
 
@@ -42,10 +42,12 @@ Sản phẩm & Mã sản phẩm, khối lượng, kích thước, số ảnh & S
 Ngành hàng & Tên ngành hàng tiếng Bồ Đào Nha và tiếng Anh & -- & 74\\ \hline
 Khách hàng & Mã khách hàng (\code{customer\_unique\_id}), mã bưu chính & Khách hàng $\rightarrow$ Thành phố $\rightarrow$ Bang $\rightarrow$ Vùng & 96.096\\ \hline
 Người bán & Mã người bán, mã bưu chính & Người bán $\rightarrow$ Thành phố $\rightarrow$ Bang $\rightarrow$ Vùng & 3.095\\ \hline
-Thành phố & Tên thành phố, vĩ độ, kinh độ & Thành phố $\rightarrow$ Bang & Khoảng 4.400 (trước khi chuẩn hóa)\\ \hline
+Thành phố & Tên thành phố, vĩ độ, kinh độ & Thành phố $\rightarrow$ Bang & 4.341\\ \hline
 Bang & Mã bang, tên bang, vùng & Bang $\rightarrow$ Vùng & 27\\ \hline
 \end{tabularx}
 \end{table}
+
+Ngoài số dòng ở Bảng~\ref{tab:chieu}, mỗi bảng chiều có thêm một dòng không xác định (khóa $-1$) để các bản ghi thiếu thông tin, như đơn chưa có ngày nhận hàng, vẫn nối được vào bảng chiều. Riêng chiều ngành hàng, con số 74 đã gồm ngành ``không xác định'' dành cho 610 sản phẩm thiếu ngành.
 
 \input{Sections/hinh/phancap}
 
